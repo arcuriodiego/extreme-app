@@ -70,7 +70,7 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
     email: values.email,
     password,
     options: {
-      emailRedirectTo: `${origin}/auth/confirm?next=${HOME_PATH}`,
+      emailRedirectTo: `${origin}/auth/callback?next=${HOME_PATH}`,
       data: { first_name: values.firstName, last_name: values.lastName, academy: academyConfig.slug },
     },
   });
@@ -92,7 +92,7 @@ export async function requestPasswordReset(_prev: FormState, formData: FormData)
   const supabase = await createClient();
   const origin = await siteOrigin();
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${origin}/auth/confirm?next=/nueva-clave`,
+    redirectTo: `${origin}/auth/callback?next=/nueva-clave`,
   });
   if (error && (error.status === 429 || error.code?.startsWith("over_"))) {
     return { error: authErrorMessage(error), values: { email } };

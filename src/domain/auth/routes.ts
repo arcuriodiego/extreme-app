@@ -34,3 +34,18 @@ export function safeNextPath(value: unknown): string | null {
   if (/[\u0000-\u001f]/.test(value)) return null;
   return value;
 }
+
+/** Tipos de enlace por email que acepta la pantalla de confirmación. */
+export const EMAIL_LINK_TYPES = ["signup", "email", "recovery", "invite", "email_change"] as const;
+export type EmailLinkType = (typeof EMAIL_LINK_TYPES)[number];
+
+export function parseEmailLinkType(value: unknown): EmailLinkType | null {
+  return typeof value === "string" && (EMAIL_LINK_TYPES as readonly string[]).includes(value)
+    ? (value as EmailLinkType)
+    : null;
+}
+
+/** Hacia dónde va cada tipo de enlace si no se indica otra cosa. */
+export function defaultNextFor(type: EmailLinkType): string {
+  return type === "recovery" ? "/nueva-clave" : HOME_PATH;
+}

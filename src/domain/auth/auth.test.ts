@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { validateSignIn, validateSignUp, validateNewPassword, validateProfile, normalizeEmail } from "./validation.ts";
-import { routeAccess, safeNextPath } from "./routes.ts";
+import { defaultNextFor, parseEmailLinkType, routeAccess, safeNextPath } from "./routes.ts";
 import { authErrorMessage, GENERIC_AUTH_ERROR } from "./errors.ts";
 
 const ok = { firstName: "Valentina", lastName: "Rodríguez", email: "vale@example.com", password: "baile2026", passwordConfirm: "baile2026" };
@@ -78,4 +78,17 @@ test("errores de Supabase en español y sin detalles técnicos", () => {
   assert.equal(authErrorMessage({ code: "invalid_credentials" }), "El email o la contraseña no son correctos.");
   assert.equal(authErrorMessage({ status: 429 }), "Hubo demasiados intentos seguidos. Esperá unos minutos y volvé a intentar.");
   assert.equal(authErrorMessage({ code: "algo_nuevo", message: "Internal error xyz" }), GENERIC_AUTH_ERROR);
+});
+
+
+test("tipos de enlace por email: sólo los conocidos", () => {
+  assert.equal(parseEmailLinkType("recovery"), "recovery");
+  assert.equal(parseEmailLinkType("email"), "email");
+  assert.equal(parseEmailLinkType("cualquiera"), null);
+  assert.equal(parseEmailLinkType(undefined), null);
+});
+
+test("la recuperación lleva a crear contraseña; el resto al inicio", () => {
+  assert.equal(defaultNextFor("recovery"), "/nueva-clave");
+  assert.equal(defaultNextFor("email"), "/inicio");
 });
