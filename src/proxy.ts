@@ -1,4 +1,4 @@
-import { createServerClient } from "@supabase/ssr";
+import { type CookieOptions, createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { HOME_PATH, SIGN_IN_PATH, routeAccess } from "@/domain/auth/routes";
 import { supabaseEnv } from "@/lib/supabase/env";
@@ -9,6 +9,8 @@ import { supabaseEnv } from "@/lib/supabase/env";
  * 2. Manda a "Ingresar" a quien entra a una página privada sin sesión.
  * 3. Manda al inicio a quien ya ingresó y abre "Ingresar" o "Registro".
  */
+type CookieToSet = { name: string; value: string; options: CookieOptions };
+
 export async function proxy(request: NextRequest) {
   const env = supabaseEnv();
   let response = NextResponse.next({ request });
@@ -19,7 +21,7 @@ export async function proxy(request: NextRequest) {
       getAll() {
         return request.cookies.getAll();
       },
-      setAll(cookiesToSet) {
+      setAll(cookiesToSet: CookieToSet[]) {
         cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
         response = NextResponse.next({ request });
         cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
