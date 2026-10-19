@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+/*
+ * Tokens de diseño de la marca.
+ * Rojo de marca sólo para acciones; los estados (verde, amarillo, rojo de alerta)
+ * son colores aparte y siempre van con ícono y texto.
+ */
+@theme {
+  --color-brand: #d90000;
+  --color-brand-hover: #b80000;
+  --color-ink: #111111;
+  --color-paper: #ffffff;
+  --color-surface: #f6f6f6;
+  --color-line: #e6e6e6;
+  --color-muted: #5c5c5c;
+
+  --color-ok: #1e7b3c;
+  --color-ok-ink: #14592b;
+  --color-ok-soft: #e9f6ee;
+  --color-warn: #9a6b00;
+  --color-warn-ink: #6b4a00;
+  --color-warn-soft: #fff6d6;
+  --color-alert: #9e1b1b;
+  --color-alert-ink: #7a1414;
+  --color-alert-soft: #fdeded;
+
+  --font-sans: var(--font-barlow), system-ui, sans-serif;
+  --font-display: var(--font-barlow-condensed), "Arial Narrow", sans-serif;
+
+  --radius-card: 16px;
+}
+
+html {
+  color-scheme: light;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-ink);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

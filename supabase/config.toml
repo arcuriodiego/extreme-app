@@ -1,0 +1,14 @@
+# Configuración del entorno local de Supabase (npx supabase start).
+# Los valores no indicados usan los predeterminados de la herramienta.
+project_id = "extreme-app"
+
+[db]
+port = 54322
+major_version = 17
+
+[db.seed]
+enabled = true
+sql_paths = ["./seed.sql"]
+
+[auth]
+site_url = "http://localhost:3000"
