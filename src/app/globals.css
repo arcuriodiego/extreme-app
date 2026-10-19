@@ -41,6 +41,19 @@ body {
   font-family: var(--font-sans);
 }
 
+/* En la capa base, para que las clases de Tailwind (botones con forma de enlace) puedan cambiarlo. */
+@layer base {
+  a {
+    color: var(--color-ink);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  a:hover {
+    color: var(--color-brand);
+  }
+}
+
 :focus-visible {
   outline: 3px solid var(--color-ink);
   outline-offset: 2px;

@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { academyConfig } from "@/config/academy";
 
 export default function Home() {
@@ -12,11 +13,20 @@ export default function Home() {
         priority
         className="h-auto w-64"
       />
-      <div className="flex flex-col gap-2">
-        <h1 className="font-display text-4xl font-bold uppercase tracking-wide">Muy pronto</h1>
-        <p className="text-lg text-muted">
-          Acá vas a poder reservar clases, pagar tu cuota y mostrar tu pase para entrar.
-        </p>
+      <p className="text-lg text-muted">Reservá clases, pagá tu cuota y mostrá tu pase para entrar.</p>
+      <div className="flex flex-col gap-3">
+        <Link
+          href="/ingresar"
+          className="flex h-12 items-center justify-center rounded-xl bg-brand font-bold text-white no-underline hover:bg-brand-hover hover:text-white"
+        >
+          Ingresar
+        </Link>
+        <Link
+          href="/registro"
+          className="flex h-12 items-center justify-center rounded-xl border-[1.5px] border-ink font-semibold text-ink no-underline hover:bg-surface hover:text-ink"
+        >
+          Crear cuenta
+        </Link>
       </div>
     </main>
   );
