@@ -3,13 +3,14 @@ import { NextResponse, type NextRequest } from "next/server";
 import { HOME_PATH, SIGN_IN_PATH, routeAccess } from "@/domain/auth/routes";
 import { supabaseEnv } from "@/lib/supabase/env";
 
+type CookieToSet = { name: string; value: string; options: CookieOptions };
+
 /**
  * Se ejecuta antes de cada página:
  * 1. Renueva la sesión del usuario si está por vencer.
  * 2. Manda a "Ingresar" a quien entra a una página privada sin sesión.
  * 3. Manda al inicio a quien ya ingresó y abre "Ingresar" o "Registro".
  */
-type CookieToSet = { name: string; value: string; options: CookieOptions };
 
 export async function proxy(request: NextRequest) {
   const env = supabaseEnv();

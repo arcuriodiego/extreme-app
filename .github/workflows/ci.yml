@@ -47,7 +47,14 @@ jobs:
       - run: npm install --no-audit --no-fund
       - run: npm run typecheck
       - run: npm run lint
-      - run: npm run build
+      - name: Compilar
+        run: |
+          set -o pipefail
+          if ! npm run build 2>&1 | tee build.log; then
+            # Muestra el final del registro como aviso, visible desde el resumen de la ejecución.
+            echo "::error title=Falló la compilación::$(tail -n 60 build.log | sed -e 's/%/%25/g' | sed ':a;N;$!ba;s/\n/%0A/g')"
+            exit 1
+          fi
 
   # Aplica las migraciones nuevas a la base de staging en Supabase.
   # Sólo corre en la rama main y sólo si las pruebas de la base pasaron.
