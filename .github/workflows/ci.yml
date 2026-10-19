@@ -52,7 +52,8 @@ jobs:
           set -o pipefail
           if ! npm run build 2>&1 | tee build.log; then
             # Muestra el final del registro como aviso, visible desde el resumen de la ejecución.
-            echo "::error title=Falló la compilación::$(tail -n 60 build.log | sed -e 's/%/%25/g' | sed ':a;N;$!ba;s/\n/%0A/g')"
+            { grep -iE -A6 "error|⨯|failed" build.log | head -n 40; echo "-----"; tail -n 15 build.log; } > build-error.log
+            echo "::error title=Falló la compilación::$(sed -e 's/%/%25/g' build-error.log | sed ':a;N;$!ba;s/\n/%0A/g')"
             exit 1
           fi
 

@@ -11,8 +11,10 @@ type CookieToSet = { name: string; value: string; options: CookieOptions };
  * así cada consulta respeta los permisos de esa persona.
  */
 export async function createClient() {
-  const { url, anonKey } = requireSupabaseEnv();
+  // Leer las cookies primero marca la página como dinámica: nunca se genera
+  // durante la compilación, cuando no hay sesión ni datos de conexión.
   const cookieStore = await cookies();
+  const { url, anonKey } = requireSupabaseEnv();
 
   return createServerClient(url, anonKey, {
     cookies: {

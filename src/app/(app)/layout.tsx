@@ -3,6 +3,9 @@ import Link from "next/link";
 import { academyConfig } from "@/config/academy";
 import { signOut } from "@/app/(cuenta)/actions";
 
+// Páginas personales: se arman en cada visita, nunca durante la compilación.
+export const dynamic = "force-dynamic";
+
 /**
  * Marco provisorio de las páginas con sesión.
  * La navegación completa por rol (barra inferior del alumno, menú lateral
