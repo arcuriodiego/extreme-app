@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { validateSignIn, validateSignUp, validateNewPassword, validateProfile, normalizeEmail } from "./validation.ts";
 import { defaultNextFor, parseEmailLinkType, routeAccess, safeNextPath } from "./routes.ts";
 import { authErrorMessage, GENERIC_AUTH_ERROR } from "./errors.ts";
+import { can, isStaff, roleLabel, sortRoles } from "./roles.ts";
 
 const ok = { firstName: "Valentina", lastName: "Rodríguez", email: "vale@example.com", password: "baile2026", passwordConfirm: "baile2026" };
 
@@ -56,6 +57,7 @@ test("rutas protegidas, sólo para visitantes y públicas", () => {
   assert.equal(routeAccess("/perfil"), "protected");
   assert.equal(routeAccess("/nueva-clave"), "protected");
   assert.equal(routeAccess("/inicio/pagos"), "protected");
+  assert.equal(routeAccess("/admin/usuarios"), "protected");
   assert.equal(routeAccess("/inicios"), "public");
   assert.equal(routeAccess("/ingresar"), "guest-only");
   assert.equal(routeAccess("/registro"), "guest-only");
@@ -91,4 +93,14 @@ test("tipos de enlace por email: sólo los conocidos", () => {
 test("la recuperación lleva a crear contraseña; el resto al inicio", () => {
   assert.equal(defaultNextFor("recovery"), "/nueva-clave");
   assert.equal(defaultNextFor("email"), "/inicio");
+});
+
+test("roles: orden, nombres y personal", () => {
+  assert.deepEqual(sortRoles(["student", "teacher", "admin", "desconocido"]), ["admin", "teacher", "student"]);
+  assert.equal(roleLabel("reception"), "Recepción");
+  assert.equal(roleLabel("otro"), "otro");
+  assert.equal(isStaff({ roles: ["student"], permissions: [] }), false);
+  assert.equal(isStaff({ roles: ["student", "teacher"], permissions: [] }), true);
+  assert.equal(can({ roles: ["admin"], permissions: ["roles.manage"] }, "roles.manage"), true);
+  assert.equal(can({ roles: ["reception"], permissions: ["people.view"] }, "roles.manage"), false);
 });

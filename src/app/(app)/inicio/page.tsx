@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { FormAlert } from "@/components/forms/fields";
+import { RoleBadges } from "@/components/status/RoleBadges";
+import { can } from "@/domain/auth/roles";
 import { requireProfile } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Inicio" };
@@ -13,17 +15,36 @@ export default async function InicioPage({ searchParams }: { searchParams: Promi
   const [profile, params] = await Promise.all([requireProfile(), searchParams]);
   const notice = params.aviso ? notices[params.aviso] : undefined;
   const missingData = !profile.phone || !profile.birthDate;
+  const canSeePeople = can(profile.access, "people.view");
 
   return (
     <>
       {notice && <FormAlert kind="ok">{notice}</FormAlert>}
-      <h1 className="font-display text-[34px] font-bold uppercase leading-none tracking-wide">
-        Hola{profile.firstName ? `, ${profile.firstName}` : ""}
-      </h1>
+      <div className="flex flex-col gap-2">
+        <h1 className="font-display text-[34px] font-bold uppercase leading-none tracking-wide">
+          Hola{profile.firstName ? `, ${profile.firstName}` : ""}
+        </h1>
+        <RoleBadges roles={profile.access.roles} />
+      </div>
 
-      <section className="flex flex-col gap-2 rounded-[var(--radius-card)] bg-ink p-5 text-white">
+      {canSeePeople && (
+        <Link
+          href="/admin/usuarios"
+          className="flex items-center justify-between gap-3 rounded-[var(--radius-card)] bg-ink p-5 text-white no-underline hover:bg-[#262626] hover:text-white"
+        >
+          <span className="flex flex-col gap-1">
+            <span className="font-display text-xl font-bold uppercase tracking-wide">Gestión</span>
+            <span className="text-[15px] text-[#cfcfcf]">Usuarios y roles de la academia</span>
+          </span>
+          <span aria-hidden="true" className="text-2xl">
+            ›
+          </span>
+        </Link>
+      )}
+
+      <section className="flex flex-col gap-2 rounded-[var(--radius-card)] border border-line p-5">
         <span className="font-display text-xl font-bold uppercase tracking-wide">Tu cuenta está lista</span>
-        <p className="text-[15px] leading-snug text-[#cfcfcf]">
+        <p className="text-[15px] leading-snug text-muted">
           Muy pronto vas a ver acá tus clases, el estado de tu cuota y tu pase para entrar.
         </p>
       </section>
