@@ -58,6 +58,10 @@ test("rutas protegidas, sólo para visitantes y públicas", () => {
   assert.equal(routeAccess("/nueva-clave"), "protected");
   assert.equal(routeAccess("/inicio/pagos"), "protected");
   assert.equal(routeAccess("/admin/usuarios"), "protected");
+  assert.equal(routeAccess("/clases"), "protected");
+  assert.equal(routeAccess("/pases"), "protected");
+  assert.equal(routeAccess("/pagos"), "protected");
+  assert.equal(routeAccess("/profe/asistencia"), "protected");
   assert.equal(routeAccess("/inicios"), "public");
   assert.equal(routeAccess("/ingresar"), "guest-only");
   assert.equal(routeAccess("/registro"), "guest-only");

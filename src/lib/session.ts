@@ -1,5 +1,6 @@
 import "server-only";
 import { redirect } from "next/navigation";
+import { cache } from "react";
 import { type Access, type PermissionCode, type RoleCode, isRoleCode, sortRoles } from "@/domain/auth/roles";
 import { SIGN_IN_PATH } from "@/domain/auth/routes";
 import { createClient } from "@/lib/supabase/server";
@@ -18,8 +19,9 @@ export interface Profile {
  * Usuario con sesión, su perfil y sus permisos. Si no hay sesión, manda a "Ingresar".
  * El proxy ya lo verifica antes, pero cada página vuelve a comprobarlo:
  * la seguridad no depende de un solo control. Los permisos los calcula la base.
+ * Con cache(), el marco y la página comparten la misma consulta en cada visita.
  */
-export async function requireProfile(): Promise<Profile> {
+export const requireProfile = cache(async function requireProfile(): Promise<Profile> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -48,4 +50,4 @@ export async function requireProfile(): Promise<Profile> {
       permissions: (row?.permission_codes ?? []) as PermissionCode[],
     },
   };
-}
+});

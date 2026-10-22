@@ -3,6 +3,7 @@ import { FormAlert } from "@/components/forms/fields";
 import { NoAccess } from "@/components/status/NoAccess";
 import { RoleBadges } from "@/components/status/RoleBadges";
 import { ASSIGNABLE_ROLES, ROLE_LABELS, can, isRoleCode, sortRoles } from "@/domain/auth/roles";
+import { canOpen } from "@/domain/navigation/menus";
 import { requireProfile } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import { setRole } from "./actions";
@@ -35,7 +36,7 @@ export default async function UsuariosPage({
   searchParams: Promise<{ q?: string; aviso?: string; error?: string }>;
 }) {
   const [me, params] = await Promise.all([requireProfile(), searchParams]);
-  if (!can(me.access, "people.view")) return <NoAccess />;
+  if (!canOpen(me.access, "usuarios")) return <NoAccess />;
 
   const canManageRoles = can(me.access, "roles.manage");
   const q = (params.q ?? "").trim().slice(0, 80);
