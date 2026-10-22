@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/ui/basics";
 import { can } from "@/domain/auth/roles";
 import { WEEKDAYS, weekdayLabel } from "@/domain/classes/schedule";
 import { loadCatalog, loadGroup } from "@/lib/grilla";
+import { loadFixedStudents } from "@/lib/memberships";
 import { requireProfile } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import { addSchedule, removeSchedule, updateGroup } from "../actions";
@@ -31,6 +32,7 @@ export default async function GrupoPage({
   const supabase = await createClient();
   const [group, catalog] = await Promise.all([loadGroup(supabase, id), loadCatalog(supabase)]);
   if (!group) notFound();
+  const fixedStudents = await loadFixedStudents(supabase, group.schedules.map((s) => s.id));
 
   const notice = query.aviso ? NOTICES[query.aviso] : undefined;
   const failure = query.error ? ERRORS[query.error] : undefined;
@@ -52,15 +54,31 @@ export default async function GrupoPage({
         ) : (
           <ul className="flex max-w-xl flex-col">
             {group.schedules.map((s) => (
-              <li key={s.id} className="flex items-center justify-between gap-3 border-t border-line py-3">
-                <span>
-                  <strong>{weekdayLabel(s.weekday)}</strong> {s.start} a {s.end} · {s.roomName}
-                </span>
-                <form action={removeSchedule}>
-                  <input type="hidden" name="group_id" value={group.id} />
-                  <input type="hidden" name="id" value={s.id} />
-                  <SmallSubmit tone="danger">Quitar</SmallSubmit>
-                </form>
+              <li key={s.id} className="flex flex-col gap-2 border-t border-line py-3">
+                <div className="flex items-center justify-between gap-3">
+                  <span>
+                    <strong>{weekdayLabel(s.weekday)}</strong> {s.start} a {s.end} · {s.roomName}
+                  </span>
+                  <form action={removeSchedule}>
+                    <input type="hidden" name="group_id" value={group.id} />
+                    <input type="hidden" name="id" value={s.id} />
+                    <SmallSubmit tone="danger">Quitar</SmallSubmit>
+                  </form>
+                </div>
+                {(() => {
+                  const here = fixedStudents.filter((f) => f.scheduleId === s.id);
+                  return (
+                    <p className="text-sm text-muted">
+                      {here.length === 0 ? "Sin alumnos fijos." : `Fijos (${here.length} de ${group.capacity}): `}
+                      {here.map((f, i) => (
+                        <span key={f.enrollmentId}>
+                          {i > 0 && ", "}
+                          <Link href={`/admin/alumnos/${f.studentId}#planes`}>{f.name}</Link>
+                        </span>
+                      ))}
+                    </p>
+                  );
+                })()}
               </li>
             ))}
           </ul>

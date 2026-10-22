@@ -142,3 +142,29 @@ export function scheduleOptions(groups: readonly GroupRow[], teacherId: string, 
     );
   return options.sort((a, b) => a.order - b.order).map((o) => o.option);
 }
+
+export interface FixedStudent {
+  enrollmentId: string;
+  scheduleId: string;
+  studentId: string;
+  name: string;
+}
+
+/** Quiénes tienen plaza fija activa en estos horarios (sólo para el personal). */
+export async function loadFixedStudents(supabase: Client, scheduleIds: readonly string[]): Promise<FixedStudent[]> {
+  if (scheduleIds.length === 0) return [];
+  const { data } = await supabase
+    .from("enrollments")
+    .select("id, schedule_id, student:students(id, first_name, last_name)")
+    .in("schedule_id", [...scheduleIds])
+    .eq("status", "active");
+  return ((data ?? []) as unknown as { id: string; schedule_id: string; student: { id: string; first_name: string; last_name: string } | null }[])
+    .filter((r) => r.student)
+    .map((r) => ({
+      enrollmentId: r.id,
+      scheduleId: r.schedule_id,
+      studentId: r.student?.id ?? "",
+      name: [r.student?.first_name, r.student?.last_name].filter(Boolean).join(" "),
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name, "es"));
+}
