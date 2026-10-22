@@ -186,7 +186,7 @@ export async function loadDebtors(supabase: Client, today: CalendarDate, graceDa
   if (error) throw new Error(`No se pudieron cargar las deudas: ${error.message}`);
   return (data ?? []).map((r) => {
     const c = toCharge(r as Record<string, unknown>);
-    const s = (r as { student: { first_name: string; last_name: string } | null }).student;
+    const s = (r as unknown as { student: { first_name: string; last_name: string } | null }).student;
     return {
       studentId: c.studentId,
       studentName: [s?.first_name, s?.last_name].filter(Boolean).join(" "),
