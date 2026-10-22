@@ -5,6 +5,7 @@ export const NOTICES: Record<string, string> = {
   "grupo-guardado": "Listo, guardamos los cambios del grupo.",
   "horario-agregado": "Listo, agregamos el horario.",
   "horario-quitado": "Listo, quitamos el horario.",
+  "horario-terminado": "Listo, el horario terminó. Queda en el historial porque tuvo alumnos fijos.",
   agregado: "Listo, lo agregamos.",
   activado: "Listo, quedó activo.",
   desactivado: "Listo, quedó desactivado. Ya no se ofrece para grupos nuevos.",

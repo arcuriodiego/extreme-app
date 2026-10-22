@@ -2,6 +2,9 @@ export const NOTICES: Record<string, string> = {
   creado: "Listo, creamos la ficha.",
   guardado: "Listo, guardamos los cambios.",
   "notas-guardadas": "Listo, guardamos las notas.",
+  inscripto: "Listo, quedó inscripto en la cuota de profe con sus horarios fijos.",
+  "horario-cambiado": "Listo, cambiamos el horario fijo.",
+  baja: "Listo, dimos de baja la cuota y liberamos sus lugares.",
 };
 
 export const ERRORS: Record<string, string> = {
@@ -15,4 +18,9 @@ export const ERRORS: Record<string, string> = {
   "sin-permiso": "No tenés permiso para hacer este cambio.",
   datos: "Revisá los datos: hay algo que no es válido.",
   generico: "No pudimos guardar el cambio. Probá de nuevo.",
+  completo: "No hay lugar: uno de los horarios se completó. Elegí otro.",
+  "ya-tiene": "El alumno ya tiene ese horario fijo.",
+  "otro-profe": "Ese horario no es de ese profe y categoría.",
+  "horarios-cantidad": "Elegí exactamente 2 horarios distintos.",
+  "no-disponible": "Eso cambió mientras tanto. Recargá la página y probá de nuevo.",
 };

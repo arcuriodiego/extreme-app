@@ -14,6 +14,7 @@ import { createClient } from "@/lib/supabase/server";
 import { saveNotes, updateStudent } from "../actions";
 import { ERRORS, NOTICES } from "../messages";
 import { StudentForm } from "../StudentForm";
+import { MembershipSection } from "./MembershipSection";
 
 export const metadata: Metadata = { title: "Ficha del alumno" };
 
@@ -27,7 +28,7 @@ export default async function AlumnoPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ aviso?: string; error?: string }>;
+  searchParams: Promise<{ aviso?: string; error?: string; profe?: string; cat?: string }>;
 }) {
   const [profile, { id }, query] = await Promise.all([requireProfile(), params, searchParams]);
   if (!canOpen(profile.access, "alumnos")) return <NoAccess />;
@@ -73,12 +74,13 @@ export default async function AlumnoPage({
         )}
       </section>
 
-      <section className="flex flex-col gap-3 border-t border-line pt-6">
-        <h2 className="font-display text-2xl font-bold uppercase tracking-wide">Planes</h2>
-        <p className="rounded-xl bg-surface px-4 py-3 text-[15px]">
-          Próximamente: inscripción a la cuota de profe con sus horarios fijos, packs y estado de pagos.
-        </p>
-      </section>
+      <MembershipSection
+        supabase={supabase}
+        studentId={student.id}
+        canManage={canManage}
+        pickedTeacher={query.profe && UUID.test(query.profe) ? query.profe : undefined}
+        pickedCategory={query.cat && UUID.test(query.cat) ? query.cat : undefined}
+      />
 
       {canManage && (
         <>

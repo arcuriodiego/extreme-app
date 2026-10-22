@@ -4,7 +4,9 @@ import { FormAlert } from "@/components/forms/fields";
 import { RoleBadges } from "@/components/status/RoleBadges";
 import { LinkCard } from "@/components/ui/basics";
 import { hasGestion } from "@/domain/navigation/menus";
+import { loadMyMemberships } from "@/lib/memberships";
 import { requireProfile } from "@/lib/session";
+import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Inicio" };
 
@@ -17,6 +19,7 @@ export default async function InicioPage({ searchParams }: { searchParams: Promi
   const notice = params.aviso ? notices[params.aviso] : undefined;
   const missingData = !profile.phone || !profile.birthDate;
   const showGestion = hasGestion(profile.access);
+  const memberships = await loadMyMemberships(await createClient(), profile.id).catch(() => []);
 
   return (
     <>
@@ -30,12 +33,38 @@ export default async function InicioPage({ searchParams }: { searchParams: Promi
 
       {showGestion && <LinkCard href="/admin" title="Gestión" description="Alumnos, clases, pagos y más" dark />}
 
-      <section className="flex flex-col gap-2 rounded-[var(--radius-card)] border border-line p-5">
-        <span className="font-display text-xl font-bold uppercase tracking-wide">Tu cuenta está lista</span>
-        <p className="text-[15px] leading-snug text-muted">
-          Muy pronto vas a ver acá tus clases, el estado de tu cuota y tu pase para entrar.
-        </p>
-      </section>
+      {memberships.map((m) => (
+        <section key={m.id} aria-label="Tu cuota de profe" className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-line p-5">
+          <div className="flex flex-col gap-0.5">
+            <span className="font-display text-xl font-bold uppercase tracking-wide">{m.planName}</span>
+            <span className="text-[15px] text-muted">
+              Prof. {m.teacherName} · {m.ageCategoryName}
+            </span>
+          </div>
+          <ul className="flex flex-col gap-1.5">
+            {m.enrollments.map((e) => (
+              <li key={e.id} className="flex items-center gap-2 text-[15px]">
+                <span className="rounded-full bg-ink px-2 py-0.5 text-xs font-bold text-white">FIJA</span>
+                {e.label}
+              </li>
+            ))}
+          </ul>
+          {m.anchorDay === null && (
+            <p className="rounded-xl bg-warn-soft px-3 py-2 text-sm font-semibold text-warn-ink">
+              Tu vencimiento se fija con tu primer pago. Acercate a recepción para abonar.
+            </p>
+          )}
+        </section>
+      ))}
+
+      {memberships.length === 0 && (
+        <section className="flex flex-col gap-2 rounded-[var(--radius-card)] border border-line p-5">
+          <span className="font-display text-xl font-bold uppercase tracking-wide">Tu cuenta está lista</span>
+          <p className="text-[15px] leading-snug text-muted">
+            Mirá la grilla en Clases. Para tener tu lugar fijo con un profe, inscribite en recepción.
+          </p>
+        </section>
+      )}
 
       {missingData && (
         <Link

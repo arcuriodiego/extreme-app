@@ -6,13 +6,15 @@ import { FormAlert } from "@/components/forms/fields";
 import { PageHeader } from "@/components/ui/basics";
 import { dayStrip, longDate, pickDay } from "@/domain/classes/sessions";
 import { academyToday, loadGroups, slotsOf } from "@/lib/grilla";
+import { loadMyMemberships } from "@/lib/memberships";
+import { requireProfile } from "@/lib/session";
 import { ensureSessions, loadSessions } from "@/lib/sessions";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Clases" };
 
 export default async function ClasesPage({ searchParams }: { searchParams: Promise<{ dia?: string }> }) {
-  const params = await searchParams;
+  const [profile, params] = await Promise.all([requireProfile(), searchParams]);
   const strip = dayStrip(academyToday());
   const day = pickDay(params.dia, strip);
 
@@ -20,12 +22,17 @@ export default async function ClasesPage({ searchParams }: { searchParams: Promi
   let failed = false;
   let sessions: Awaited<ReturnType<typeof loadSessions>> = [];
   let slots: ReturnType<typeof slotsOf> = [];
+  let fixedSchedules = new Set<string>();
   try {
     await ensureSessions(supabase);
-    [sessions, slots] = await Promise.all([
+    const [loaded, groups, mine] = await Promise.all([
       loadSessions(supabase, day, day),
-      loadGroups(supabase, { onlyActive: true }).then((g) => slotsOf(g)),
+      loadGroups(supabase, { onlyActive: true }),
+      loadMyMemberships(supabase, profile.id),
     ]);
+    sessions = loaded;
+    slots = slotsOf(groups);
+    fixedSchedules = new Set(mine.flatMap((m) => m.enrollments.map((e) => e.scheduleId)));
   } catch {
     failed = true;
   }
@@ -53,7 +60,7 @@ export default async function ClasesPage({ searchParams }: { searchParams: Promi
               <ul className="flex flex-col gap-2">
                 {sessions.map((s) => (
                   <li key={s.id}>
-                    <SessionCard session={s} />
+                    <SessionCard session={s} tag={s.scheduleId && fixedSchedules.has(s.scheduleId) ? "TU CLASE FIJA" : undefined} />
                   </li>
                 ))}
               </ul>

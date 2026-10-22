@@ -77,3 +77,77 @@ export async function saveNotes(formData: FormData): Promise<void> {
   if (error) to(back, { error: errorCode(error) });
   to(back, { aviso: "notas-guardadas" });
 }
+
+// ---------------------------------------------------------------------
+// Cuota de profe
+// ---------------------------------------------------------------------
+
+function enrollErrorCode(error: { code?: string; message?: string }): string {
+  const m = error.message ?? "";
+  if (m.startsWith("No hay lugar")) return "completo";
+  if (m.startsWith("El alumno ya tiene")) return "ya-tiene";
+  if (m.startsWith("Ese horario no es de ese profe")) return "otro-profe";
+  if (error.code === "42501") return "sin-permiso";
+  if (error.code === "P0002") return "no-disponible";
+  if (error.code === "22023") return "horarios-cantidad";
+  return "generico";
+}
+
+export async function enrollStudent(formData: FormData): Promise<void> {
+  const studentId = String(formData.get("student_id") ?? "");
+  const teacherId = String(formData.get("teacher_id") ?? "");
+  const ageId = String(formData.get("age_category_id") ?? "");
+  if (![studentId, teacherId, ageId].every((v) => UUID.test(v))) to("/admin/alumnos", { error: "datos" });
+  const back = `/admin/alumnos/${studentId}`;
+  const keep = { profe: teacherId, cat: ageId };
+
+  const scheduleIds = formData.getAll("schedule_id").map(String).filter((v) => UUID.test(v));
+  const supabase = await createClient();
+  const { data: plan } = await supabase
+    .from("plans")
+    .select("classes_per_week")
+    .eq("kind", "teacher_monthly")
+    .eq("active", true)
+    .order("sort_order")
+    .limit(1)
+    .maybeSingle();
+  const required = (plan?.classes_per_week as number | undefined) ?? 2;
+  if (new Set(scheduleIds).size !== scheduleIds.length || scheduleIds.length !== required) {
+    to(back, { ...keep, error: "horarios-cantidad" });
+  }
+
+  const { error } = await supabase.rpc("enroll_teacher_monthly", {
+    p_student_id: studentId,
+    p_teacher_id: teacherId,
+    p_age_category_id: ageId,
+    p_schedule_ids: scheduleIds,
+  });
+  if (error) to(back, { ...keep, error: enrollErrorCode(error) });
+  to(back, { aviso: "inscripto" });
+}
+
+export async function changeEnrollment(formData: FormData): Promise<void> {
+  const studentId = String(formData.get("student_id") ?? "");
+  const enrollmentId = String(formData.get("enrollment_id") ?? "");
+  const scheduleId = String(formData.get("schedule_id") ?? "");
+  if (![studentId, enrollmentId, scheduleId].every((v) => UUID.test(v))) to("/admin/alumnos", { error: "datos" });
+  const back = `/admin/alumnos/${studentId}`;
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("change_enrollment", { p_enrollment_id: enrollmentId, p_new_schedule_id: scheduleId });
+  if (error) to(back, { error: enrollErrorCode(error) });
+  to(back, { aviso: "horario-cambiado" });
+}
+
+export async function endMembership(formData: FormData): Promise<void> {
+  const studentId = String(formData.get("student_id") ?? "");
+  const membershipId = String(formData.get("membership_id") ?? "");
+  const reason = String(formData.get("reason") ?? "").trim().slice(0, 200);
+  if (!UUID.test(studentId) || !UUID.test(membershipId)) to("/admin/alumnos", { error: "datos" });
+  const back = `/admin/alumnos/${studentId}`;
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("end_membership", { p_membership_id: membershipId, p_reason: reason });
+  if (error) to(back, { error: enrollErrorCode(error) });
+  to(back, { aviso: "baja" });
+}

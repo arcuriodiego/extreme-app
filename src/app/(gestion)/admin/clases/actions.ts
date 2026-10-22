@@ -125,10 +125,9 @@ export async function removeSchedule(formData: FormData): Promise<void> {
   const back = `/admin/clases/${groupId}`;
 
   const supabase = await createClient();
-  const { data, error } = await supabase.from("class_schedules").delete().eq("id", id).eq("group_id", groupId).select("id");
+  const { data, error } = await supabase.rpc("remove_schedule", { p_schedule_id: id });
   if (error) to(back, { error: grillaErrorCode(error) });
-  if (!data || data.length === 0) to(back, { error: "sin-permiso" });
-  to(back, { aviso: "horario-quitado" });
+  to(back, { aviso: data === "ended" ? "horario-terminado" : "horario-quitado" });
 }
 
 // ---------------------------------------------------------------------

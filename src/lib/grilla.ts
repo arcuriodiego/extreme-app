@@ -209,6 +209,7 @@ export function slotsOf(groups: readonly GroupRow[], today = academyToday()): Sl
 export function grillaErrorCode(error: { code?: string; message?: string }): string {
   const message = error.message ?? "";
   if (message.startsWith("El profe ya tiene") || message.includes("teacher_overlap")) return "profe-ocupado";
+  if (message.includes("tiene alumnos fijos")) return "con-fijos";
   if (error.code === "23P01") return "sala-ocupada";
   if (error.code === "P0002") return "no-disponible";
   if (error.code === "22023") return "motivo";
@@ -222,6 +223,7 @@ export function grillaErrorCode(error: { code?: string; message?: string }): str
 export const GRILLA_ERRORS: Record<string, string> = {
   "sala-ocupada": "Esa sala ya está ocupada en ese horario. Elegí otra sala u otro horario.",
   "profe-ocupado": "Ese profe ya tiene otra clase en ese horario.",
+  "con-fijos": "Tiene alumnos con plaza fija: primero cambiales el horario o dales de baja desde su ficha.",
   "no-disponible": "Esa clase ya empezó o cambió mientras tanto. Recargá la página y probá de nuevo.",
   motivo: "Escribí el motivo.",
   repetido: "Ya existe uno con ese nombre.",

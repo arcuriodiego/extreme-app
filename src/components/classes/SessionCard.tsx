@@ -8,7 +8,18 @@ const tones = {
 } as const;
 
 /** Una clase de una fecha: hora, grupo, profe, sala y avisos. `children` agrega acciones. */
-export function SessionCard({ session, extra, children }: { session: SessionRow; extra?: string; children?: React.ReactNode }) {
+export function SessionCard({
+  session,
+  extra,
+  tag,
+  children,
+}: {
+  session: SessionRow;
+  extra?: string;
+  /** Etiqueta destacada, por ejemplo "TU CLASE FIJA". */
+  tag?: string;
+  children?: React.ReactNode;
+}) {
   const cancelled = session.status === "cancelled";
   const badges = sessionBadges(session);
   return (
@@ -24,8 +35,9 @@ export function SessionCard({ session, extra, children }: { session: SessionRow;
             {teacherShown(session)} · {session.roomName}
             {extra ? ` · ${extra}` : ""}
           </span>
-          {badges.length > 0 && (
+          {(badges.length > 0 || tag) && (
             <span className="flex flex-wrap gap-1.5 pt-1">
+              {tag && <span className="rounded-full bg-ink px-2 py-0.5 text-xs font-bold tracking-wide text-white">{tag}</span>}
               {badges.map((b) => (
                 <span key={b.text} className={`rounded-full px-2 py-0.5 text-xs font-bold ${tones[b.tone]}`}>
                   {b.text}
