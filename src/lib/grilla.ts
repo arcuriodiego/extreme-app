@@ -207,7 +207,11 @@ export function slotsOf(groups: readonly GroupRow[], today = academyToday()): Sl
 
 /** Traduce los errores de la base de la grilla a mensajes claros. */
 export function grillaErrorCode(error: { code?: string; message?: string }): string {
+  const message = error.message ?? "";
+  if (message.startsWith("El profe ya tiene") || message.includes("teacher_overlap")) return "profe-ocupado";
   if (error.code === "23P01") return "sala-ocupada";
+  if (error.code === "P0002") return "no-disponible";
+  if (error.code === "22023") return "motivo";
   if (error.code === "23505") return "repetido";
   if (error.code === "23503") return "en-uso";
   if (error.code === "42501") return "sin-permiso";
@@ -217,6 +221,9 @@ export function grillaErrorCode(error: { code?: string; message?: string }): str
 
 export const GRILLA_ERRORS: Record<string, string> = {
   "sala-ocupada": "Esa sala ya está ocupada en ese horario. Elegí otra sala u otro horario.",
+  "profe-ocupado": "Ese profe ya tiene otra clase en ese horario.",
+  "no-disponible": "Esa clase ya empezó o cambió mientras tanto. Recargá la página y probá de nuevo.",
+  motivo: "Escribí el motivo.",
   repetido: "Ya existe uno con ese nombre.",
   "en-uso": "No se puede borrar porque está en uso. Podés desactivarlo.",
   "sin-permiso": "No tenés permiso para cambiar la grilla.",

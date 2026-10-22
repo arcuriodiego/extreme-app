@@ -99,3 +99,43 @@ export function calendarDateInZone(instant: Date, timeZone: string): CalendarDat
   const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
   return `${get("year")}-${get("month")}-${get("day")}`;
 }
+
+/** Minutos que una zona horaria está adelantada respecto de UTC en ese instante (Buenos Aires: -180). */
+function zoneOffsetMinutes(instant: Date, timeZone: string): number {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    hourCycle: "h23",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  }).formatToParts(instant);
+  const get = (type: string) => Number(parts.find((p) => p.type === type)?.value ?? 0);
+  const asUtc = Date.UTC(get("year"), get("month") - 1, get("day"), get("hour"), get("minute"), get("second"));
+  return Math.round((asUtc - instant.getTime()) / 60_000);
+}
+
+/** El instante en que empieza un día de calendario en una zona horaria. */
+export function startOfDayInZone(date: CalendarDate, timeZone: string): Date {
+  const { year, month, day } = parse(date);
+  const guess = new Date(Date.UTC(year, month - 1, day));
+  const offset = zoneOffsetMinutes(guess, timeZone);
+  const result = new Date(guess.getTime() - offset * 60_000);
+  // Si justo ese día cambia el horario (verano), se corrige con el desfasaje real.
+  const real = zoneOffsetMinutes(result, timeZone);
+  return real === offset ? result : new Date(guess.getTime() - real * 60_000);
+}
+
+/** Día de la semana ISO: 1 = lunes … 7 = domingo. */
+export function isoWeekday(date: CalendarDate): number {
+  const { year, month, day } = parse(date);
+  const dow = new Date(Date.UTC(year, month - 1, day)).getUTCDay();
+  return dow === 0 ? 7 : dow;
+}
+
+/** Hora local "HH:MM" de un instante en una zona horaria. */
+export function timeInZone(instant: Date, timeZone: string): string {
+  return new Intl.DateTimeFormat("en-GB", { timeZone, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(instant);
+}
