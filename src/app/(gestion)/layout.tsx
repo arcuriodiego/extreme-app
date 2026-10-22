@@ -22,21 +22,19 @@ export default async function GestionLayout({ children }: { children: React.Reac
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-6xl flex-col">
-      <header className="flex items-center justify-between gap-3 border-b border-line px-5 py-3">
-        <div className="flex items-center gap-3">
-          {menu.length > 0 && <MobileMenu items={menu} />}
-          <Link href="/admin" aria-label="Ir al panel de gestión">
-            <Image
-              src={academyConfig.logo.light}
-              alt={academyConfig.name}
-              width={academyConfig.logo.width}
-              height={academyConfig.logo.height}
-              priority
-              className="h-auto w-24 sm:w-28"
-            />
-          </Link>
-        </div>
-        <div className="flex items-center gap-4 text-[15px] font-semibold">
+      <header className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 border-b border-line px-5 py-3">
+        <div>{menu.length > 0 && <MobileMenu items={menu} />}</div>
+        <Link href="/admin" aria-label="Ir al panel de gestión">
+          <Image
+            src={academyConfig.logo.light}
+            alt={academyConfig.name}
+            width={academyConfig.logo.width}
+            height={academyConfig.logo.height}
+            priority
+            className="h-auto w-24 sm:w-28"
+          />
+        </Link>
+        <div className="flex items-center justify-end gap-3 text-[15px] sm:gap-4 font-semibold">
           {mainRole && (
             <span className="hidden text-muted sm:inline">
               {roleLabel(mainRole)}

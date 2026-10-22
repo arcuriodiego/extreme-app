@@ -11,9 +11,9 @@ export default function Home() {
         width={academyConfig.logo.width}
         height={academyConfig.logo.height}
         priority
-        className="h-auto w-64"
+        className="h-auto w-64 self-center"
       />
-      <p className="text-lg text-muted">Reservá clases, pagá tu cuota y mostrá tu pase para entrar.</p>
+      <p className="text-center text-lg text-muted">Reservá clases, pagá tu cuota y mostrá tu pase para entrar.</p>
       <div className="flex flex-col gap-3">
         <Link
           href="/ingresar"

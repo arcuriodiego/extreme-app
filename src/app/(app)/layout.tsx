@@ -18,7 +18,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col">
-      <header className="flex items-center justify-between gap-4 px-5 pt-4">
+      <header className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 px-5 pt-4">
+        <span aria-hidden="true" />
         <Link href="/inicio" aria-label="Ir a mi inicio">
           <Image
             src={academyConfig.logo.light}
@@ -32,7 +33,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         {hasGestion(profile.access) && (
           <Link
             href="/admin"
-            className="flex h-9 items-center rounded-full bg-ink px-3.5 text-sm font-bold text-white no-underline hover:bg-[#262626] hover:text-white"
+            className="flex h-9 items-center justify-self-end rounded-full bg-ink px-3.5 text-sm font-bold text-white no-underline hover:bg-[#262626] hover:text-white"
           >
             Gestión
           </Link>
