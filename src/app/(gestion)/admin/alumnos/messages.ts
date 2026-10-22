@@ -5,6 +5,8 @@ export const NOTICES: Record<string, string> = {
   inscripto: "Listo, quedó inscripto en la cuota de profe con sus horarios fijos.",
   "horario-cambiado": "Listo, cambiamos el horario fijo.",
   baja: "Listo, dimos de baja la cuota y liberamos sus lugares.",
+  "pago-registrado": "Listo, registramos el pago.",
+  "pago-anulado": "Listo, anulamos el pago. Lo que cubría vuelve a figurar como pendiente.",
 };
 
 export const ERRORS: Record<string, string> = {
@@ -23,4 +25,12 @@ export const ERRORS: Record<string, string> = {
   "otro-profe": "Ese horario no es de ese profe y categoría.",
   "horarios-cantidad": "Elegí exactamente 2 horarios distintos.",
   "no-disponible": "Eso cambió mientras tanto. Recargá la página y probá de nuevo.",
+  "pago-monto": "Escribí el importe en pesos, por ejemplo 55.500.",
+  "pago-monto-mayor": "El importe es mayor a lo que se debe. Si paga de más, registrá sólo lo adeudado.",
+  "pago-mayor": "El importe es mayor a lo que se debe. Si paga de más, registrá sólo lo adeudado.",
+  "pago-medio": "Elegí el medio de pago.",
+  "pago-datos": "Revisá el importe y el medio de pago.",
+  "ya-pago": "Esa cuota ya tiene su primer pago. Recargá la página.",
+  "sin-precio": "El plan no tiene precio vigente. Cargalo en Configuración.",
+  "motivo-anulacion": "Escribí el motivo de la anulación.",
 };

@@ -4,6 +4,9 @@ import { FormAlert } from "@/components/forms/fields";
 import { RoleBadges } from "@/components/status/RoleBadges";
 import { LinkCard } from "@/components/ui/basics";
 import { hasGestion } from "@/domain/navigation/menus";
+import { AccessLight } from "@/components/status/AccessLight";
+import { ensureCharges, lightFor, loadCharges, loadGraceDays, loadMyStudentId } from "@/lib/billing";
+import { academyToday } from "@/lib/grilla";
 import { loadMyMemberships } from "@/lib/memberships";
 import { requireProfile } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
@@ -19,7 +22,15 @@ export default async function InicioPage({ searchParams }: { searchParams: Promi
   const notice = params.aviso ? notices[params.aviso] : undefined;
   const missingData = !profile.phone || !profile.birthDate;
   const showGestion = hasGestion(profile.access);
-  const memberships = await loadMyMemberships(await createClient(), profile.id).catch(() => []);
+  const supabase = await createClient();
+  const today = academyToday();
+  const [memberships, studentId, graceDays] = await Promise.all([
+    loadMyMemberships(supabase, profile.id).catch(() => []),
+    loadMyStudentId(supabase, profile.id),
+    loadGraceDays(supabase),
+    ensureCharges(supabase),
+  ]);
+  const charges = studentId && memberships.length > 0 ? await loadCharges(supabase, studentId).catch(() => []) : [];
 
   return (
     <>
@@ -49,10 +60,19 @@ export default async function InicioPage({ searchParams }: { searchParams: Promi
               </li>
             ))}
           </ul>
-          {m.anchorDay === null && (
+          {m.anchorDay === null ? (
             <p className="rounded-xl bg-warn-soft px-3 py-2 text-sm font-semibold text-warn-ink">
               Tu vencimiento se fija con tu primer pago. Acercate a recepción para abonar.
             </p>
+          ) : (
+            <AccessLight
+              state={lightFor(
+                charges.filter((c) => c.membershipId === m.id),
+                today,
+                graceDays,
+              )}
+              planName={`Vence el ${m.anchorDay} de cada mes`}
+            />
           )}
         </section>
       ))}

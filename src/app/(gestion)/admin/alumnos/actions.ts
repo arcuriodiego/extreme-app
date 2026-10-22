@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { validatePaymentForm } from "@/domain/billing/payments";
 import { validateStudent } from "@/domain/people/student";
 import { academyToday } from "@/lib/grilla";
 import { createClient } from "@/lib/supabase/server";
@@ -150,4 +151,80 @@ export async function endMembership(formData: FormData): Promise<void> {
   const { error } = await supabase.rpc("end_membership", { p_membership_id: membershipId, p_reason: reason });
   if (error) to(back, { error: enrollErrorCode(error) });
   to(back, { aviso: "baja" });
+}
+
+// ---------------------------------------------------------------------
+// Cobros
+// ---------------------------------------------------------------------
+
+function payErrorCode(error: { code?: string; message?: string }): string {
+  const m = error.message ?? "";
+  if (m.startsWith("El importe supera")) return "pago-mayor";
+  if (m.startsWith("Esa cuota ya tiene")) return "ya-pago";
+  if (m.startsWith("El plan no tiene precio")) return "sin-precio";
+  if (error.code === "42501") return "sin-permiso";
+  if (error.code === "P0002") return "no-disponible";
+  if (error.code === "22023") return "pago-datos";
+  return "generico";
+}
+
+function readPayment(formData: FormData) {
+  return { amount: formData.get("amount"), method: formData.get("method"), reference: formData.get("reference") };
+}
+
+export async function registerFirstPayment(formData: FormData): Promise<void> {
+  const studentId = String(formData.get("student_id") ?? "");
+  const membershipId = String(formData.get("membership_id") ?? "");
+  if (!UUID.test(studentId) || !UUID.test(membershipId)) to("/admin/alumnos", { error: "datos" });
+  const back = `/admin/alumnos/${studentId}`;
+  const pending = Number(formData.get("pending_cents") ?? 0);
+
+  const checked = validatePaymentForm(readPayment(formData), Number.isSafeInteger(pending) && pending > 0 ? pending : 0);
+  if (!checked.ok) to(back, { error: `pago-${checked.error}` });
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("first_membership_payment", {
+    p_membership_id: membershipId,
+    p_amount_cents: checked.value.amountCents,
+    p_method: checked.value.method,
+    p_reference: checked.value.reference,
+  });
+  if (error) to(back, { error: payErrorCode(error) });
+  to(back, { aviso: "pago-registrado" });
+}
+
+export async function registerChargePayment(formData: FormData): Promise<void> {
+  const studentId = String(formData.get("student_id") ?? "");
+  const chargeId = String(formData.get("charge_id") ?? "");
+  if (!UUID.test(studentId) || !UUID.test(chargeId)) to("/admin/alumnos", { error: "datos" });
+  const back = `/admin/alumnos/${studentId}`;
+  const pending = Number(formData.get("pending_cents") ?? 0);
+
+  const checked = validatePaymentForm(readPayment(formData), Number.isSafeInteger(pending) && pending > 0 ? pending : 0);
+  if (!checked.ok) to(back, { error: `pago-${checked.error}` });
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("pay_charge", {
+    p_charge_id: chargeId,
+    p_amount_cents: checked.value.amountCents,
+    p_method: checked.value.method,
+    p_reference: checked.value.reference,
+  });
+  if (error) to(back, { error: payErrorCode(error) });
+  to(back, { aviso: "pago-registrado" });
+}
+
+export async function voidPayment(formData: FormData): Promise<void> {
+  const studentId = String(formData.get("student_id") ?? "");
+  const paymentId = String(formData.get("payment_id") ?? "");
+  const reason = String(formData.get("reason") ?? "").trim().slice(0, 200);
+  const backTo = String(formData.get("back") ?? "");
+  if (!UUID.test(paymentId)) to("/admin/alumnos", { error: "datos" });
+  const back = backTo === "caja" ? "/admin/pagos" : UUID.test(studentId) ? `/admin/alumnos/${studentId}` : "/admin/alumnos";
+  if (!reason) to(back, { error: "motivo-anulacion" });
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("void_payment", { p_payment_id: paymentId, p_reason: reason });
+  if (error) to(back, { error: payErrorCode(error) });
+  to(back, { aviso: "pago-anulado" });
 }

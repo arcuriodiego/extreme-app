@@ -11,7 +11,11 @@ import { academyToday } from "@/lib/grilla";
 import { requireProfile } from "@/lib/session";
 import { loadStudent, loadStudentNotes } from "@/lib/students";
 import { createClient } from "@/lib/supabase/server";
-import { saveNotes, updateStudent } from "../actions";
+import { saveNotes, updateStudent, voidPayment } from "../actions";
+import { methodLabel } from "@/domain/billing/payments";
+import { formatARS } from "@/domain/shared/money";
+import { ensureCharges, loadCharges, loadGraceDays, loadPayments } from "@/lib/billing";
+import { loadPlans } from "@/lib/prices";
 import { ERRORS, NOTICES } from "../messages";
 import { StudentForm } from "../StudentForm";
 import { MembershipSection } from "./MembershipSection";
@@ -36,10 +40,22 @@ export default async function AlumnoPage({
   const canManage = can(profile.access, "people.manage");
 
   const supabase = await createClient();
-  const [student, notes] = await Promise.all([loadStudent(supabase, id), loadStudentNotes(supabase, id)]);
-  if (!student) notFound();
-
   const today = academyToday();
+  const canPay = can(profile.access, "payments.register");
+  const canVoid = can(profile.access, "finance.view");
+  const seesMoney = canPay || canVoid;
+  await ensureCharges(supabase);
+  const [student, notes, charges, payments, graceDays, plans] = await Promise.all([
+    loadStudent(supabase, id),
+    loadStudentNotes(supabase, id),
+    seesMoney ? loadCharges(supabase, id) : Promise.resolve([]),
+    seesMoney ? loadPayments(supabase, id) : Promise.resolve([]),
+    loadGraceDays(supabase),
+    loadPlans(supabase, today),
+  ]);
+  if (!student) notFound();
+  const monthlyPrice = plans.find((p) => p.kind === "teacher_monthly" && p.active)?.current?.amountCents ?? null;
+
   const notice = query.aviso ? NOTICES[query.aviso] : undefined;
   const failure = query.error ? ERRORS[query.error] : undefined;
   const facts = [
@@ -80,7 +96,63 @@ export default async function AlumnoPage({
         canManage={canManage}
         pickedTeacher={query.profe && UUID.test(query.profe) ? query.profe : undefined}
         pickedCategory={query.cat && UUID.test(query.cat) ? query.cat : undefined}
+        canPay={canPay}
+        charges={charges}
+        today={today}
+        graceDays={graceDays}
+        monthlyPriceCents={monthlyPrice}
       />
+
+      {seesMoney && (
+        <section className="flex flex-col gap-3 border-t border-line pt-6">
+          <h2 className="font-display text-2xl font-bold uppercase tracking-wide">Pagos</h2>
+          {payments.length === 0 ? (
+            <p className="text-[15px] text-muted">Todavía no tiene pagos registrados.</p>
+          ) : (
+            <ul className="flex max-w-2xl flex-col">
+              {payments.map((p) => (
+                <li key={p.id} className="flex flex-col gap-1.5 border-t border-line py-2.5">
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-[15px]">
+                    <span className={p.status === "void" ? "text-muted line-through" : ""}>
+                      {p.date.split("-").reverse().join("/")} {p.time} · {methodLabel(p.method)}
+                      {p.reference ? ` · ${p.reference}` : ""}
+                    </span>
+                    <strong className={p.status === "void" ? "text-muted line-through" : ""}>{formatARS(p.amountCents)}</strong>
+                  </div>
+                  <span className="text-sm text-muted">
+                    {p.concepts.join(" · ")}
+                    {p.registeredBy ? ` · Cargó: ${p.registeredBy}` : ""}
+                  </span>
+                  {p.status === "void" && (
+                    <span className="text-sm font-semibold text-alert-ink">ANULADO · {p.voidReason}</span>
+                  )}
+                  {p.status === "approved" && canVoid && (
+                    <details>
+                      <summary className="cursor-pointer text-sm font-semibold text-alert-ink">Anular este pago</summary>
+                      <form action={voidPayment} className="flex gap-2 pt-2">
+                        <input type="hidden" name="student_id" value={student.id} />
+                        <input type="hidden" name="payment_id" value={p.id} />
+                        <label htmlFor={`anular-${p.id}`} className="sr-only">
+                          Motivo
+                        </label>
+                        <input
+                          id={`anular-${p.id}`}
+                          name="reason"
+                          required
+                          maxLength={200}
+                          placeholder="Motivo (obligatorio)"
+                          className="h-10 min-w-0 flex-1 rounded-xl border border-[#cfcfcf] bg-white px-3 text-base outline-none focus:border-ink"
+                        />
+                        <SmallSubmit tone="danger">Anular</SmallSubmit>
+                      </form>
+                    </details>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      )}
 
       {canManage && (
         <>

@@ -1,8 +1,13 @@
 import { SmallSubmit } from "@/components/forms/fields";
+import { AccessLight } from "@/components/status/AccessLight";
+import { formatARS } from "@/domain/shared/money";
+import { periodLabel } from "@/domain/billing/payments";
+import { type ChargeRow, lightFor } from "@/lib/billing";
 import { loadCatalog, loadGroups } from "@/lib/grilla";
 import { loadActiveMemberships, loadFixedCounts, scheduleOptions } from "@/lib/memberships";
 import type { createClient } from "@/lib/supabase/server";
-import { changeEnrollment, endMembership, enrollStudent } from "../actions";
+import { changeEnrollment, endMembership, enrollStudent, registerChargePayment, registerFirstPayment } from "../actions";
+import { PaymentFields, pesosText } from "../PaymentFields";
 
 type Client = Awaited<ReturnType<typeof createClient>>;
 
@@ -15,10 +20,20 @@ export async function MembershipSection({
   canManage,
   pickedTeacher,
   pickedCategory,
+  canPay,
+  charges,
+  today,
+  graceDays,
+  monthlyPriceCents,
 }: {
   supabase: Client;
   studentId: string;
   canManage: boolean;
+  canPay: boolean;
+  charges: ChargeRow[];
+  today: string;
+  graceDays: number;
+  monthlyPriceCents: number | null;
   pickedTeacher?: string;
   pickedCategory?: string;
 }) {
@@ -58,6 +73,65 @@ export async function MembershipSection({
                 </span>
               )}
             </div>
+
+            {m.anchorDay === null && canPay && monthlyPriceCents !== null && (
+              <form action={registerFirstPayment} className="flex flex-col gap-3 rounded-xl bg-surface p-3">
+                <input type="hidden" name="student_id" value={studentId} />
+                <input type="hidden" name="membership_id" value={m.id} />
+                <input type="hidden" name="pending_cents" value={monthlyPriceCents} />
+                <p className="text-sm">
+                  <strong>Primer pago</strong> · {formatARS(monthlyPriceCents)}. El día de hoy queda como vencimiento de cada mes.
+                </p>
+                <PaymentFields idPrefix={`primer-${m.id}`} defaultPesos={pesosText(monthlyPriceCents)} />
+                <div>
+                  <SmallSubmit tone="dark">Registrar pago</SmallSubmit>
+                </div>
+              </form>
+            )}
+
+            {m.anchorDay !== null && (() => {
+              const mine = charges.filter((c) => c.membershipId === m.id);
+              return (
+                <>
+                  <AccessLight state={lightFor(mine, today, graceDays)} planName={`Vence el ${m.anchorDay} de cada mes`} />
+                  <ul className="flex flex-col">
+                    {mine.slice(0, 4).map((c) => (
+                      <li key={c.id} className="flex flex-col gap-2 border-t border-line py-2.5">
+                        <div className="flex flex-wrap items-center justify-between gap-2 text-[15px]">
+                          <span>
+                            {c.periodStart && c.periodEnd ? periodLabel(c.periodStart, c.periodEnd) : c.description}
+                          </span>
+                          <span className="flex items-center gap-2">
+                            <strong>{formatARS(c.totalCents)}</strong>
+                            <span
+                              className={`rounded-full px-2 py-0.5 text-xs font-bold ${
+                                c.status === "paid" ? "bg-ok-soft text-ok-ink" : "bg-warn-soft text-warn-ink"
+                              }`}
+                            >
+                              {c.status === "paid" ? "PAGADA" : c.status === "partially_paid" ? `DEBE ${formatARS(c.pendingCents)}` : "PENDIENTE"}
+                            </span>
+                          </span>
+                        </div>
+                        {canPay && c.pendingCents > 0 && (
+                          <details>
+                            <summary className="cursor-pointer text-sm font-semibold">Cobrar</summary>
+                            <form action={registerChargePayment} className="flex flex-col gap-3 pt-2">
+                              <input type="hidden" name="student_id" value={studentId} />
+                              <input type="hidden" name="charge_id" value={c.id} />
+                              <input type="hidden" name="pending_cents" value={c.pendingCents} />
+                              <PaymentFields idPrefix={`cargo-${c.id}`} defaultPesos={pesosText(c.pendingCents)} />
+                              <div>
+                                <SmallSubmit tone="dark">Registrar pago</SmallSubmit>
+                              </div>
+                            </form>
+                          </details>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              );
+            })()}
             <ul className="flex flex-col">
               {m.enrollments.map((e) => (
                 <li key={e.id} className="flex flex-col gap-2 border-t border-line py-2.5">
