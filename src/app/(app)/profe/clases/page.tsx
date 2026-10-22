@@ -27,9 +27,9 @@ export default async function ProfeClasesPage() {
   if (!profile.access.roles.includes("teacher")) return <NoAccess />;
 
   const supabase = await createClient();
-  await ensureSessions(supabase);
   const today = academyToday();
-  const [sessions, groups, fixed] = await Promise.all([
+  const [, sessions, groups, fixed] = await Promise.all([
+    ensureSessions(supabase),
     loadSessions(supabase, today, addDays(today, 13)),
     loadGroups(supabase, { onlyActive: true }),
     loadFixedCounts(supabase),

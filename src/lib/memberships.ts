@@ -108,9 +108,15 @@ export async function loadActiveMemberships(supabase: Client, studentId: string)
 
 /** Cuotas activas de quien tiene la sesión (la base sólo devuelve las suyas). */
 export async function loadMyMemberships(supabase: Client, profileId: string): Promise<MembershipRow[]> {
-  const { data: student } = await supabase.from("students").select("id").eq("profile_id", profileId).maybeSingle();
-  if (!student) return [];
-  return loadActiveMemberships(supabase, student.id as string);
+  // Una sola consulta: filtra por la ficha del alumno con un join interno.
+  const { data, error } = await supabase
+    .from("memberships")
+    .select(`${SELECT}, student:students!inner(profile_id)`)
+    .eq("student.profile_id", profileId)
+    .eq("status", "active")
+    .order("created_at");
+  if (error) throw new Error(`No se pudieron cargar las cuotas: ${error.message}`);
+  return ((data ?? []) as unknown as Raw[]).map(toRow);
 }
 
 export interface ScheduleOption {

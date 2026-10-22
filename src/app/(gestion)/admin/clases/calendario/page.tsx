@@ -34,8 +34,8 @@ export default async function CalendarioPage({
   const day = pickDay(params.dia, strip);
 
   const supabase = await createClient();
-  await ensureSessions(supabase);
-  const [sessions, exceptions, catalog, fixed] = await Promise.all([
+  const [, sessions, exceptions, catalog, fixed] = await Promise.all([
+    ensureSessions(supabase),
     loadSessions(supabase, day, day),
     loadUpcomingExceptions(supabase, today),
     canManage ? loadCatalog(supabase) : Promise.resolve(null),

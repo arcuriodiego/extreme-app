@@ -24,8 +24,9 @@ export default async function ClasesPage({ searchParams }: { searchParams: Promi
   let slots: ReturnType<typeof slotsOf> = [];
   let fixedSchedules = new Set<string>();
   try {
-    await ensureSessions(supabase);
-    const [loaded, groups, mine] = await Promise.all([
+    // Todo en paralelo: la generación diaria ya dejó listas las próximas semanas.
+    const [, loaded, groups, mine] = await Promise.all([
+      ensureSessions(supabase),
       loadSessions(supabase, day, day),
       loadGroups(supabase, { onlyActive: true }),
       loadMyMemberships(supabase, profile.id),
