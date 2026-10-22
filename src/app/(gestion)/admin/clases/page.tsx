@@ -30,7 +30,14 @@ export default async function ClasesAdminPage({ searchParams }: { searchParams: 
     <>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <PageHeader title="Clases y grilla" subtitle={`${active.length} ${active.length === 1 ? "grupo activo" : "grupos activos"} · ${slots.length} ${slots.length === 1 ? "horario" : "horarios"} por semana`} />
-        {canManage && <ButtonLink href="/admin/clases/nuevo">Nuevo grupo</ButtonLink>}
+        {canManage && (
+          <div className="flex flex-wrap gap-2">
+            <ButtonLink href="/admin/clases/catalogo" variant="secondary">
+              Catálogo y salas
+            </ButtonLink>
+            <ButtonLink href="/admin/clases/nuevo">Nuevo grupo</ButtonLink>
+          </div>
+        )}
       </div>
       <SectionTabs current="grilla" canManage={canManage} />
       {failure && <FormAlert kind="error">{failure}</FormAlert>}
