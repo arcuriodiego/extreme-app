@@ -16,7 +16,7 @@ export function TextField({
 }: {
   name: string;
   label: string;
-  type?: "text" | "email" | "password" | "tel" | "date";
+  type?: "text" | "email" | "password" | "tel" | "date" | "time";
   autoComplete?: string;
   defaultValue?: string;
   error?: string;
@@ -85,5 +85,85 @@ export function FormAlert({ kind, children }: { kind: "error" | "ok"; children: 
     <div role={kind === "error" ? "alert" : "status"} className={`rounded-xl border-[1.5px] px-4 py-3 text-[15px] font-semibold ${styles}`}>
       {children}
     </div>
+  );
+}
+
+const controlBase =
+  "w-full rounded-xl border border-[#cfcfcf] bg-white px-4 text-base text-ink outline-none transition-colors focus:border-ink";
+
+/** Lista desplegable con etiqueta. */
+export function SelectField({
+  name,
+  label,
+  options,
+  defaultValue,
+  required,
+  placeholder,
+}: {
+  name: string;
+  label: string;
+  options: readonly { value: string; label: string }[];
+  defaultValue?: string;
+  required?: boolean;
+  placeholder?: string;
+}) {
+  const id = `campo-${name}`;
+  return (
+    <div className="flex flex-col gap-1.5">
+      <label htmlFor={id} className="text-sm font-semibold text-[#3d3d3d]">
+        {label}
+        {!required && <span className="font-normal text-muted"> (opcional)</span>}
+      </label>
+      <select id={id} name={name} defaultValue={defaultValue ?? ""} required={required} className={`h-12 ${controlBase}`}>
+        {placeholder !== undefined && <option value="">{placeholder}</option>}
+        {options.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
+/** Texto largo. */
+export function TextAreaField({ name, label, defaultValue, maxLength }: { name: string; label: string; defaultValue?: string; maxLength?: number }) {
+  const id = `campo-${name}`;
+  return (
+    <div className="flex flex-col gap-1.5">
+      <label htmlFor={id} className="text-sm font-semibold text-[#3d3d3d]">
+        {label} <span className="font-normal text-muted">(opcional)</span>
+      </label>
+      <textarea id={id} name={name} defaultValue={defaultValue} maxLength={maxLength} rows={3} className={`py-3 ${controlBase}`} />
+    </div>
+  );
+}
+
+/** Casilla de sí/no con explicación. */
+export function CheckboxField({ name, label, hint, defaultChecked }: { name: string; label: string; hint?: string; defaultChecked?: boolean }) {
+  const id = `campo-${name}`;
+  return (
+    <div className="flex items-start gap-3">
+      <input id={id} name={name} type="checkbox" defaultChecked={defaultChecked} className="mt-1 size-5 accent-ink" />
+      <label htmlFor={id} className="flex flex-col gap-0.5">
+        <span className="text-[15px] font-semibold">{label}</span>
+        {hint && <span className="text-[13px] text-muted">{hint}</span>}
+      </label>
+    </div>
+  );
+}
+
+/** Botón chico para acciones dentro de listas (activar, quitar, guardar). */
+export function SmallSubmit({ children, tone = "default" }: { children: React.ReactNode; tone?: "default" | "danger" | "dark" }) {
+  const { pending } = useFormStatus();
+  const styles = {
+    default: "border border-[#cfcfcf] bg-white text-ink hover:border-ink",
+    danger: "border border-alert bg-white text-alert-ink hover:bg-alert-soft",
+    dark: "border border-ink bg-ink text-white hover:bg-[#333]",
+  }[tone];
+  return (
+    <button type="submit" disabled={pending} aria-busy={pending} className={`h-9 shrink-0 rounded-full px-3.5 text-sm font-semibold transition-colors disabled:opacity-60 ${styles}`}>
+      {children}
+    </button>
   );
 }
