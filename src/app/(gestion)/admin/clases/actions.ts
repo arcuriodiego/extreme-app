@@ -195,3 +195,12 @@ export async function renameTeacher(formData: FormData): Promise<void> {
   if (!data || data.length === 0) to(CATALOG, { error: "sin-permiso" });
   to(CATALOG, { aviso: "profe-guardado" });
 }
+
+export async function deleteGroup(formData: FormData): Promise<void> {
+  const id = str(formData, "id");
+  if (!UUID.test(id)) to("/admin/clases", { error: "datos" });
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("delete_group", { p_group_id: id });
+  if (error) to(`/admin/clases/${id}`, { error: grillaErrorCode(error) });
+  to("/admin/clases", { aviso: data === "archived" ? "grupo-archivado" : "grupo-eliminado" });
+}

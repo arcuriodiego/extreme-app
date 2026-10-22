@@ -3,6 +3,8 @@ import { GRILLA_ERRORS } from "@/lib/grilla";
 export const NOTICES: Record<string, string> = {
   "grupo-creado": "Listo, creamos el grupo. Ahora agregale sus horarios.",
   "grupo-guardado": "Listo, guardamos los cambios del grupo.",
+  "grupo-eliminado": "Listo, eliminamos el grupo.",
+  "grupo-archivado": "Listo, eliminamos el grupo de la lista. Como ya tuvo clases o alumnos, queda guardado en el historial (lo ves en \"Grupos cerrados\").",
   "horario-agregado": "Listo, agregamos el horario.",
   "horario-quitado": "Listo, quitamos el horario.",
   "horario-terminado": "Listo, el horario terminó. Queda en el historial porque tuvo alumnos fijos.",

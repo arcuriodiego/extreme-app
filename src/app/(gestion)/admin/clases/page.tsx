@@ -10,12 +10,12 @@ import { canOpen } from "@/domain/navigation/menus";
 import { loadGroups, slotsOf } from "@/lib/grilla";
 import { requireProfile } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
-import { ERRORS, STATUS_LABELS } from "./messages";
+import { ERRORS, NOTICES, STATUS_LABELS } from "./messages";
 import { SectionTabs } from "./SectionTabs";
 
 export const metadata: Metadata = { title: "Clases y grilla" };
 
-export default async function ClasesAdminPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
+export default async function ClasesAdminPage({ searchParams }: { searchParams: Promise<{ error?: string; aviso?: string; cerrados?: string }> }) {
   const [profile, params] = await Promise.all([requireProfile(), searchParams]);
   if (!canOpen(profile.access, "clases")) return <NoAccess />;
   const canManage = can(profile.access, "classes.manage");
@@ -25,6 +25,10 @@ export default async function ClasesAdminPage({ searchParams }: { searchParams: 
   const active = groups.filter((g) => g.status === "active");
   const slots = slotsOf(active);
   const failure = params.error ? ERRORS[params.error] : undefined;
+  const notice = params.aviso ? NOTICES[params.aviso] : undefined;
+  const showClosed = params.cerrados === "1";
+  const closedCount = groups.filter((g) => g.status === "closed").length;
+  const listed = groups.filter((g) => (showClosed ? g.status === "closed" : g.status !== "closed"));
 
   return (
     <>
@@ -40,6 +44,7 @@ export default async function ClasesAdminPage({ searchParams }: { searchParams: 
         )}
       </div>
       <SectionTabs current="grilla" canManage={canManage} />
+      {notice && <FormAlert kind="ok">{notice}</FormAlert>}
       {failure && <FormAlert kind="error">{failure}</FormAlert>}
 
       {groups.length === 0 ? (
@@ -54,9 +59,17 @@ export default async function ClasesAdminPage({ searchParams }: { searchParams: 
       ) : (
         <>
           <section className="flex flex-col gap-3">
-            <h2 className="font-display text-2xl font-bold uppercase tracking-wide">Grupos</h2>
+            <div className="flex flex-wrap items-baseline justify-between gap-3">
+              <h2 className="font-display text-2xl font-bold uppercase tracking-wide">{showClosed ? "Grupos cerrados" : "Grupos"}</h2>
+              {(closedCount > 0 || showClosed) && (
+                <Link href={showClosed ? "/admin/clases" : "/admin/clases?cerrados=1"} className="text-sm font-semibold">
+                  {showClosed ? "Volver a los grupos vigentes" : `Ver grupos cerrados (${closedCount})`}
+                </Link>
+              )}
+            </div>
+            {listed.length === 0 && <p className="text-[15px] text-muted">No hay grupos para mostrar.</p>}
             <ul className="flex flex-col">
-              {groups.map((g) => (
+              {listed.map((g) => (
                 <li key={g.id} className="flex flex-col gap-2 border-t border-line py-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex min-w-0 flex-col gap-1">
                     <span className="flex flex-wrap items-center gap-2 font-semibold">

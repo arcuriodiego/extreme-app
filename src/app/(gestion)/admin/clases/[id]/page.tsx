@@ -10,7 +10,7 @@ import { loadCatalog, loadGroup } from "@/lib/grilla";
 import { loadFixedStudents } from "@/lib/memberships";
 import { requireProfile } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
-import { addSchedule, removeSchedule, updateGroup } from "../actions";
+import { addSchedule, deleteGroup, removeSchedule, updateGroup } from "../actions";
 import { GroupForm } from "../GroupForm";
 import { ERRORS, NOTICES } from "../messages";
 
@@ -108,6 +108,22 @@ export default async function GrupoPage({
       <section className="flex flex-col gap-3 border-t border-line pt-6">
         <h2 className="font-display text-2xl font-bold uppercase tracking-wide">Datos del grupo</h2>
         <GroupForm catalog={catalog} group={group} action={updateGroup} />
+      </section>
+
+      <section className="flex flex-col gap-3 border-t border-line pt-6">
+        <details className="max-w-xl">
+          <summary className="cursor-pointer font-semibold text-alert-ink">Eliminar este grupo</summary>
+          <div className="flex flex-col gap-3 pt-3">
+            <p className="text-[15px] text-muted">
+              Se quitan el grupo, sus horarios y sus clases futuras. Si ya tuvo clases dadas o alumnos, queda guardado en el
+              historial pero deja de aparecer en la lista. Si tiene alumnos fijos, primero hay que cambiarles el horario o darles de baja.
+            </p>
+            <form action={deleteGroup}>
+              <input type="hidden" name="id" value={group.id} />
+              <SmallSubmit tone="danger">Sí, eliminar el grupo</SmallSubmit>
+            </form>
+          </div>
+        </details>
       </section>
     </>
   );
