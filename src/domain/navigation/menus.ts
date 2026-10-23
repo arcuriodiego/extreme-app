@@ -64,8 +64,22 @@ const GESTION_ITEMS: readonly GestionItem[] = [
 export type GestionSection = (typeof GESTION_ITEMS)[number]["key"];
 
 /** Barra inferior del área personal. Quien tiene rol de profesor ve sus herramientas. */
-export function personalTabs(access: Access): NavItem[] {
-  const tabs = access.roles.includes("teacher") ? TEACHER_TABS : STUDENT_TABS;
+export type PersonalMode = "alumno" | "profe";
+
+/** ¿Puede elegir entre la vista de alumno y la de profe? (profe que también toma clases) */
+export function canSwitchMode(access: Access): boolean {
+  return access.roles.includes("teacher") && access.roles.includes("student");
+}
+
+/** La vista que corresponde: la elegida si puede elegir; si no, la de su rol. */
+export function resolveMode(access: Access, chosen: unknown): PersonalMode {
+  if (!access.roles.includes("teacher")) return "alumno";
+  if (canSwitchMode(access) && chosen === "alumno") return "alumno";
+  return "profe";
+}
+
+export function personalTabs(access: Access, chosen?: unknown): NavItem[] {
+  const tabs = resolveMode(access, chosen) === "profe" ? TEACHER_TABS : STUDENT_TABS;
   return tabs.map(({ key, href, label, icon }) => ({ key, href, label, icon }));
 }
 

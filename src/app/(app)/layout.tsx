@@ -1,8 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { TabBar } from "@/components/nav/TabBar";
 import { academyConfig } from "@/config/academy";
-import { hasGestion, personalTabs } from "@/domain/navigation/menus";
+import { canSwitchMode, hasGestion, personalTabs, resolveMode } from "@/domain/navigation/menus";
 import { requireProfile } from "@/lib/session";
 
 // Páginas personales: se arman en cada visita, nunca durante la compilación.
@@ -14,7 +15,9 @@ export const dynamic = "force-dynamic";
  */
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const profile = await requireProfile();
-  const tabs = personalTabs(profile.access);
+  const chosen = (await cookies()).get("modo")?.value;
+  const tabs = personalTabs(profile.access, chosen);
+  const mode = resolveMode(profile.access, chosen);
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col">
@@ -39,6 +42,16 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           </Link>
         )}
       </header>
+      {canSwitchMode(profile.access) && (
+        <div className="px-5 pt-3">
+          <a
+            href={`/modo?m=${mode === "profe" ? "alumno" : "profe"}`}
+            className="flex items-center justify-center gap-2 rounded-full border border-line py-1.5 text-sm font-semibold text-ink no-underline hover:border-ink hover:text-ink"
+          >
+            Estás en la vista de {mode === "profe" ? "profe" : "alumno"} · Cambiar a {mode === "profe" ? "alumno" : "profe"}
+          </a>
+        </div>
+      )}
       <main className="flex flex-1 flex-col gap-6 px-5 pb-28 pt-6">{children}</main>
       <TabBar items={tabs} />
     </div>

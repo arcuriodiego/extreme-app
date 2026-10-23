@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import type { Access, PermissionCode } from "../auth/roles.ts";
-import { activeKey, canOpen, gestionMenu, hasGestion, personalTabs } from "./menus.ts";
+import { activeKey, canOpen, canSwitchMode, gestionMenu, hasGestion, personalTabs, resolveMode } from "./menus.ts";
 
 // Permisos tal como los asigna la base (seed_default_roles).
 const ALL: PermissionCode[] = [
@@ -53,4 +53,14 @@ test("ítem activo: gana el más específico", () => {
   assert.equal(activeKey(menu, "/admin/alumnosx"), "panel");
   assert.equal(activeKey(personalTabs(student), "/inicio"), "inicio");
   assert.equal(activeKey(personalTabs(student), "/nueva-clave"), null);
+});
+
+test("profe que también es alumno: puede cambiar a la vista de alumno", () => {
+  assert.equal(canSwitchMode(teacher), true);
+  assert.equal(resolveMode(teacher, undefined), "profe");
+  assert.deepEqual(keys(personalTabs(teacher, "alumno")), ["inicio", "clases", "pases", "pagos", "perfil"]);
+  const onlyTeacher: Access = { roles: ["teacher"], permissions: [] };
+  assert.equal(canSwitchMode(onlyTeacher), false);
+  assert.equal(resolveMode(onlyTeacher, "alumno"), "profe");
+  assert.equal(resolveMode(student, "profe"), "alumno");
 });
