@@ -160,7 +160,8 @@ export async function endMembership(formData: FormData): Promise<void> {
 
 function payErrorCode(error: { code?: string; message?: string }): string {
   const m = error.message ?? "";
-  if (m.startsWith("El importe supera")) return "pago-mayor";
+  if (m.startsWith("Se cobra el total")) return "pago-total";
+  if (m.startsWith("Ese cargo ya está pagado")) return "ya-pagado";
   if (m.startsWith("Esa cuota ya tiene")) return "ya-pago";
   if (m.startsWith("El plan no tiene precio")) return "sin-precio";
   if (error.code === "42501") return "sin-permiso";

@@ -2,15 +2,15 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { cashSummary, methodLabel, periodLabel, validatePaymentForm } from "./payments.ts";
 
-test("cobro válido, parcial y de más", () => {
+test("se cobra el total: ni parcial ni de más", () => {
   assert.deepEqual(validatePaymentForm({ amount: "55.500", method: "cash", reference: " " }, 5_550_000), {
     ok: true,
     value: { amountCents: 5_550_000, method: "cash", reference: null },
   });
-  assert.equal(validatePaymentForm({ amount: "20000", method: "transfer", reference: "OP-1" }, 5_550_000).ok, true);
-  assert.deepEqual(validatePaymentForm({ amount: "60.000", method: "cash", reference: "" }, 5_550_000), { ok: false, error: "monto-mayor" });
+  assert.deepEqual(validatePaymentForm({ amount: "20000", method: "transfer", reference: "OP-1" }, 5_550_000), { ok: false, error: "monto-distinto" });
+  assert.deepEqual(validatePaymentForm({ amount: "60.000", method: "cash", reference: "" }, 5_550_000), { ok: false, error: "monto-distinto" });
   assert.deepEqual(validatePaymentForm({ amount: "", method: "cash", reference: "" }, 5_550_000), { ok: false, error: "monto" });
-  assert.deepEqual(validatePaymentForm({ amount: "100", method: "mp_checkout", reference: "" }, 5_550_000), { ok: false, error: "medio" });
+  assert.deepEqual(validatePaymentForm({ amount: "55500", method: "mp_checkout", reference: "" }, 5_550_000), { ok: false, error: "medio" });
 });
 
 test("caja del día: totales por medio sin anulados", () => {

@@ -30,7 +30,8 @@ function code(error: { code?: string; message?: string }): string {
   if (m.startsWith("Ese workshop no está abierto")) return "no-publicado";
   if (m.startsWith("Ese workshop ya empezó")) return "ya-empezo";
   if (m.startsWith("No hay nada pendiente")) return "nada-que-devolver";
-  if (m.startsWith("El importe supera")) return "pago-mayor";
+  if (m.startsWith("Se cobra el total")) return "pago-total";
+  if (m.startsWith("Ese cargo ya está pagado")) return "ya-pagado";
   if (error.code === "23P01") return "sala-ocupada";
   if (error.code === "42501") return "sin-permiso";
   if (error.code === "P0002") return "no-disponible";

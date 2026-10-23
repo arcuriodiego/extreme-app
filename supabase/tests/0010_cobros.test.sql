@@ -1,4 +1,4 @@
--- Pruebas de cobros: primer pago, parciales, meses siguientes, anulaciones y visibilidad.
+-- Pruebas de cobros: primer pago, cobro total, meses siguientes, anulaciones y visibilidad.
 \set ON_ERROR_STOP on
 begin;
 
@@ -64,23 +64,28 @@ begin
   raise notice 'OK  primer pago';
 end $$;
 
--- 3. Pago parcial y después el resto; no se puede pagar de más.
+-- 3. Se cobra el total: no se aceptan pagos parciales ni de más.
 do $$
 declare v_charge uuid;
 begin
-  perform first_membership_payment((select m_sofi from ids), 2000000, 'transfer', 'OP-123');
-  select id into v_charge from charges where membership_id = (select m_sofi from ids);
-  assert (select status from charges where id = v_charge) = 'partially_paid', 'parcial';
   begin
-    perform pay_charge(v_charge, 4000000, 'cash', null);
-    raise exception 'no debe aceptar más de lo que se debe';
-  exception when invalid_parameter_value then null;
+    perform first_membership_payment((select m_sofi from ids), 2000000, 'transfer', 'OP-123');
+    raise exception 'no debe aceptar un primer pago parcial';
+  exception when invalid_parameter_value then
+    if sqlerrm not like 'Se cobra el total%' then raise; end if;
   end;
-  perform pay_charge(v_charge, 3550000, 'qr', null);
-  assert (select status from charges where id = v_charge) = 'paid', 'pagado en dos veces';
-  assert (select count(*) from payments where student_id = (select student_id from memberships where id = (select m_sofi from ids))) = 2,
-    'dos pagos registrados';
-  raise notice 'OK  pagos parciales';
+  assert (select anchor_day from memberships where id = (select m_sofi from ids)) is null, 'el rechazo no deja nada a medias';
+  perform first_membership_payment((select m_sofi from ids), 5550000, 'qr', 'OP-123');
+  select id into v_charge from charges where membership_id = (select m_sofi from ids);
+  assert (select status from charges where id = v_charge) = 'paid', 'pagado completo';
+  begin
+    perform pay_charge(v_charge, 5550000, 'cash', null);
+    raise exception 'no debe cobrar dos veces';
+  exception when no_data_found then null;
+  end;
+  assert (select count(*) from payments where student_id = (select student_id from memberships where id = (select m_sofi from ids))) = 1,
+    'un solo pago registrado';
+  raise notice 'OK  se cobra el total';
 end $$;
 
 -- 4. El profe no ve montos; la alumna ve sólo lo suyo.
@@ -116,8 +121,13 @@ do $$
 declare v_charge uuid := (select id from charges where membership_id = (select m_sofi from ids));
 begin
   perform void_payment((select id from payments where method = 'qr'), 'Cargado dos veces');
-  assert (select status from charges where id = v_charge) = 'partially_paid', 'vuelve a deberse el resto';
-  assert (select paid_cents from charges where id = v_charge) = 2000000, 'sólo cuenta el pago vigente';
+  assert (select status from charges where id = v_charge) = 'open', 'vuelve a deberse';
+  assert (select paid_cents from charges where id = v_charge) = 0, 'el pago anulado no cuenta';
+  begin
+    perform pay_charge(v_charge, 4000000, 'cash', null);
+    raise exception 'no debe aceptar un pago parcial';
+  exception when invalid_parameter_value then null;
+  end;
   raise notice 'OK  anulación';
 end $$;
 
@@ -181,7 +191,7 @@ begin
   set local role authenticated;
   perform end_membership(v_m, 'prueba');
   assert (select status from charges where membership_id = v_m and description = 'Futuro') = 'void', 'cargo futuro anulado';
-  assert (select status from charges where membership_id = v_m and description <> 'Futuro') = 'partially_paid',
+  assert (select status from charges where membership_id = v_m and description <> 'Futuro') = 'open',
     'lo ya adeudado sigue';
   raise notice 'OK  baja anula cargos futuros';
 end $$;

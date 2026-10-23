@@ -28,14 +28,14 @@ export function methodLabel(method: string): string {
   return method in PAYMENT_METHOD_LABELS ? PAYMENT_METHOD_LABELS[method as PaymentMethod] : method;
 }
 
-/** Valida un cobro: importe en pesos, positivo y no mayor a lo pendiente; medio válido. */
+/** Valida un cobro: se cobra siempre el total pendiente (sin pagos parciales) con un medio válido. */
 export function validatePaymentForm(
   input: { amount: unknown; method: unknown; reference: unknown },
   pendingCents: Cents,
-): { ok: true; value: { amountCents: Cents; method: PaymentMethod; reference: string | null } } | { ok: false; error: "monto" | "monto-mayor" | "medio" } {
+): { ok: true; value: { amountCents: Cents; method: PaymentMethod; reference: string | null } } | { ok: false; error: "monto" | "monto-distinto" | "medio" } {
   const amount = parsePesos(input.amount);
   if (amount === null) return { ok: false, error: "monto" };
-  if (amount > pendingCents) return { ok: false, error: "monto-mayor" };
+  if (amount !== pendingCents) return { ok: false, error: "monto-distinto" };
   if (!isCounterMethod(input.method)) return { ok: false, error: "medio" };
   const reference = typeof input.reference === "string" ? input.reference.trim().slice(0, 80) : "";
   return { ok: true, value: { amountCents: amount, method: input.method, reference: reference || null } };
