@@ -45,10 +45,10 @@ set local request.jwt.claims = '{"sub":"a0000000-0000-0000-0000-00000000000a"}';
 do $$
 declare v_reg uuid; v_guest uuid;
 begin
-  v_reg := register_workshop((select id from w where name = 'lejos'), (select id from students where first_name = 'Valentina'));
+  v_reg := enroll_workshop((select id from w where name = 'lejos'), (select id from students where first_name = 'Valentina'), 'cash', null);
   assert (select c.total_cents from workshop_registrations r join charges c on c.id = r.charge_id where r.id = v_reg) = 2500000,
     'cargo con el precio del workshop';
-  v_guest := register_workshop_guest((select id from w where name = 'lejos'), 'Carla', 'Externa', '11 5555-0000', '30.111.222');
+  v_guest := enroll_workshop_guest((select id from w where name = 'lejos'), 'Carla', 'Externa', '11 5555-0000', '30.111.222', 'cash', null);
   assert (select s.status from workshop_registrations r join students s on s.id = r.student_id where r.id = v_guest) = 'occasional',
     'externo como ficha ocasional';
   assert (select s.profile_id from workshop_registrations r join students s on s.id = r.student_id where r.id = v_guest) is null,
@@ -60,19 +60,19 @@ end $$;
 do $$
 begin
   begin
-    perform register_workshop_guest((select id from w where name = 'lejos'), 'Otra', '', null, null);
+    perform enroll_workshop_guest((select id from w where name = 'lejos'), 'Otra', '', null, null, 'cash', null);
     raise exception 'debió rechazar por cupo';
   exception when raise_exception then
     if sqlerrm not like 'No hay lugar%' then raise; end if;
   end;
-  perform register_workshop((select id from w where name = 'cerca'), (select id from students where first_name = 'Valentina'));
+  perform enroll_workshop((select id from w where name = 'cerca'), (select id from students where first_name = 'Valentina'), 'cash', null);
   begin
-    perform register_workshop((select id from w where name = 'cerca'), (select id from students where first_name = 'Valentina'));
+    perform enroll_workshop((select id from w where name = 'cerca'), (select id from students where first_name = 'Valentina'), 'cash', null);
     raise exception 'debió rechazar la inscripción repetida';
   exception when unique_violation then null;
   end;
   -- El externo con el mismo DNI reutiliza su ficha.
-  perform register_workshop_guest((select id from w where name = 'cerca'), 'Carla', 'Externa', null, '30111222');
+  perform enroll_workshop_guest((select id from w where name = 'cerca'), 'Carla', 'Externa', null, '30111222', 'cash', null);
   assert (select count(*) from students where dni = '30111222') = 1, 'una sola ficha por DNI';
   raise notice 'OK  cupo, duplicados y DNI';
 end $$;
@@ -82,7 +82,6 @@ do $$
 declare v_reg uuid := (select r.id from workshop_registrations r join students s on s.id = r.student_id
                        where s.first_name = 'Valentina' and r.workshop_id = (select id from w where name = 'lejos'));
 begin
-  perform pay_charge((select charge_id from workshop_registrations where id = v_reg), 2500000, 'cash', null);
   assert cancel_workshop_registration(v_reg, 'No puede ir') = 2500000, 'devuelve todo';
   perform record_workshop_refund(v_reg, 'transfer');
   assert (select refunded_cents from workshop_registrations where id = v_reg) = 2500000, 'devolución registrada';
@@ -101,21 +100,23 @@ do $$
 declare v_reg uuid := (select r.id from workshop_registrations r join students s on s.id = r.student_id
                        where s.first_name = 'Valentina' and r.workshop_id = (select id from w where name = 'cerca') and r.status = 'confirmed');
 begin
-  perform pay_charge((select charge_id from workshop_registrations where id = v_reg), 1000000, 'qr', null);
   assert cancel_workshop_registration(v_reg, 'Se enfermó') = 0, 'no devuelve';
   assert (select status from charges where id = (select charge_id from workshop_registrations where id = v_reg)) = 'paid',
     'lo pagado queda cobrado';
   raise notice 'OK  menos de 48 h sin devolución';
 end $$;
 
--- 6. Cancelación sin pagos: el cargo se anula.
+-- 6. Ya no se puede inscribir sin pagar: la función sin pago no está disponible.
 do $$
-declare v_reg uuid := (select r.id from workshop_registrations r join students s on s.id = r.student_id
-                       where s.first_name = 'Carla' and r.workshop_id = (select id from w where name = 'cerca'));
 begin
-  perform cancel_workshop_registration(v_reg, null);
-  assert (select status from charges where id = (select charge_id from workshop_registrations where id = v_reg)) = 'void', 'cargo anulado';
-  raise notice 'OK  sin pagos no queda deuda';
+  perform register_workshop((select id from w where name = 'cerca'), (select id from students where first_name = 'Carla'));
+  raise exception 'no debe poder inscribir sin pago';
+exception when insufficient_privilege then
+  assert (select c.status from workshop_registrations r join charges c on c.id = r.charge_id
+          join students s on s.id = r.student_id
+          where s.first_name = 'Carla' and r.workshop_id = (select id from w where name = 'cerca')) = 'paid',
+    'toda inscripción nace pagada';
+  raise notice 'OK  sólo con pago total';
 end $$;
 
 -- 7. La alumna ve sólo sus inscripciones; no ve borradores; no inscribe.
@@ -128,7 +129,7 @@ begin
   assert (select count(*) from workshop_registrations) = 2, 've sólo las suyas';
   assert (select count(*) from refunds) = 1, 've su devolución';
   begin
-    perform register_workshop((select id from workshops where title = 'Coreo express'), (select id from students limit 1));
+    perform enroll_workshop((select id from workshops where title = 'Coreo express'), (select id from students limit 1), 'cash', null);
     raise exception 'la alumna no inscribe';
   exception when insufficient_privilege then null;
   end;
@@ -144,7 +145,7 @@ begin
   assert not exists (select 1 from room_occupancies o join workshop_sessions s on s.id = o.source_id where s.workshop_id = v_id),
     'sala liberada';
   assert (select refund_cents from workshop_registrations r join students s on s.id = r.student_id
-          where s.first_name = 'Carla' and r.workshop_id = v_id) = 0, 'Carla no había pagado: nada que devolver';
+          where s.first_name = 'Carla' and r.workshop_id = v_id) = 2500000, 'a Carla le corresponde la devolución completa';
   assert not exists (select 1 from workshop_registrations where workshop_id = v_id and status = 'confirmed'), 'todas canceladas';
   raise notice 'OK  cancelar workshop';
 end $$;

@@ -37,7 +37,7 @@ export function WorkshopList({ workshops, mine }: { workshops: readonly Workshop
               )}
             </span>
             {!mine.has(w.id) && w.taken < w.capacity && (
-              <p className="text-sm text-muted">Inscribite en recepción. Cancelando con 48 h o más de anticipación, se te devuelve el dinero.</p>
+              <p className="text-sm text-muted">Se reserva en recepción, con el pago total. Si cancelás con 48 h o más de anticipación, se te devuelve el dinero.</p>
             )}
           </li>
         ))}

@@ -6,7 +6,7 @@ export const NOTICES: Record<string, string> = {
   cancelado: "Listo, cancelamos el workshop. A quienes habían pagado les corresponde la devolución.",
   "jornada-agregada": "Listo, agregamos la fecha.",
   "jornada-quitada": "Listo, quitamos la fecha.",
-  inscripto: "Listo, quedó inscripto. Si paga ahora, registrá el pago.",
+  inscripto: "Listo, cobramos el total y quedó inscripto.",
   "pago-registrado": "Listo, registramos el pago.",
   cancelada: "Listo, cancelamos la inscripción. No corresponde devolución.",
   "cancelada-con-devolucion": "Listo, cancelamos la inscripción. Corresponde devolver lo pagado: registralo cuando lo devuelvas.",

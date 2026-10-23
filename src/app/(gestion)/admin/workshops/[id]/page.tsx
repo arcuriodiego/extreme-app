@@ -34,6 +34,28 @@ import { WorkshopForm } from "../WorkshopForm";
 
 export const metadata: Metadata = { title: "Workshop" };
 
+/** Medio y referencia del pago total, para inscribir. */
+function PayInputs({ idPrefix }: { idPrefix: string }) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      <label className="sr-only" htmlFor={`${idPrefix}-medio`}>
+        Medio de pago
+      </label>
+      <select id={`${idPrefix}-medio`} name="method" defaultValue="cash" className={input}>
+        {COUNTER_METHODS.map((m) => (
+          <option key={m} value={m}>
+            {PAYMENT_METHOD_LABELS[m]}
+          </option>
+        ))}
+      </select>
+      <label className="sr-only" htmlFor={`${idPrefix}-ref`}>
+        N° de operación
+      </label>
+      <input id={`${idPrefix}-ref`} name="reference" maxLength={80} placeholder="N° de operación (opcional)" className={`${input} min-w-0 flex-1`} />
+    </div>
+  );
+}
+
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const input = "h-10 min-w-0 rounded-xl border border-[#cfcfcf] bg-white px-3 text-base outline-none focus:border-ink";
 const dateTime = new Intl.DateTimeFormat("es-AR", {
@@ -235,6 +257,7 @@ export default async function WorkshopPage({
             <div className="grid max-w-3xl gap-4 lg:grid-cols-2">
               <div className="flex flex-col gap-3 rounded-[var(--radius-card)] bg-surface p-4">
                 <span className="font-semibold">Inscribir a un alumno</span>
+                <p className="text-sm text-muted">Sólo con el pago total: se cobra e inscribe en un solo paso.</p>
                 <form method="get" action={`/admin/workshops/${workshop.id}`} className="flex gap-2">
                   <label htmlFor="buscar" className="sr-only">
                     Buscar alumno
@@ -245,7 +268,7 @@ export default async function WorkshopPage({
                 {q && found.rows.length === 0 && <p className="text-sm text-muted">No encontramos a nadie. Si es de afuera, usá el formulario de al lado.</p>}
                 <ul className="flex flex-col">
                   {found.rows.slice(0, 8).map((s) => (
-                    <li key={s.id} className="flex items-center justify-between gap-2 border-t border-line py-2 text-[15px]">
+                    <li key={s.id} className="flex flex-wrap items-center justify-between gap-2 border-t border-line py-2 text-[15px]">
                       <span className="min-w-0 truncate">
                         {s.name}
                         {s.dni ? <span className="text-sm text-muted"> · DNI {s.dni}</span> : null}
@@ -253,11 +276,17 @@ export default async function WorkshopPage({
                       {registeredIds.has(s.id) ? (
                         <span className="text-sm text-muted">Inscripto</span>
                       ) : (
-                        <form action={registerStudent}>
-                          <input type="hidden" name="workshop_id" value={workshop.id} />
-                          <input type="hidden" name="student_id" value={s.id} />
-                          <SmallSubmit tone="dark">Inscribir</SmallSubmit>
-                        </form>
+                        <details>
+                          <summary className="cursor-pointer text-sm font-semibold">Cobrar e inscribir</summary>
+                          <form action={registerStudent} className="flex flex-col gap-2 pt-2">
+                            <input type="hidden" name="workshop_id" value={workshop.id} />
+                            <input type="hidden" name="student_id" value={s.id} />
+                            <PayInputs idPrefix={`al-${s.id}`} />
+                            <div>
+                              <SmallSubmit tone="dark">Cobrar {formatARS(workshop.priceCents)} e inscribir</SmallSubmit>
+                            </div>
+                          </form>
+                        </details>
                       )}
                     </li>
                   ))}
@@ -273,8 +302,9 @@ export default async function WorkshopPage({
                   <input name="phone" inputMode="tel" placeholder="Teléfono" aria-label="Teléfono" className={input} />
                   <input name="dni" inputMode="numeric" placeholder="DNI (opcional)" aria-label="DNI" className={input} />
                 </div>
+                <PayInputs idPrefix="externo" />
                 <div>
-                  <SmallSubmit tone="dark">Inscribir</SmallSubmit>
+                  <SmallSubmit tone="dark">Cobrar {formatARS(workshop.priceCents)} e inscribir</SmallSubmit>
                 </div>
               </form>
             </div>

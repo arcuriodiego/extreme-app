@@ -145,8 +145,16 @@ export async function registerStudent(formData: FormData): Promise<void> {
   const studentId = str(formData, "student_id");
   if (!UUID.test(id) || !UUID.test(studentId)) to("/admin/workshops", { error: "datos" });
   const back = `/admin/workshops/${id}`;
+  const method = formData.get("method");
+  if (!isCounterMethod(method)) to(back, { error: "pago-medio" });
   const supabase = await createClient();
-  const { error } = await supabase.rpc("register_workshop", { p_workshop_id: id, p_student_id: studentId });
+  // Inscribir y cobrar el total van juntos: sin pago no hay lugar (decisión de Diego, 23 oct).
+  const { error } = await supabase.rpc("enroll_workshop", {
+    p_workshop_id: id,
+    p_student_id: studentId,
+    p_method: method,
+    p_reference: str(formData, "reference").slice(0, 80) || null,
+  });
   if (error) to(back, { error: code(error) });
   to(back, { aviso: "inscripto" });
 }
@@ -161,13 +169,17 @@ export async function registerGuest(formData: FormData): Promise<void> {
   if (phone && !/^[0-9 +()-]{6,25}$/.test(phone)) to(back, { error: "telefono" });
   const dni = str(formData, "dni").replace(/[.\s-]/g, "");
   if (dni && !/^[0-9A-Za-z]{6,12}$/.test(dni)) to(back, { error: "dni" });
+  const method = formData.get("method");
+  if (!isCounterMethod(method)) to(back, { error: "pago-medio" });
   const supabase = await createClient();
-  const { error } = await supabase.rpc("register_workshop_guest", {
+  const { error } = await supabase.rpc("enroll_workshop_guest", {
     p_workshop_id: id,
     p_first_name: firstName,
     p_last_name: str(formData, "last_name").slice(0, 80),
     p_phone: phone || null,
     p_dni: dni || null,
+    p_method: method,
+    p_reference: str(formData, "reference").slice(0, 80) || null,
   });
   if (error) to(back, { error: code(error) });
   to(back, { aviso: "inscripto" });
