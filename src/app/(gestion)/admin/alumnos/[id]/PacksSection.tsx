@@ -50,12 +50,17 @@ export async function PacksSection({
   plans: PlanWithPrices[];
   today: string;
 }) {
-  const [balances, bookings, sessions] = await Promise.all([
+  const [balances, bookings, sessions, { data: fixedRows }] = await Promise.all([
     loadBalances(supabase, studentId),
     loadUpcomingBookings(supabase, studentId),
     canManage ? loadSessions(supabase, today, addDays(today, 13)) : Promise.resolve([]),
+    supabase.from("enrollments").select("schedule_id").eq("student_id", studentId).eq("status", "active"),
   ]);
-  const bookable = sessions.filter((s) => s.status === "scheduled" && s.upcoming && s.allowsSingleBooking);
+  // Sus clases fijas no se reservan: ya tiene el lugar.
+  const fixedSchedules = new Set(((fixedRows ?? []) as { schedule_id: string }[]).map((r) => r.schedule_id));
+  const bookable = sessions.filter(
+    (s) => s.status === "scheduled" && s.upcoming && s.allowsSingleBooking && !(s.scheduleId && fixedSchedules.has(s.scheduleId)),
+  );
   const availability = await loadAvailability(
     supabase,
     bookable.map((s) => s.id),
