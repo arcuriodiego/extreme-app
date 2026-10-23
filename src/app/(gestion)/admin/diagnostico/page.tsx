@@ -8,7 +8,12 @@ import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Diagnóstico" };
 
-const REGIONS: Record<string, string> = { gru1: "São Paulo", iad1: "Washington", local: "Computadora local" };
+const REGIONS: Record<string, string> = {
+  gru1: "São Paulo",
+  iad1: "Washington",
+  pdx1: "Portland (junto a la base de staging, en Oregón)",
+  local: "Computadora local",
+};
 
 /** Mide la velocidad real del servidor. Sólo administración; no aparece en el menú. */
 export default async function DiagnosticoPage() {
