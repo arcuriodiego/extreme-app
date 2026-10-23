@@ -118,6 +118,20 @@ export default async function WorkshopPage({
       {notice && <FormAlert kind="ok">{notice}</FormAlert>}
       {failure && <FormAlert kind="error">{failure}</FormAlert>}
 
+      {canManage && workshop.status === "draft" && (
+        <div className="flex max-w-xl flex-col gap-3 rounded-[var(--radius-card)] border-[1.5px] border-ink p-4">
+          <p className="text-[15px]">
+            <strong>Es un borrador:</strong> los alumnos todavía no lo ven y no se puede inscribir.
+            {workshop.sessions.length === 0 ? " Primero agregale al menos una fecha (más abajo)." : ""}
+          </p>
+          <form action={setPublished}>
+            <input type="hidden" name="id" value={workshop.id} />
+            <input type="hidden" name="publish" value="true" />
+            <SmallSubmit tone="dark">Publicar workshop</SmallSubmit>
+          </form>
+        </div>
+      )}
+
       <section className="flex flex-col gap-2">
         <h2 className="font-display text-2xl font-bold uppercase tracking-wide">Fechas</h2>
         {workshop.sessions.length === 0 ? (
@@ -320,13 +334,13 @@ export default async function WorkshopPage({
       {canManage && workshop.status !== "cancelled" && (
         <section className="flex flex-col gap-4 border-t border-line pt-6">
           <h2 className="font-display text-2xl font-bold uppercase tracking-wide">Datos</h2>
-          <form action={setPublished}>
-            <input type="hidden" name="id" value={workshop.id} />
-            <input type="hidden" name="publish" value={workshop.status === "published" ? "false" : "true"} />
-            <SmallSubmit tone={workshop.status === "published" ? "default" : "dark"}>
-              {workshop.status === "published" ? "Volver a borrador (los alumnos dejan de verlo)" : "Publicar (los alumnos lo ven)"}
-            </SmallSubmit>
-          </form>
+          {workshop.status === "published" && (
+            <form action={setPublished}>
+              <input type="hidden" name="id" value={workshop.id} />
+              <input type="hidden" name="publish" value="false" />
+              <SmallSubmit>Volver a borrador (los alumnos dejan de verlo)</SmallSubmit>
+            </form>
+          )}
           <WorkshopForm workshop={workshop} action={updateWorkshop} />
           <details className="max-w-xl">
             <summary className="cursor-pointer font-semibold text-alert-ink">Cancelar el workshop</summary>
