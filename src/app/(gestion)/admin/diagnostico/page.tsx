@@ -29,6 +29,7 @@ export default async function DiagnosticoPage() {
           <li key={t.label} className="flex justify-between gap-3 border-t border-line py-2.5 text-[15px]">
             <span>
               {t.label}
+              {t.note && <span className="ml-2 text-sm text-muted">{t.note}</span>}
               {!t.ok && <span className="ml-2 text-sm font-semibold text-alert-ink">(con error)</span>}
             </span>
             <strong className={t.ms > 300 ? "text-alert-ink" : t.ms > 120 ? "text-warn-ink" : "text-ok-ink"}>{t.ms} ms</strong>
