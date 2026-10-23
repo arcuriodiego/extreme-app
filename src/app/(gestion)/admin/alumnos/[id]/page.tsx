@@ -27,12 +27,22 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const dateFormat = new Intl.DateTimeFormat("es-AR", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
 const longDate = (d: string) => dateFormat.format(new Date(`${d}T12:00:00Z`));
 
+/** El profe y la categoría elegidos llegan juntos ("combo") o por separado (al volver de un error). */
+function pickTeacher(q: { profe?: string; combo?: string }): string | undefined {
+  const v = q.combo?.split(":")[0] ?? q.profe;
+  return v && UUID.test(v) ? v : undefined;
+}
+function pickCategory(q: { cat?: string; combo?: string }): string | undefined {
+  const v = q.combo?.split(":")[1] ?? q.cat;
+  return v && UUID.test(v) ? v : undefined;
+}
+
 export default async function AlumnoPage({
   params,
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ aviso?: string; error?: string; profe?: string; cat?: string }>;
+  searchParams: Promise<{ aviso?: string; error?: string; profe?: string; cat?: string; combo?: string }>;
 }) {
   const [profile, { id }, query] = await Promise.all([requireProfile(), params, searchParams]);
   if (!canOpen(profile.access, "alumnos")) return <NoAccess />;
@@ -97,8 +107,8 @@ export default async function AlumnoPage({
         supabase={supabase}
         studentId={student.id}
         canManage={canManage}
-        pickedTeacher={query.profe && UUID.test(query.profe) ? query.profe : undefined}
-        pickedCategory={query.cat && UUID.test(query.cat) ? query.cat : undefined}
+        pickedTeacher={pickTeacher(query)}
+        pickedCategory={pickCategory(query)}
         canPay={canPay}
         charges={charges}
         today={today}

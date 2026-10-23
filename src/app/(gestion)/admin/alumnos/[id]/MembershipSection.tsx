@@ -45,12 +45,19 @@ export async function MembershipSection({
   ]);
 
   // Profes y categorías que tienen al menos un grupo activo con horarios.
-  const teachers = catalog.teachers.filter((t) => groups.some((g) => g.teacherId === t.id && g.schedules.length > 0));
-  const categories = catalog.ageCategories.filter((c) => groups.some((g) => g.ageCategoryId === c.id && g.schedules.length > 0));
-  const picked =
-    pickedTeacher && pickedCategory && teachers.some((t) => t.id === pickedTeacher) && categories.some((c) => c.id === pickedCategory)
-      ? scheduleOptions(groups, pickedTeacher, pickedCategory, fixed)
-      : null;
+  // Combinaciones de profe + categoría que realmente existen (grupos activos con horarios),
+  // así no se puede elegir una combinación vacía.
+  const usable = groups.filter((g) => g.teacherId && g.schedules.length > 0);
+  const combos = [...new Map(usable.map((g) => [`${g.teacherId}:${g.ageCategoryId}`, g])).values()].map((g) => {
+    const teacher = catalog.teachers.find((t) => t.id === g.teacherId)?.displayName ?? "Profe";
+    const category = catalog.ageCategories.find((c) => c.id === g.ageCategoryId)?.name ?? "";
+    const styles = [...new Set(usable.filter((x) => x.teacherId === g.teacherId && x.ageCategoryId === g.ageCategoryId).map((x) => x.name.split(" · ")[0]))];
+    return { value: `${g.teacherId}:${g.ageCategoryId}`, teacherId: g.teacherId ?? "", categoryId: g.ageCategoryId, label: `${teacher} · ${category} (${styles.join(", ")})` };
+  });
+  const withoutTeacher = groups.filter((g) => !g.teacherId).length;
+  const withoutSchedules = groups.filter((g) => g.teacherId && g.schedules.length === 0).length;
+  const pickedCombo = combos.find((c) => c.teacherId === pickedTeacher && c.categoryId === pickedCategory);
+  const picked = pickedCombo ? scheduleOptions(groups, pickedCombo.teacherId, pickedCombo.categoryId, fixed) : null;
 
   return (
     <section id="planes" className="flex scroll-mt-6 flex-col gap-4 border-t border-line pt-6">
@@ -182,44 +189,53 @@ export async function MembershipSection({
       {canManage && (
         <div className="flex max-w-2xl flex-col gap-3 rounded-[var(--radius-card)] bg-surface p-4">
           <span className="font-semibold">Inscribir en una cuota de profe</span>
-          {teachers.length === 0 ? (
-            <p className="text-[15px] text-muted">Todavía no hay grupos activos con profe y horarios.</p>
+          {combos.length === 0 ? (
+            <div className="flex flex-col gap-1 text-[15px] text-muted">
+              <p>Todavía no hay grupos listos para la cuota de profe: hace falta un grupo activo con profe asignado y horarios.</p>
+              {withoutTeacher > 0 && (
+                <p>
+                  Hay {withoutTeacher} {withoutTeacher === 1 ? "grupo" : "grupos"} con el profe &quot;a confirmar&quot;: asignalo en Clases y grilla → Editar.
+                </p>
+              )}
+              {withoutSchedules > 0 && (
+                <p>
+                  Hay {withoutSchedules} {withoutSchedules === 1 ? "grupo" : "grupos"} sin horarios.
+                </p>
+              )}
+            </div>
           ) : (
             <>
               {/* Paso 1: profe y categoría (recarga la página con la elección). */}
-              <form method="get" action={`/admin/alumnos/${studentId}#planes`} className="flex flex-wrap items-end gap-2">
+              <form method="get" action={`/admin/alumnos/${studentId}`} className="flex flex-wrap items-end gap-2">
                 <label className="flex min-w-0 flex-1 flex-col gap-1 text-sm font-semibold">
-                  Profe
-                  <select name="profe" required defaultValue={pickedTeacher ?? ""} className={select}>
+                  Profe y categoría
+                  <select name="combo" required defaultValue={pickedCombo?.value ?? ""} className={select}>
                     <option value="" disabled>
                       Elegí…
                     </option>
-                    {teachers.map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.displayName}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="flex min-w-0 flex-1 flex-col gap-1 text-sm font-semibold">
-                  Categoría
-                  <select name="cat" required defaultValue={pickedCategory ?? ""} className={select}>
-                    <option value="" disabled>
-                      Elegí…
-                    </option>
-                    {categories.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
+                    {combos.map((c) => (
+                      <option key={c.value} value={c.value}>
+                        {c.label}
                       </option>
                     ))}
                   </select>
                 </label>
                 <SmallSubmit>Ver horarios</SmallSubmit>
               </form>
+              {withoutTeacher > 0 && (
+                <p className="text-sm text-muted">
+                  {withoutTeacher} {withoutTeacher === 1 ? "grupo no aparece" : "grupos no aparecen"} porque tienen el profe &quot;a confirmar&quot;.
+                </p>
+              )}
 
               {/* Paso 2: los 2 horarios. */}
-              {picked && picked.length === 0 && <p className="text-[15px] text-muted">Ese profe no tiene horarios para esa categoría.</p>}
-              {picked && picked.length > 0 && (
+              {picked && picked.length < 2 && (
+                <p className="text-[15px] text-muted">
+                  Ese profe tiene {picked.length === 1 ? "un solo horario" : "ningún horario"} en esa categoría, y la cuota necesita 2. Agregale
+                  otro horario a alguno de sus grupos en Clases y grilla.
+                </p>
+              )}
+              {picked && picked.length >= 2 && (
                 <form action={enrollStudent} className="flex flex-col gap-3">
                   <input type="hidden" name="student_id" value={studentId} />
                   <input type="hidden" name="teacher_id" value={pickedTeacher} />
