@@ -177,7 +177,7 @@ select public.seed_default_plans(id) from public.academies;
 
 -- Precios aprobados por dirección para Extreme Dance (octubre 2026).
 insert into public.plan_prices (academy_id, plan_id, amount_cents, valid_from)
-select p.academy_id, p.id, v.cents, current_date
+select p.academy_id, p.id, v.cents, (now() at time zone 'America/Argentina/Buenos_Aires')::date
 from public.plans p
 join public.academies a on a.id = p.academy_id and a.slug = 'extreme-dance'
 join (values ('Cuota de profe', 5550000), ('Pack 10 clases', 6600000), ('Pack 16 clases', 10300000), ('Clase individual', 1150000))
