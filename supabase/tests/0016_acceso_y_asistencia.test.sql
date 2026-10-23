@@ -147,6 +147,17 @@ begin
   raise notice 'OK  gracia, suspensión, reserva y sin clase';
 end $$;
 reset role;
+-- Ventana de ingreso: de 30 min antes a 15 min después del inicio (la clase empieza en 20 min).
+do $$
+begin
+  assert evaluate_access((select academy_id from students where id = (select vale from ids)), (select vale from ids), now() - interval '15 minutes')
+         ->> 'reason' = 'sin-clase', 'más de 30 min antes todavía no entra';
+  assert evaluate_access((select academy_id from students where id = (select vale from ids)), (select vale from ids), now() + interval '34 minutes')
+         ->> 'reason' = 'fija', 'hasta 15 min después del inicio entra';
+  assert evaluate_access((select academy_id from students where id = (select vale from ids)), (select vale from ids), now() + interval '36 minutes')
+         ->> 'reason' = 'sin-clase', 'más de 15 min después ya no entra';
+  raise notice 'OK  ventana de ingreso';
+end $$;
 with w as (insert into workshops (academy_id, title, price_cents, capacity, status)
            select id, 'Heels intensivo', 2500000, 10, 'published' from academies returning id, academy_id)
 insert into workshop_sessions (academy_id, workshop_id, starts_at, ends_at, room_id)

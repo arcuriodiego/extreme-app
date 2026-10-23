@@ -9,7 +9,7 @@ declare v_id uuid;
 begin
   insert into academies (slug, name) values ('test-academia', 'Academia de prueba') returning id into v_id;
   assert (select count(*) from app_settings where academy_id = v_id) = 10, 'deberían crearse 10 reglas';
-  assert setting(v_id, 'checkin_before_minutes') = 60 and setting(v_id, 'checkin_after_minutes') = 30, 'ventana de ingreso';
+  assert setting(v_id, 'checkin_before_minutes') = 30 and setting(v_id, 'checkin_after_minutes') = 15, 'ventana de ingreso';
   assert setting(v_id, 'grace_days') = 5, 'gracia = 5 días';
   assert setting(v_id, 'cancel_hours') = 12, 'cancelación = 12 h';
   assert setting(v_id, 'credit_days') = 5, 'crédito = 5 días';
