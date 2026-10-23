@@ -56,6 +56,7 @@ const GESTION_ITEMS: readonly GestionItem[] = [
   { key: "alumnos", href: "/admin/alumnos", label: "Alumnos", icon: "people", anyOf: ["people.view"] },
   { key: "clases", href: "/admin/clases", label: "Clases y grilla", icon: "calendar", anyOf: ["classes.manage", "classes.view_roster"] },
   { key: "pagos", href: "/admin/pagos", label: "Pagos", icon: "card", anyOf: ["payments.register", "finance.view"] },
+  { key: "workshops", href: "/admin/workshops", label: "Workshops", icon: "ticket", anyOf: ["people.view", "classes.manage"] },
   { key: "escaner", href: "/admin/escaner", label: "Escáner QR", icon: "scan", anyOf: ["attendance.mark"] },
   { key: "usuarios", href: "/admin/usuarios", label: "Usuarios y roles", icon: "shield", anyOf: ["roles.manage"] },
   { key: "configuracion", href: "/admin/configuracion", label: "Configuración", icon: "settings", anyOf: ["settings.manage"] },

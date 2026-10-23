@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { DayStrip } from "@/components/classes/DayStrip";
 import { SessionCard } from "@/components/classes/SessionCard";
 import { WeeklyGrid } from "@/components/classes/WeeklyGrid";
+import { WorkshopList } from "@/components/classes/WorkshopList";
+import { loadMyRegistrations, loadWorkshops, type WorkshopRow } from "@/lib/workshops";
 import { FormAlert } from "@/components/forms/fields";
 import { PageHeader } from "@/components/ui/basics";
 import { dayStrip, longDate, pickDay } from "@/domain/classes/sessions";
@@ -23,14 +25,20 @@ export default async function ClasesPage({ searchParams }: { searchParams: Promi
   let sessions: Awaited<ReturnType<typeof loadSessions>> = [];
   let slots: ReturnType<typeof slotsOf> = [];
   let fixedSchedules = new Set<string>();
+  let workshops: WorkshopRow[] = [];
+  let myWorkshops = new Set<string>();
   try {
     // Todo en paralelo: la generación diaria ya dejó listas las próximas semanas.
-    const [, loaded, groups, mine] = await Promise.all([
+    const [, loaded, groups, mine, ws, myRegs] = await Promise.all([
       ensureSessions(supabase),
       loadSessions(supabase, day, day),
       loadGroups(supabase, { onlyActive: true }),
       loadMyMemberships(supabase, profile.id),
+      loadWorkshops(supabase),
+      loadMyRegistrations(supabase, profile.id),
     ]);
+    workshops = ws.filter((w) => w.status === "published" && !w.finished && w.sessions.length > 0);
+    myWorkshops = new Set(myRegs.map((r) => r.workshopId));
     sessions = loaded;
     slots = slotsOf(groups);
     fixedSchedules = new Set(mine.flatMap((m) => m.enrollments.map((e) => e.scheduleId)));
@@ -48,7 +56,9 @@ export default async function ClasesPage({ searchParams }: { searchParams: Promi
           <span className="font-display text-xl font-bold uppercase tracking-wide">Grilla en preparación</span>
           <p className="text-[15px] leading-snug text-muted">Muy pronto vas a ver acá los días y horarios de cada clase.</p>
         </section>
-      ) : (
+      ) : null}
+      {!failed && slots.length === 0 && <WorkshopList workshops={workshops} mine={myWorkshops} />}
+      {!(!failed && slots.length === 0) && (
         <>
           <DayStrip days={strip} selected={day} hrefFor={(d) => `/clases?dia=${d}`} />
           <section aria-labelledby="dia-elegido" className="flex flex-col gap-2">
@@ -67,6 +77,7 @@ export default async function ClasesPage({ searchParams }: { searchParams: Promi
               </ul>
             )}
           </section>
+          <WorkshopList workshops={workshops} mine={myWorkshops} />
           <p className="rounded-xl bg-surface px-4 py-3 text-[15px] leading-snug">
             Muy pronto vas a poder <strong>reservar</strong> desde acá. Por ahora, consultá en recepción.
           </p>

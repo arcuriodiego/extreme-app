@@ -1,0 +1,48 @@
+export const NOTICES: Record<string, string> = {
+  creado: "Listo, creamos el workshop. Agregale sus fechas y publicalo.",
+  guardado: "Listo, guardamos los cambios.",
+  publicado: "Listo, el workshop está publicado: los alumnos ya lo ven.",
+  despublicado: "Listo, el workshop volvió a borrador: los alumnos ya no lo ven.",
+  cancelado: "Listo, cancelamos el workshop. A quienes habían pagado les corresponde la devolución.",
+  "jornada-agregada": "Listo, agregamos la fecha.",
+  "jornada-quitada": "Listo, quitamos la fecha.",
+  inscripto: "Listo, quedó inscripto. Si paga ahora, registrá el pago.",
+  "pago-registrado": "Listo, registramos el pago.",
+  cancelada: "Listo, cancelamos la inscripción. No corresponde devolución.",
+  "cancelada-con-devolucion": "Listo, cancelamos la inscripción. Corresponde devolver lo pagado: registralo cuando lo devuelvas.",
+  devuelto: "Listo, registramos la devolución.",
+};
+
+export const ERRORS: Record<string, string> = {
+  titulo: "Escribí el nombre del workshop (hasta 80 letras).",
+  precio: "Escribí el precio en pesos, por ejemplo 25.000.",
+  cupo: "El cupo tiene que ser un número entre 1 y 500.",
+  "sin-fechas": "Agregá al menos una fecha antes de publicarlo.",
+  "jornada-fecha": "Elegí la fecha.",
+  "jornada-fecha-pasada": "La fecha ya pasó.",
+  "jornada-hora": "Revisá las horas: el fin tiene que ser al menos 15 minutos después del inicio.",
+  "jornada-sala": "Elegí la sala.",
+  "sala-ocupada": "Esa sala ya está ocupada en ese horario (por una clase u otro workshop).",
+  completo: "No hay lugar: el workshop está completo.",
+  "ya-inscripto": "Ya está inscripto en este workshop.",
+  "no-publicado": "Publicá el workshop antes de inscribir.",
+  "ya-empezo": "El workshop ya empezó o no tiene fechas.",
+  "nada-que-devolver": "No hay nada pendiente de devolver.",
+  nombre: "Escribí el nombre.",
+  telefono: "Revisá el teléfono.",
+  dni: "Revisá el DNI.",
+  "pago-monto": "Escribí el importe en pesos.",
+  "pago-monto-mayor": "El importe es mayor a lo que se debe.",
+  "pago-mayor": "El importe es mayor a lo que se debe.",
+  "pago-medio": "Elegí el medio.",
+  "sin-permiso": "No tenés permiso para hacer esto.",
+  "no-disponible": "Eso cambió mientras tanto. Recargá la página.",
+  datos: "Revisá los datos.",
+  generico: "No pudimos guardar el cambio. Probá de nuevo.",
+};
+
+export const STATUS = {
+  draft: { label: "BORRADOR", style: "bg-surface text-ink" },
+  published: { label: "PUBLICADO", style: "bg-ok-soft text-ok-ink" },
+  cancelled: { label: "CANCELADO", style: "bg-alert-soft text-alert-ink" },
+} as const;

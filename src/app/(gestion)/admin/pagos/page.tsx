@@ -7,7 +7,9 @@ import { can } from "@/domain/auth/roles";
 import { cashSummary, methodLabel } from "@/domain/billing/payments";
 import { longDate } from "@/domain/classes/sessions";
 import { canOpen } from "@/domain/navigation/menus";
-import { addDays, isValidCalendarDate } from "@/domain/shared/calendar-date";
+import { addDays, isValidCalendarDate, startOfDayInZone } from "@/domain/shared/calendar-date";
+import { academyConfig } from "@/config/academy";
+import { loadRefunds } from "@/lib/workshops";
 import { formatARS } from "@/domain/shared/money";
 import { voidPayment } from "@/app/(gestion)/admin/alumnos/actions";
 import { ensureCharges, loadDayPayments, loadDebtors, loadGraceDays } from "@/lib/billing";
@@ -34,7 +36,17 @@ export default async function PagosPage({ searchParams }: { searchParams: Promis
   const day = params.dia && isValidCalendarDate(params.dia) && params.dia <= today ? params.dia : today;
 
   const supabase = await createClient();
-  const [, graceDays, payments] = await Promise.all([ensureCharges(supabase), loadGraceDays(supabase), loadDayPayments(supabase, day)]);
+  const [, graceDays, payments, refunds] = await Promise.all([
+    ensureCharges(supabase),
+    loadGraceDays(supabase),
+    loadDayPayments(supabase, day),
+    loadRefunds(
+      supabase,
+      startOfDayInZone(day, academyConfig.timeZone).toISOString(),
+      startOfDayInZone(addDays(day, 1), academyConfig.timeZone).toISOString(),
+    ),
+  ]);
+  const refundsTotal = refunds.reduce((s, r) => s + r.amountCents, 0);
   const debtors = await loadDebtors(supabase, today, graceDays);
   const summary = cashSummary(payments);
   const grace = debtors.filter((d) => d.light.light === "grace");
@@ -62,8 +74,13 @@ export default async function PagosPage({ searchParams }: { searchParams: Promis
           </div>
 
           <div className="flex flex-col gap-2 rounded-[var(--radius-card)] bg-ink p-5 text-white">
-            <span className="text-sm font-semibold text-[#cfcfcf]">Total cobrado</span>
-            <strong className="font-display text-4xl">{formatARS(summary.total)}</strong>
+            <span className="text-sm font-semibold text-[#cfcfcf]">{refundsTotal > 0 ? "Neto del día" : "Total cobrado"}</span>
+            <strong className="font-display text-4xl">{formatARS(summary.total - refundsTotal)}</strong>
+            {refundsTotal > 0 && (
+              <span className="text-sm text-[#cfcfcf]">
+                Cobrado {formatARS(summary.total)} · Devuelto {formatARS(refundsTotal)}
+              </span>
+            )}
             {summary.byMethod.length > 0 && (
               <ul className="flex flex-col gap-1 border-t border-white/15 pt-2 text-[15px]">
                 {summary.byMethod.map((m) => (
@@ -128,6 +145,21 @@ export default async function PagosPage({ searchParams }: { searchParams: Promis
         </section>
 
         <section className="flex flex-col gap-4">
+          {refunds.length > 0 && (
+            <div className="flex flex-col gap-1 rounded-xl bg-alert-soft p-4">
+              <span className="font-semibold text-alert-ink">Devoluciones del día</span>
+              <ul className="flex flex-col gap-1 text-[15px]">
+                {refunds.map((r) => (
+                  <li key={r.id} className="flex justify-between gap-3">
+                    <span>
+                      {r.time} · {r.studentName} · {methodLabel(r.method)}
+                    </span>
+                    <strong>−{formatARS(r.amountCents)}</strong>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           <h2 className="font-display text-2xl font-bold uppercase tracking-wide">Cuotas vencidas</h2>
           {debtors.length === 0 && <p className="text-[15px] text-muted">Nadie debe cuotas vencidas.</p>}
           {[
