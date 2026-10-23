@@ -8,7 +8,7 @@ import { can } from "@/domain/auth/roles";
 import { dayStrip, longDate, pickDay } from "@/domain/classes/sessions";
 import { canOpen } from "@/domain/navigation/menus";
 import { academyToday, loadCatalog } from "@/lib/grilla";
-import { loadFixedCounts } from "@/lib/memberships";
+import { loadAvailability } from "@/lib/bookings";
 import { ensureSessions, loadSessions, loadUpcomingExceptions } from "@/lib/sessions";
 import { requireProfile } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
@@ -34,13 +34,16 @@ export default async function CalendarioPage({
   const day = pickDay(params.dia, strip);
 
   const supabase = await createClient();
-  const [, sessions, exceptions, catalog, fixed] = await Promise.all([
+  const [, sessions, exceptions, catalog] = await Promise.all([
     ensureSessions(supabase),
     loadSessions(supabase, day, day),
     loadUpcomingExceptions(supabase, today),
     canManage ? loadCatalog(supabase) : Promise.resolve(null),
-    loadFixedCounts(supabase),
   ]);
+  const avail = await loadAvailability(
+    supabase,
+    sessions.map((s) => s.id),
+  );
   const teachers = (catalog?.teachers ?? []).filter((t) => t.active);
   const dayException = exceptions.find((e) => e.date === day);
 
@@ -71,7 +74,10 @@ export default async function CalendarioPage({
                 const upcoming = s.upcoming;
                 return (
                   <li key={s.id}>
-                    <SessionCard session={s} extra={`${(s.scheduleId && fixed.get(s.scheduleId)) || 0} fijos de ${s.capacity}`}>
+                    <SessionCard session={s} extra={(() => {
+                        const a = avail.get(s.id);
+                        return a ? `${a.fixed} fijos + ${a.booked} reservas de ${a.capacity}` : `Cupo ${s.capacity}`;
+                      })()}>
                       {canManage && upcoming && s.status === "scheduled" && (
                         <div className="flex flex-col gap-3 border-t border-line pt-3 sm:flex-row sm:flex-wrap sm:items-end">
                           <form action={setSubstitute} className="flex flex-1 items-end gap-2">

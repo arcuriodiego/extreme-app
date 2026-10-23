@@ -6,7 +6,7 @@ import { PageHeader } from "@/components/ui/basics";
 import { longDate } from "@/domain/classes/sessions";
 import { addDays } from "@/domain/shared/calendar-date";
 import { academyToday, loadGroups, slotsOf } from "@/lib/grilla";
-import { loadFixedCounts } from "@/lib/memberships";
+import { loadAvailability } from "@/lib/bookings";
 import { ensureSessions, loadSessions, type SessionRow } from "@/lib/sessions";
 import { requireProfile } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
@@ -28,17 +28,20 @@ export default async function ProfeClasesPage() {
 
   const supabase = await createClient();
   const today = academyToday();
-  const [, sessions, groups, fixed] = await Promise.all([
+  const [, sessions, groups] = await Promise.all([
     ensureSessions(supabase),
     loadSessions(supabase, today, addDays(today, 13)),
     loadGroups(supabase, { onlyActive: true }),
-    loadFixedCounts(supabase),
   ]);
 
   const mine = sessions
     .map((s) => ({ s, role: myRole(s, profile.id) }))
     .filter((x) => x.role.mine);
   const days = [...new Set(mine.map((x) => x.s.date))];
+  const avail = await loadAvailability(
+    supabase,
+    mine.map((x) => x.s.id),
+  );
   const weekly = slotsOf(groups.filter((g) => g.teacherProfileId === profile.id));
 
   return (
@@ -60,7 +63,10 @@ export default async function ProfeClasesPage() {
                 .filter((x) => x.s.date === date)
                 .map(({ s, role }) => (
                   <li key={s.id}>
-                    <SessionCard session={s} extra={`${(s.scheduleId && fixed.get(s.scheduleId)) || 0} fijos de ${s.capacity}`}>
+                    <SessionCard session={s} extra={(() => {
+                        const a = avail.get(s.id);
+                        return a ? `${a.fixed} fijos + ${a.booked} reservas de ${a.capacity}` : `Cupo ${s.capacity}`;
+                      })()}>
                       {role.note && <p className="rounded-lg bg-warn-soft px-3 py-2 text-sm font-semibold text-warn-ink">{role.note}</p>}
                     </SessionCard>
                   </li>

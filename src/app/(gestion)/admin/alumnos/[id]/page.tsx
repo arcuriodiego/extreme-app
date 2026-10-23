@@ -19,6 +19,7 @@ import { loadPlans } from "@/lib/prices";
 import { ERRORS, NOTICES } from "../messages";
 import { StudentForm } from "../StudentForm";
 import { MembershipSection } from "./MembershipSection";
+import { PacksSection } from "./PacksSection";
 
 export const metadata: Metadata = { title: "Ficha del alumno" };
 
@@ -115,6 +116,8 @@ export default async function AlumnoPage({
         graceDays={graceDays}
         monthlyPriceCents={monthlyPrice}
       />
+
+      <PacksSection supabase={supabase} studentId={student.id} canPay={canPay} canManage={canManage} plans={plans} today={today} />
 
       {seesMoney && (
         <section className="flex flex-col gap-3 border-t border-line pt-6">

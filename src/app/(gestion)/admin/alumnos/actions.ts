@@ -1,7 +1,8 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { validatePaymentForm } from "@/domain/billing/payments";
+import { isCounterMethod, validatePaymentForm } from "@/domain/billing/payments";
+import { bookingErrorCode } from "@/domain/bookings/messages";
 import { validateStudent } from "@/domain/people/student";
 import { academyToday } from "@/lib/grilla";
 import { createClient } from "@/lib/supabase/server";
@@ -227,4 +228,61 @@ export async function voidPayment(formData: FormData): Promise<void> {
   const { error } = await supabase.rpc("void_payment", { p_payment_id: paymentId, p_reason: reason });
   if (error) to(back, { error: payErrorCode(error) });
   to(back, { aviso: "pago-anulado" });
+}
+
+// ---------------------------------------------------------------------
+// Packs y reservas
+// ---------------------------------------------------------------------
+
+export async function sellPack(formData: FormData): Promise<void> {
+  const studentId = String(formData.get("student_id") ?? "");
+  const planId = String(formData.get("plan_id") ?? "");
+  const method = formData.get("method");
+  if (!UUID.test(studentId) || !UUID.test(planId)) to("/admin/alumnos", { error: "datos" });
+  const back = `/admin/alumnos/${studentId}`;
+  if (!isCounterMethod(method)) to(back, { error: "pago-medio" });
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("sell_pack", {
+    p_student_id: studentId,
+    p_plan_id: planId,
+    p_method: method,
+    p_reference: String(formData.get("reference") ?? "").trim().slice(0, 80) || null,
+  });
+  if (error) to(back, { error: payErrorCode(error) });
+  to(back, { aviso: "pack-vendido" });
+}
+
+export async function bookForStudent(formData: FormData): Promise<void> {
+  const studentId = String(formData.get("student_id") ?? "");
+  const sessionId = String(formData.get("session_id") ?? "");
+  const mode = String(formData.get("mode") ?? "");
+  if (!UUID.test(studentId) || !UUID.test(sessionId)) to("/admin/alumnos", { error: "datos" });
+  const back = `/admin/alumnos/${studentId}`;
+  const supabase = await createClient();
+  if (mode === "single") {
+    const method = formData.get("method");
+    if (!isCounterMethod(method)) to(back, { error: "pago-medio" });
+    const { error } = await supabase.rpc("book_single_class", {
+      p_session_id: sessionId,
+      p_student_id: studentId,
+      p_method: method,
+      p_reference: String(formData.get("reference") ?? "").trim().slice(0, 80) || null,
+    });
+    if (error) to(back, { error: bookingErrorCode(error) });
+    to(back, { aviso: "clase-cobrada" });
+  }
+  const { error } = await supabase.rpc("book_session", { p_session_id: sessionId, p_student_id: studentId });
+  if (error) to(back, { error: bookingErrorCode(error) });
+  to(back, { aviso: "reservada" });
+}
+
+export async function cancelStudentBooking(formData: FormData): Promise<void> {
+  const studentId = String(formData.get("student_id") ?? "");
+  const bookingId = String(formData.get("booking_id") ?? "");
+  if (!UUID.test(studentId) || !UUID.test(bookingId)) to("/admin/alumnos", { error: "datos" });
+  const back = `/admin/alumnos/${studentId}`;
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("cancel_booking", { p_booking_id: bookingId });
+  if (error) to(back, { error: bookingErrorCode(error) });
+  to(back, { aviso: data ? "cancelada-devuelta" : "cancelada-tarde" });
 }

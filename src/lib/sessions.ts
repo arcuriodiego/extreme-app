@@ -19,6 +19,8 @@ export interface SessionRow {
   upcoming: boolean;
   groupId: string;
   scheduleId: string | null;
+  /** El grupo acepta reservas con pack o clase individual. */
+  allowsSingleBooking: boolean;
   title: string;
   roomName: string;
   capacity: number;
@@ -36,7 +38,7 @@ export interface SessionRow {
 const SELECT = `
   id, starts_at, ends_at, capacity, status, cancel_reason, exception_id, group_id, schedule_id, teacher_id, substitute_teacher_id,
   room:rooms(name),
-  group:class_groups(style:dance_styles(name), age:age_categories(name), level:levels(name)),
+  group:class_groups(allows_single_booking, style:dance_styles(name), age:age_categories(name), level:levels(name)),
   teacher:teachers!class_sessions_academy_id_teacher_id_fkey(display_name, profile_id),
   substitute:teachers!class_sessions_academy_id_substitute_teacher_id_fkey(display_name, profile_id)
 `;
@@ -54,7 +56,12 @@ interface Raw {
   teacher_id: string | null;
   substitute_teacher_id: string | null;
   room: { name: string } | null;
-  group: { style: { name: string } | null; age: { name: string } | null; level: { name: string } | null } | null;
+  group: {
+    allows_single_booking: boolean;
+    style: { name: string } | null;
+    age: { name: string } | null;
+    level: { name: string } | null;
+  } | null;
   teacher: { display_name: string; profile_id: string } | null;
   substitute: { display_name: string; profile_id: string } | null;
 }
@@ -89,6 +96,7 @@ export async function loadSessions(supabase: Client, from: CalendarDate, to: Cal
       upcoming: starts.getTime() > now,
       groupId: r.group_id,
       scheduleId: r.schedule_id,
+      allowsSingleBooking: r.group?.allows_single_booking ?? false,
       title: groupName({
         style: r.group?.style?.name ?? "",
         ageCategory: r.group?.age?.name ?? "",

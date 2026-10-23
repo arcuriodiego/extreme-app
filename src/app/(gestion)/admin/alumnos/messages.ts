@@ -1,4 +1,7 @@
+import { BOOKING_ERRORS, BOOKING_NOTICES } from "@/domain/bookings/messages";
+
 export const NOTICES: Record<string, string> = {
+  ...BOOKING_NOTICES,
   creado: "Listo, creamos la ficha.",
   guardado: "Listo, guardamos los cambios.",
   "notas-guardadas": "Listo, guardamos las notas.",
@@ -10,6 +13,8 @@ export const NOTICES: Record<string, string> = {
 };
 
 export const ERRORS: Record<string, string> = {
+  ...BOOKING_ERRORS,
+  "sin-saldo": "El alumno no tiene clases disponibles para esa fecha: vendele un pack o cobrale la clase individual.",
   "campo-firstName": "Escribí el nombre (hasta 80 letras).",
   "campo-lastName": "El apellido puede tener hasta 80 letras.",
   "campo-dni": "Revisá el DNI: sólo números (o letras si es pasaporte), entre 6 y 12.",
