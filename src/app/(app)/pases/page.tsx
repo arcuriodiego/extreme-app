@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { MyQr } from "@/components/access/MyQr";
+import { currentTimeMs } from "@/domain/access/qr";
 import { FormAlert, SmallSubmit } from "@/components/forms/fields";
 import { PageHeader } from "@/components/ui/basics";
 import { BOOKING_ERRORS, BOOKING_NOTICES } from "@/domain/bookings/messages";
@@ -19,8 +21,12 @@ export default async function PasesPage({ searchParams }: { searchParams: Promis
     loadMyStudentId(supabase, profile.id),
     loadMyMemberships(supabase, profile.id).catch(() => []),
   ]);
-  const balances = studentId ? await loadBalances(supabase, studentId) : [];
-  const bookings = studentId ? await loadUpcomingBookings(supabase, studentId) : [];
+  const [balances, bookings, key] = await Promise.all([
+    studentId ? loadBalances(supabase, studentId) : [],
+    studentId ? loadUpcomingBookings(supabase, studentId) : [],
+    studentId ? supabase.rpc("my_access_key").then((r) => r.data as { student_id: string; secret: string } | null) : null,
+  ]);
+  const serverNow = currentTimeMs();
   const active = balances.filter((b) => b.active);
 
   return (
@@ -28,6 +34,23 @@ export default async function PasesPage({ searchParams }: { searchParams: Promis
       <PageHeader title="Mis pases" />
       {params.aviso && BOOKING_NOTICES[params.aviso] && <FormAlert kind="ok">{BOOKING_NOTICES[params.aviso]}</FormAlert>}
       {params.error && BOOKING_ERRORS[params.error] && <FormAlert kind="error">{BOOKING_ERRORS[params.error]}</FormAlert>}
+
+      <section className="flex flex-col gap-2">
+        <h2 className="font-display text-xl font-bold uppercase tracking-wide">Tu pase de entrada</h2>
+        {key ? (
+          <>
+            <MyQr
+              studentId={key.student_id}
+              secret={key.secret}
+              serverNow={serverNow}
+              name={[profile.firstName, profile.lastName].filter(Boolean).join(" ") || "Tu pase"}
+            />
+            <p className="text-sm text-muted">Mostralo en recepción al llegar: queda registrada tu asistencia a la clase.</p>
+          </>
+        ) : (
+          <p className="rounded-xl bg-surface px-4 py-3 text-[15px]">Tu cuenta todavía no tiene ficha de alumno. Pedila en recepción.</p>
+        )}
+      </section>
 
       <section className="flex flex-col gap-2">
         <h2 className="font-display text-xl font-bold uppercase tracking-wide">Tus clases disponibles</h2>
@@ -101,10 +124,6 @@ export default async function PasesPage({ searchParams }: { searchParams: Promis
         </section>
       )}
 
-      <section className="flex flex-col gap-2 rounded-[var(--radius-card)] bg-surface p-5">
-        <span className="self-start rounded-full bg-ink px-2.5 py-0.5 text-xs font-bold tracking-wide text-white">PRÓXIMAMENTE</span>
-        <p className="text-[15px] leading-snug">Tu código QR para entrar a la academia.</p>
-      </section>
     </>
   );
 }

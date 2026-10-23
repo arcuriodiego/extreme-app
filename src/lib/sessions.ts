@@ -85,7 +85,16 @@ export async function loadSessions(supabase: Client, from: CalendarDate, to: Cal
   if (error) throw new Error(`No se pudieron cargar las clases: ${error.message}`);
 
   const now = Date.now();
-  return ((data ?? []) as unknown as Raw[]).map((r) => {
+  return ((data ?? []) as unknown as Raw[]).map((r) => toRow(r, now));
+}
+
+/** Una clase por su id (o null si no existe o no se puede ver). */
+export async function loadSession(supabase: Client, id: string): Promise<SessionRow | null> {
+  const { data } = await supabase.from("class_sessions").select(SELECT).eq("id", id).maybeSingle();
+  return data ? toRow(data as unknown as Raw, Date.now()) : null;
+}
+
+function toRow(r: Raw, now: number): SessionRow {
     const starts = new Date(r.starts_at);
     return {
       id: r.id,
@@ -114,7 +123,6 @@ export async function loadSessions(supabase: Client, from: CalendarDate, to: Cal
       substituteName: r.substitute?.display_name ?? null,
       substituteProfileId: r.substitute?.profile_id ?? null,
     };
-  });
 }
 
 export interface ExceptionRow {

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { DayStrip } from "@/components/classes/DayStrip";
 import { SessionCard } from "@/components/classes/SessionCard";
 import { FormAlert, SelectField, SmallSubmit, TextField } from "@/components/forms/fields";
@@ -28,6 +29,7 @@ export default async function CalendarioPage({
   const [profile, params] = await Promise.all([requireProfile(), searchParams]);
   if (!canOpen(profile.access, "clases")) return <NoAccess />;
   const canManage = can(profile.access, "classes.manage");
+  const canRoster = can(profile.access, "people.view");
 
   const today = academyToday();
   const strip = dayStrip(today, 14);
@@ -78,6 +80,11 @@ export default async function CalendarioPage({
                         const a = avail.get(s.id);
                         return a ? `${a.fixed} fijos + ${a.booked} reservas de ${a.capacity}` : `Cupo ${s.capacity}`;
                       })()}>
+                      {canRoster && s.status === "scheduled" && (
+                        <Link href={`/admin/clases/calendario/lista/${s.id}`} className="self-start text-sm font-semibold">
+                          Lista y asistencia →
+                        </Link>
+                      )}
                       {canManage && upcoming && s.status === "scheduled" && (
                         <div className="flex flex-col gap-3 border-t border-line pt-3 sm:flex-row sm:flex-wrap sm:items-end">
                           <form action={setSubstitute} className="flex flex-1 items-end gap-2">

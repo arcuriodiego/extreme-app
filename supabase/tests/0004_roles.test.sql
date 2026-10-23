@@ -90,7 +90,7 @@ do $$
 begin
   assert (select count(*) from profiles) = 1, 'sólo su perfil';
   assert (select count(*) from user_roles) = 1, 'sólo sus roles';
-  assert (select count(*) from app_settings) = 8, 've las reglas de su academia';
+  assert (select count(*) from app_settings) = 10, 've las reglas de su academia';
   assert (select count(*) from audit_logs) = 0, 'no ve la auditoría';
   assert (select role_codes from my_access()) = '{student}', 'my_access devuelve su rol';
   raise notice 'OK  la alumna ve sólo lo suyo';

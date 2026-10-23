@@ -37,6 +37,8 @@ const RULES: Record<string, { label: string; unit: string }> = {
   credit_class_window_days: { label: "La clase del crédito puede ser hasta", unit: "días después" },
   booking_hold_minutes: { label: "Lugar guardado sin pagar", unit: "minutos" },
   session_generation_weeks: { label: "Clases generadas por adelantado", unit: "semanas" },
+  checkin_before_minutes: { label: "Ingreso con QR desde antes de la clase", unit: "minutos antes" },
+  checkin_after_minutes: { label: "Ingreso con QR hasta después del inicio", unit: "minutos después" },
 };
 
 const dateFormat = new Intl.DateTimeFormat("es-AR", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
