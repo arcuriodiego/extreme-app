@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { FormAlert, SmallSubmit, TextField } from "@/components/forms/fields";
 import { NoAccess } from "@/components/status/NoAccess";
 import { PageHeader } from "@/components/ui/basics";
@@ -56,7 +57,12 @@ export default async function ConfiguracionPage({ searchParams }: { searchParams
 
   return (
     <>
-      <PageHeader title="Configuración" subtitle="Precios y reglas de la academia." />
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <PageHeader title="Configuración" subtitle="Precios y reglas de la academia." />
+        <Link href="/admin/diagnostico" className="text-sm font-semibold">
+          Diagnóstico de velocidad
+        </Link>
+      </div>
       {notice && <FormAlert kind="ok">{notice}</FormAlert>}
       {failure && <FormAlert kind="error">{failure}</FormAlert>}
 
