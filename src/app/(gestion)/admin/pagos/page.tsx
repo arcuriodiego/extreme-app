@@ -34,9 +34,8 @@ export default async function PagosPage({ searchParams }: { searchParams: Promis
   const day = params.dia && isValidCalendarDate(params.dia) && params.dia <= today ? params.dia : today;
 
   const supabase = await createClient();
-  await ensureCharges(supabase);
-  const graceDays = await loadGraceDays(supabase);
-  const [payments, debtors] = await Promise.all([loadDayPayments(supabase, day), loadDebtors(supabase, today, graceDays)]);
+  const [, graceDays, payments] = await Promise.all([ensureCharges(supabase), loadGraceDays(supabase), loadDayPayments(supabase, day)]);
+  const debtors = await loadDebtors(supabase, today, graceDays);
   const summary = cashSummary(payments);
   const grace = debtors.filter((d) => d.light.light === "grace");
   const suspended = debtors.filter((d) => d.light.light === "suspended");

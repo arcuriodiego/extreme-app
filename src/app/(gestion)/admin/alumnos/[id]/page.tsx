@@ -44,14 +44,17 @@ export default async function AlumnoPage({
   const canPay = can(profile.access, "payments.register");
   const canVoid = can(profile.access, "finance.view");
   const seesMoney = canPay || canVoid;
-  await ensureCharges(supabase);
-  const [student, notes, charges, payments, graceDays, plans] = await Promise.all([
+  // La generación diaria de cuotas corre antes de leer los cargos (es instantánea si ya corrió hoy).
+  const [, student, notes, graceDays, plans] = await Promise.all([
+    ensureCharges(supabase),
     loadStudent(supabase, id),
     loadStudentNotes(supabase, id),
-    seesMoney ? loadCharges(supabase, id) : Promise.resolve([]),
-    seesMoney ? loadPayments(supabase, id) : Promise.resolve([]),
     loadGraceDays(supabase),
     loadPlans(supabase, today),
+  ]);
+  const [charges, payments] = await Promise.all([
+    seesMoney ? loadCharges(supabase, id) : Promise.resolve([]),
+    seesMoney ? loadPayments(supabase, id) : Promise.resolve([]),
   ]);
   if (!student) notFound();
   const monthlyPrice = plans.find((p) => p.kind === "teacher_monthly" && p.active)?.current?.amountCents ?? null;

@@ -23,10 +23,11 @@ export interface Profile {
  */
 export const requireProfile = cache(async function requireProfile(): Promise<Profile> {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect(SIGN_IN_PATH);
+  // Firma del token verificada localmente (ver proxy.ts); la base vuelve a controlar cada dato con RLS.
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const claims = claimsData?.claims;
+  if (!claims?.sub) redirect(SIGN_IN_PATH);
+  const user = { id: claims.sub, email: typeof claims.email === "string" ? claims.email : "" };
 
   const [{ data: profile }, { data: accessRows }] = await Promise.all([
     supabase.from("profiles").select("first_name, last_name, phone, birth_date").eq("id", user.id).maybeSingle(),

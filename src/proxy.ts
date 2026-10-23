@@ -30,10 +30,11 @@ export async function proxy(request: NextRequest) {
     },
   });
 
-  // getUser() valida la sesión contra Supabase; no confiar sólo en la cookie.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // getClaims() verifica la firma del token de la sesión (y lo renueva si hace falta).
+  // Con las claves de firma de Supabase lo hace sin consultar al servidor en cada pedido,
+  // así cada clic no espera un viaje extra. No confía sólo en la cookie: valida la firma.
+  const { data } = await supabase.auth.getClaims();
+  const user = data?.claims?.sub ? { id: data.claims.sub } : null;
 
   const access = routeAccess(request.nextUrl.pathname);
 
