@@ -7,6 +7,8 @@ import { EntryCard } from "./EntryCard";
 
 type Status = "off" | "starting" | "on" | "error";
 
+const CAMERA_KEY = "escaner-camara";
+
 /**
  * Cámara que lee códigos QR. Cada código leído se manda a `onCode`; el resultado
  * queda en pantalla unos segundos y la cámara sigue leyendo.
@@ -30,6 +32,20 @@ export function Scanner({ onCode, onResult }: { onCode: (code: string) => Promis
   }, []);
 
   useEffect(() => stop, [stop]);
+
+  // Si la cámara ya se usó en este dispositivo, se abre sola al entrar (sin tocar "Activar cámara").
+  const startRef = useRef<() => Promise<void>>(async () => {});
+  useEffect(() => {
+    let remembered = false;
+    try {
+      remembered = localStorage.getItem(CAMERA_KEY) === "1";
+    } catch {
+      // Sin almacenamiento (modo privado): se activa con el botón.
+    }
+    if (!remembered) return;
+    const t = setTimeout(() => void startRef.current(), 0);
+    return () => clearTimeout(t);
+  }, []);
 
   const handle = useCallback(
     async (code: string) => {
@@ -55,6 +71,7 @@ export function Scanner({ onCode, onResult }: { onCode: (code: string) => Promis
   );
 
   async function start() {
+    if (streamRef.current) return;
     setStatus("starting");
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false });
@@ -64,6 +81,11 @@ export function Scanner({ onCode, onResult }: { onCode: (code: string) => Promis
       video.srcObject = stream;
       await video.play();
       setStatus("on");
+      try {
+        localStorage.setItem(CAMERA_KEY, "1");
+      } catch {
+        // Sin almacenamiento: no pasa nada.
+      }
       const canvas = canvasRef.current;
       const scan = () => {
         if (canvas && video.readyState >= 2 && video.videoWidth > 0) {
@@ -84,9 +106,18 @@ export function Scanner({ onCode, onResult }: { onCode: (code: string) => Promis
       frameRef.current = requestAnimationFrame(scan);
     } catch {
       stop();
+      try {
+        localStorage.removeItem(CAMERA_KEY);
+      } catch {
+        // Sin almacenamiento: no pasa nada.
+      }
       setStatus("error");
     }
   }
+
+  useEffect(() => {
+    startRef.current = start;
+  });
 
   return (
     <div className="flex flex-col gap-3">
