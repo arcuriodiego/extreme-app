@@ -31,14 +31,14 @@ test("profesor: ve sus herramientas aunque también sea alumno, y no entra a ges
 });
 
 test("recepción: operación diaria, sin roles ni configuración", () => {
-  assert.deepEqual(keys(gestionMenu(reception)), ["panel", "alumnos", "clases", "pagos", "workshops", "escaner"]);
+  assert.deepEqual(keys(gestionMenu(reception)), ["panel", "alumnos", "clases", "pagos", "workshops", "avisos", "escaner"]);
   assert.equal(canOpen(reception, "usuarios"), false);
   assert.equal(canOpen(reception, "configuracion"), false);
 });
 
 test("administración: todo el menú", () => {
   assert.deepEqual(keys(gestionMenu(admin)), [
-    "panel", "alumnos", "clases", "pagos", "workshops", "escaner", "usuarios", "configuracion",
+    "panel", "alumnos", "clases", "pagos", "workshops", "avisos", "escaner", "usuarios", "configuracion",
   ]);
 });
 

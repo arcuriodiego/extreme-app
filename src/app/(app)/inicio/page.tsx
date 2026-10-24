@@ -6,7 +6,8 @@ import { LinkCard } from "@/components/ui/basics";
 import { hasGestion } from "@/domain/navigation/menus";
 import { AccessLight } from "@/components/status/AccessLight";
 import { getActiveStudent } from "@/lib/active-student";
-import { ensureCharges, lightFor, loadCharges, loadGraceDays } from "@/lib/billing";
+import { lightFor, loadCharges, loadGraceDays } from "@/lib/billing";
+import { ensureNotifications } from "@/lib/notifications";
 import { academyToday } from "@/lib/grilla";
 import { loadActiveMemberships } from "@/lib/memberships";
 import { requireProfile } from "@/lib/session";
@@ -25,7 +26,7 @@ export default async function InicioPage({ searchParams }: { searchParams: Promi
   const showGestion = hasGestion(profile.access);
   const supabase = await createClient();
   const today = academyToday();
-  const [{ active }, graceDays] = await Promise.all([getActiveStudent(), loadGraceDays(supabase), ensureCharges(supabase)]);
+  const [{ active }, graceDays] = await Promise.all([getActiveStudent(), loadGraceDays(supabase), ensureNotifications(supabase)]);
   const studentId = active?.id ?? null;
   const viewingChild = active !== null && !active.isSelf;
   const memberships = studentId ? await loadActiveMemberships(supabase, studentId).catch(() => []) : [];

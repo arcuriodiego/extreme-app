@@ -6,7 +6,10 @@ import { TabBar } from "@/components/nav/TabBar";
 import { academyConfig } from "@/config/academy";
 import { canSwitchMode, hasGestion, personalTabs, resolveMode } from "@/domain/navigation/menus";
 import { getActiveStudent } from "@/lib/active-student";
+import { countUnread } from "@/lib/notifications";
 import { requireProfile } from "@/lib/session";
+import { createClient } from "@/lib/supabase/server";
+import { Icon } from "@/components/ui/Icon";
 
 // Páginas personales: se arman en cada visita, nunca durante la compilación.
 export const dynamic = "force-dynamic";
@@ -21,12 +24,26 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const tabs = personalTabs(profile.access, chosen);
   const mode = resolveMode(profile.access, chosen);
   // Tutores: a quién se está viendo (él o uno de sus hijos).
-  const { active, options } = mode === "alumno" ? await getActiveStudent() : { active: null, options: [] };
+  const [{ active, options }, unread] = await Promise.all([
+    mode === "alumno" ? getActiveStudent() : Promise.resolve({ active: null, options: [] }),
+    createClient().then(countUnread),
+  ]);
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col">
       <header className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 px-5 pt-4">
-        <span aria-hidden="true" />
+        <Link
+          href="/avisos"
+          aria-label={unread > 0 ? `Avisos: ${unread} sin leer` : "Avisos"}
+          className="relative flex size-11 items-center justify-center justify-self-start rounded-full border border-line text-ink hover:border-ink hover:text-ink"
+        >
+          <Icon name="bell" size={22} />
+          {unread > 0 && (
+            <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-brand px-1 text-xs font-bold text-white">
+              {unread > 9 ? "9+" : unread}
+            </span>
+          )}
+        </Link>
         <Link href="/inicio" aria-label="Ir a mi inicio">
           <Image
             src={academyConfig.logo.light}
