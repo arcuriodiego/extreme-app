@@ -29,6 +29,8 @@ export interface WorkshopRow {
   status: WorkshopStatus;
   sessions: WorkshopSessionRow[];
   taken: number;
+  /** Lugares guardados a gente de la lista de espera (todavía sin pagar). */
+  held: number;
   firstStart: string | null;
   /** La última jornada ya terminó. */
   finished: boolean;
@@ -47,14 +49,14 @@ interface RawWorkshop {
 
 const SELECT = "id, title, description, teacher_name, price_cents, capacity, status, sessions:workshop_sessions(id, starts_at, ends_at, room_id, room:rooms(name))";
 
-export async function loadTakenCounts(supabase: Client): Promise<Map<string, number>> {
+export async function loadTakenCounts(supabase: Client): Promise<Map<string, { taken: number; held: number }>> {
   const { data } = await supabase.rpc("workshop_taken_counts");
-  const map = new Map<string, number>();
-  for (const r of (data ?? []) as { workshop_id: string; taken: number }[]) map.set(r.workshop_id, r.taken);
+  const map = new Map<string, { taken: number; held: number }>();
+  for (const r of (data ?? []) as { workshop_id: string; taken: number; held: number }[]) map.set(r.workshop_id, { taken: r.taken, held: r.held });
   return map;
 }
 
-function toRow(r: RawWorkshop, taken: Map<string, number>, now: number): WorkshopRow {
+function toRow(r: RawWorkshop, taken: Map<string, { taken: number; held: number }>, now: number): WorkshopRow {
   const sessions = (r.sessions ?? [])
     .map((s) => {
       const st = new Date(s.starts_at);
@@ -80,7 +82,8 @@ function toRow(r: RawWorkshop, taken: Map<string, number>, now: number): Worksho
     capacity: r.capacity,
     status: r.status,
     sessions: sessions.map((s) => ({ id: s.id, startsAt: s.startsAt, date: s.date, start: s.start, end: s.end, roomId: s.roomId, roomName: s.roomName })),
-    taken: taken.get(r.id) ?? 0,
+    taken: taken.get(r.id)?.taken ?? 0,
+    held: taken.get(r.id)?.held ?? 0,
     firstStart: sessions[0]?.startsAt ?? null,
     finished: last ? new Date(last.endsAt).getTime() < now : false,
   };
@@ -206,4 +209,46 @@ export function refundPreview(firstStart: string | null, paidCents: number): { r
     refund: refundIfCancelled(start, new Date(), paidCents),
     deadline: start ? refundDeadline(start) : null,
   };
+}
+
+export interface WaitlistRow {
+  id: string;
+  workshopId: string;
+  studentId: string;
+  name: string;
+  phone: string | null;
+  status: "waiting" | "offered";
+  offerExpiresAt: string | null;
+  position: number;
+}
+
+/** Vence lugares guardados y ofrece los libres (una pasada por las listas con algo pendiente). */
+export async function refreshWorkshopWaitlists(supabase: Client): Promise<void> {
+  await supabase.rpc("refresh_workshop_waitlists");
+}
+
+/** Lista de espera de un workshop (personal) o, sin workshop, las anotaciones propias y de los hijos a cargo. */
+export async function loadWorkshopWaitlist(supabase: Client, workshopId?: string): Promise<WaitlistRow[]> {
+  const { data } = await supabase.rpc("workshop_waitlist_view", workshopId ? { p_workshop_id: workshopId } : {});
+  return (
+    (data ?? []) as {
+      entry_id: string;
+      workshop_id: string;
+      student_id: string;
+      full_name: string;
+      phone: string | null;
+      status: "waiting" | "offered";
+      offer_expires_at: string | null;
+      queue_position: number;
+    }[]
+  ).map((r) => ({
+    id: r.entry_id,
+    workshopId: r.workshop_id,
+    studentId: r.student_id,
+    name: r.full_name,
+    phone: r.phone,
+    status: r.status,
+    offerExpiresAt: r.offer_expires_at,
+    position: r.queue_position,
+  }));
 }

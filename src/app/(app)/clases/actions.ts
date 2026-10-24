@@ -29,6 +29,27 @@ export async function bookMySession(formData: FormData): Promise<void> {
   back(formData, { aviso: "reservada" });
 }
 
+export async function joinWorkshopWaitlist(formData: FormData): Promise<void> {
+  const id = String(formData.get("workshop_id") ?? "");
+  if (!UUID.test(id)) back(formData, { error: "generico" });
+  const [supabase, { active }] = await Promise.all([createClient(), getActiveStudent()]);
+  const { error } = await supabase.rpc(
+    "join_workshop_waitlist",
+    active ? { p_workshop_id: id, p_student_id: active.id } : { p_workshop_id: id },
+  );
+  if (error) back(formData, { error: bookingErrorCode(error) });
+  back(formData, { aviso: "en-espera" });
+}
+
+export async function leaveWorkshopWaitlist(formData: FormData): Promise<void> {
+  const id = String(formData.get("entry_id") ?? "");
+  if (!UUID.test(id)) back(formData, { error: "generico" });
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("leave_workshop_waitlist", { p_entry_id: id });
+  if (error) back(formData, { error: bookingErrorCode(error) });
+  back(formData, { aviso: "salio-lista" });
+}
+
 export async function cancelMyBooking(formData: FormData): Promise<void> {
   const id = String(formData.get("booking_id") ?? "");
   if (!UUID.test(id)) back(formData, { error: "generico" });

@@ -3,7 +3,7 @@ import { DayStrip } from "@/components/classes/DayStrip";
 import { SessionCard } from "@/components/classes/SessionCard";
 import { WeeklyGrid } from "@/components/classes/WeeklyGrid";
 import { WorkshopList } from "@/components/classes/WorkshopList";
-import { loadStudentRegistrations, loadWorkshops, type WorkshopRow } from "@/lib/workshops";
+import { loadStudentRegistrations, loadWorkshopWaitlist, loadWorkshops, refreshWorkshopWaitlists, type WaitlistRow, type WorkshopRow } from "@/lib/workshops";
 import { FormAlert } from "@/components/forms/fields";
 import { PageHeader } from "@/components/ui/basics";
 import { dayStrip, longDate, pickDay } from "@/domain/classes/sessions";
@@ -37,6 +37,7 @@ export default async function ClasesPage({ searchParams }: { searchParams: Promi
   let availability = new Map<string, Availability>();
   const myBookings = new Map<string, { id: string; startsAt: string }>();
   let hasBalance = false;
+  let workshopWaits = new Map<string, WaitlistRow>();
   try {
     // Todo en paralelo: la generación diaria ya dejó listas las próximas semanas.
     const [, loaded, groups, mine, ws, myRegs] = await Promise.all([
@@ -55,6 +56,11 @@ export default async function ClasesPage({ searchParams }: { searchParams: Promi
     availability = avail;
     hasBalance = balances.some((b) => b.active);
     for (const b of bookings) myBookings.set(b.sessionId, { id: b.id, startsAt: b.startsAt });
+    if (studentId) {
+      await refreshWorkshopWaitlists(supabase);
+      const ww = await loadWorkshopWaitlist(supabase);
+      workshopWaits = new Map(ww.filter((x) => x.studentId === studentId).map((x) => [x.workshopId, x]));
+    }
     workshops = ws.filter((w) => w.status === "published" && !w.finished && w.sessions.length > 0);
     myWorkshops = new Set(myRegs.map((r) => r.workshopId));
     sessions = loaded;
@@ -77,7 +83,7 @@ export default async function ClasesPage({ searchParams }: { searchParams: Promi
           <p className="text-[15px] leading-snug text-muted">Muy pronto vas a ver acá los días y horarios de cada clase.</p>
         </section>
       ) : null}
-      {!failed && slots.length === 0 && <WorkshopList workshops={workshops} mine={myWorkshops} />}
+      {!failed && slots.length === 0 && <WorkshopList workshops={workshops} mine={myWorkshops} waits={workshopWaits} canJoin={canBook} />}
       {!(!failed && slots.length === 0) && (
         <>
           <DayStrip days={strip} selected={day} hrefFor={(d) => `/clases?dia=${d}`} />
@@ -131,7 +137,7 @@ export default async function ClasesPage({ searchParams }: { searchParams: Promi
               </ul>
             )}
           </section>
-          <WorkshopList workshops={workshops} mine={myWorkshops} />
+          <WorkshopList workshops={workshops} mine={myWorkshops} waits={workshopWaits} canJoin={canBook} />
           {!hasBalance && (
             <p className="rounded-xl bg-surface px-4 py-3 text-[15px] leading-snug">
               Para reservar clases sueltas necesitás un <strong>pack</strong> o una <strong>clase individual</strong>: pedilos en recepción.

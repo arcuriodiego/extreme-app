@@ -15,7 +15,7 @@ import { academyToday, loadCatalog } from "@/lib/grilla";
 import { requireProfile } from "@/lib/session";
 import { searchStudents } from "@/lib/students";
 import { createClient } from "@/lib/supabase/server";
-import { loadRegistrations, loadWorkshop, refundPreview } from "@/lib/workshops";
+import { loadRegistrations, loadWorkshop, loadWorkshopWaitlist, refreshWorkshopWaitlists, refundPreview } from "@/lib/workshops";
 import { PaymentFields, pesosText } from "../../alumnos/PaymentFields";
 import {
   addWorkshopSession,
@@ -25,7 +25,10 @@ import {
   recordRefund,
   registerGuest,
   registerStudent,
+  removeFromWaitlist,
   removeWorkshopSession,
+  waitlistGuest,
+  waitlistStudent,
   setPublished,
   updateWorkshop,
 } from "../actions";
@@ -64,6 +67,7 @@ const dateTime = new Intl.DateTimeFormat("es-AR", {
   month: "long",
   hour: "2-digit",
   minute: "2-digit",
+  hour12: false,
   timeZone: academyConfig.timeZone,
 });
 
@@ -82,11 +86,14 @@ export default async function WorkshopPage({
 
   const supabase = await createClient();
   const q = (query.q ?? "").trim().slice(0, 80);
-  const [workshop, registrations, catalog, found] = await Promise.all([
+  const seesPeople = canPay || can(profile.access, "people.view");
+  if (seesPeople) await refreshWorkshopWaitlists(supabase);
+  const [workshop, registrations, catalog, found, waitlist] = await Promise.all([
     loadWorkshop(supabase, id),
     canPay || can(profile.access, "people.view") ? loadRegistrations(supabase, id) : Promise.resolve([]),
     canManage ? loadCatalog(supabase) : Promise.resolve(null),
     q && canPay ? searchStudents(supabase, q) : Promise.resolve({ rows: [], error: false }),
+    seesPeople ? loadWorkshopWaitlist(supabase, id) : Promise.resolve([]),
   ]);
   if (!workshop) notFound();
 
@@ -98,6 +105,8 @@ export default async function WorkshopPage({
   const failure = query.error ? ERRORS[query.error] : undefined;
   const rooms = (catalog?.rooms ?? []).filter((r) => r.active);
   const registeredIds = new Set(active.map((r) => r.studentId));
+  const waitingIds = new Set(waitlist.map((w) => w.studentId));
+  const full = workshop.taken + workshop.held >= workshop.capacity;
 
   return (
     <>
@@ -107,7 +116,7 @@ export default async function WorkshopPage({
       <div className="flex flex-col gap-2">
         <PageHeader
           title={workshop.title}
-          subtitle={[workshop.teacherName, formatARS(workshop.priceCents), `${workshop.taken} de ${workshop.capacity} inscriptos`]
+          subtitle={[workshop.teacherName, formatARS(workshop.priceCents), `${workshop.taken} de ${workshop.capacity} inscriptos${workshop.held > 0 ? ` · ${workshop.held} ${workshop.held === 1 ? "lugar guardado" : "lugares guardados"}` : ""}`]
             .filter(Boolean)
             .join(" · ")}
         />
@@ -267,11 +276,69 @@ export default async function WorkshopPage({
             </div>
           )}
 
+          {(waitlist.length > 0 || (open && full)) && (
+            <div className="flex max-w-2xl flex-col gap-2 rounded-[var(--radius-card)] border border-line p-4">
+              <span className="font-semibold">Lista de espera ({waitlist.length})</span>
+              <p className="text-sm text-muted">
+                Si se libera un lugar, se le guarda 24 h al primero de la lista y le avisamos en la app. Si no tiene la app, llamalo.
+                Para quedarse con el lugar tiene que pagar el total.
+              </p>
+              {waitlist.length === 0 ? (
+                <p className="text-[15px] text-muted">Nadie en espera.</p>
+              ) : (
+                <ol className="flex flex-col">
+                  {waitlist.map((e) => (
+                    <li key={e.id} className={`flex flex-col gap-2 border-t border-line py-2.5 ${e.status === "offered" ? "bg-ok-soft px-2" : ""}`}>
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <span className="flex flex-wrap items-center gap-2">
+                          <span className="font-bold tabular-nums">{e.position}°</span>
+                          <Link href={`/admin/alumnos/${e.studentId}`} className="font-semibold">
+                            {e.name}
+                          </Link>
+                          {e.phone && <span className="text-sm text-muted">{e.phone}</span>}
+                        </span>
+                        <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${e.status === "offered" ? "bg-ok text-white" : "bg-surface"}`}>
+                          {e.status === "offered" && e.offerExpiresAt
+                            ? `LUGAR GUARDADO HASTA ${dateTime.format(new Date(e.offerExpiresAt)).toUpperCase()}`
+                            : "ESPERANDO"}
+                        </span>
+                      </div>
+                      {canPay && (
+                        <div className="flex flex-wrap gap-4">
+                          {e.status === "offered" && (
+                            <details className="min-w-0 flex-1">
+                              <summary className="cursor-pointer text-sm font-semibold">Cobrar e inscribir</summary>
+                              <form action={registerStudent} className="flex flex-col gap-2 pt-2">
+                                <input type="hidden" name="workshop_id" value={workshop.id} />
+                                <input type="hidden" name="student_id" value={e.studentId} />
+                                <PayInputs idPrefix={`le-${e.id}`} />
+                                <div>
+                                  <SmallSubmit tone="dark">Cobrar {formatARS(workshop.priceCents)} e inscribir</SmallSubmit>
+                                </div>
+                              </form>
+                            </details>
+                          )}
+                          <form action={removeFromWaitlist}>
+                            <input type="hidden" name="workshop_id" value={workshop.id} />
+                            <input type="hidden" name="entry_id" value={e.id} />
+                            <SmallSubmit tone="danger">{e.status === "offered" ? "No lo quiere: pasar al siguiente" : "Sacar de la lista"}</SmallSubmit>
+                          </form>
+                        </div>
+                      )}
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </div>
+          )}
+
           {canPay && open && (
             <div className="grid max-w-3xl gap-4 lg:grid-cols-2">
               <div className="flex flex-col gap-3 rounded-[var(--radius-card)] bg-surface p-4">
-                <span className="font-semibold">Inscribir a un alumno</span>
-                <p className="text-sm text-muted">Sólo con el pago total: se cobra e inscribe en un solo paso.</p>
+                <span className="font-semibold">{full ? "Anotar a un alumno en la lista de espera" : "Inscribir a un alumno"}</span>
+                <p className="text-sm text-muted">
+                  {full ? "El workshop está completo." : "Sólo con el pago total: se cobra e inscribe en un solo paso."}
+                </p>
                 <form method="get" action={`/admin/workshops/${workshop.id}`} className="flex gap-2">
                   <label htmlFor="buscar" className="sr-only">
                     Buscar alumno
@@ -289,6 +356,14 @@ export default async function WorkshopPage({
                       </span>
                       {registeredIds.has(s.id) ? (
                         <span className="text-sm text-muted">Inscripto</span>
+                      ) : waitingIds.has(s.id) ? (
+                        <span className="text-sm text-muted">En la lista de espera</span>
+                      ) : full ? (
+                        <form action={waitlistStudent}>
+                          <input type="hidden" name="workshop_id" value={workshop.id} />
+                          <input type="hidden" name="student_id" value={s.id} />
+                          <SmallSubmit>Anotar en la lista</SmallSubmit>
+                        </form>
                       ) : (
                         <details>
                           <summary className="cursor-pointer text-sm font-semibold">Cobrar e inscribir</summary>
@@ -306,9 +381,9 @@ export default async function WorkshopPage({
                   ))}
                 </ul>
               </div>
-              <form action={registerGuest} className="flex flex-col gap-3 rounded-[var(--radius-card)] bg-surface p-4">
+              <form action={full ? waitlistGuest : registerGuest} className="flex flex-col gap-3 rounded-[var(--radius-card)] bg-surface p-4">
                 <input type="hidden" name="workshop_id" value={workshop.id} />
-                <span className="font-semibold">Inscribir a alguien de afuera</span>
+                <span className="font-semibold">{full ? "Anotar a alguien de afuera en la lista de espera" : "Inscribir a alguien de afuera"}</span>
                 <p className="text-sm text-muted">Le creamos una ficha sin cuenta (Ocasional). Si ya vino antes con el mismo DNI, se usa su ficha.</p>
                 <div className="grid gap-2 sm:grid-cols-2">
                   <input name="first_name" required maxLength={80} placeholder="Nombre" aria-label="Nombre" className={input} />
@@ -316,9 +391,9 @@ export default async function WorkshopPage({
                   <input name="phone" inputMode="tel" placeholder="Teléfono" aria-label="Teléfono" className={input} />
                   <input name="dni" inputMode="numeric" placeholder="DNI (opcional)" aria-label="DNI" className={input} />
                 </div>
-                <PayInputs idPrefix="externo" />
+                {!full && <PayInputs idPrefix="externo" />}
                 <div>
-                  <SmallSubmit tone="dark">Cobrar {formatARS(workshop.priceCents)} e inscribir</SmallSubmit>
+                  <SmallSubmit tone="dark">{full ? "Anotar en la lista de espera" : `Cobrar ${formatARS(workshop.priceCents)} e inscribir`}</SmallSubmit>
                 </div>
               </form>
             </div>
@@ -357,7 +432,7 @@ export default async function WorkshopPage({
         </section>
       )}
 
-      <p className="text-sm text-muted">{seatsLabel(workshop.capacity, workshop.taken)}</p>
+      <p className="text-sm text-muted">{seatsLabel(workshop.capacity, workshop.taken + workshop.held)}</p>
     </>
   );
 }

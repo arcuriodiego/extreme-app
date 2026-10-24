@@ -11,6 +11,8 @@ export const NOTICES: Record<string, string> = {
   cancelada: "Listo, cancelamos la inscripción. No corresponde devolución.",
   "cancelada-con-devolucion": "Listo, cancelamos la inscripción. Corresponde devolver lo pagado: registralo cuando lo devuelvas.",
   devuelto: "Listo, registramos la devolución.",
+  "en-espera": "Listo, quedó anotado en la lista de espera.",
+  "quitado-lista": "Listo, lo sacamos de la lista. Si tenía un lugar guardado, pasó al siguiente.",
 };
 
 export const ERRORS: Record<string, string> = {
@@ -23,7 +25,9 @@ export const ERRORS: Record<string, string> = {
   "jornada-hora": "Revisá las horas: el fin tiene que ser al menos 15 minutos después del inicio.",
   "jornada-sala": "Elegí la sala.",
   "sala-ocupada": "Esa sala ya está ocupada en ese horario (por una clase u otro workshop).",
-  completo: "No hay lugar: el workshop está completo.",
+  completo: "No hay lugar: el workshop está completo (o el lugar libre está guardado para alguien de la lista de espera).",
+  "hay-lugar": "Hay lugar: inscribilo directamente con el pago.",
+  "ya-en-lista": "Ya está en la lista de espera.",
   "ya-inscripto": "Ya está inscripto en este workshop.",
   "no-publicado": "Publicá el workshop antes de inscribir.",
   "ya-empezo": "El workshop ya empezó o no tiene fechas.",

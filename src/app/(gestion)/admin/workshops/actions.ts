@@ -26,6 +26,8 @@ function to(path: string, params: Record<string, string>): never {
 function code(error: { code?: string; message?: string }): string {
   const m = error.message ?? "";
   if (m.startsWith("No hay lugar")) return "completo";
+  if (m.startsWith("Hay lugar")) return "hay-lugar";
+  if (m.startsWith("Ya está en la lista")) return "ya-en-lista";
   if (m.startsWith("Ya está inscripto")) return "ya-inscripto";
   if (m.startsWith("Ese workshop no está abierto")) return "no-publicado";
   if (m.startsWith("Ese workshop ya empezó")) return "ya-empezo";
@@ -233,4 +235,51 @@ export async function recordRefund(formData: FormData): Promise<void> {
   const { error } = await supabase.rpc("record_workshop_refund", { p_registration_id: regId, p_method: method });
   if (error) to(back, { error: code(error) });
   to(back, { aviso: "devuelto" });
+}
+
+/** Lista de espera: anota a un alumno de la academia. */
+export async function waitlistStudent(formData: FormData): Promise<void> {
+  const id = str(formData, "workshop_id");
+  const studentId = str(formData, "student_id");
+  if (!UUID.test(id) || !UUID.test(studentId)) to("/admin/workshops", { error: "datos" });
+  const back = `/admin/workshops/${id}`;
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("join_workshop_waitlist", { p_workshop_id: id, p_student_id: studentId });
+  if (error) to(back, { error: code(error) });
+  to(back, { aviso: "en-espera" });
+}
+
+/** Lista de espera: anota a alguien de afuera (se le crea la ficha Ocasional si no existe). */
+export async function waitlistGuest(formData: FormData): Promise<void> {
+  const id = str(formData, "workshop_id");
+  if (!UUID.test(id)) to("/admin/workshops", { error: "datos" });
+  const back = `/admin/workshops/${id}`;
+  const firstName = str(formData, "first_name").slice(0, 80);
+  if (!firstName) to(back, { error: "nombre" });
+  const phone = str(formData, "phone");
+  if (phone && !/^[0-9 +()-]{6,25}$/.test(phone)) to(back, { error: "telefono" });
+  const dni = str(formData, "dni").replace(/[.\s-]/g, "");
+  if (dni && !/^[0-9A-Za-z]{6,12}$/.test(dni)) to(back, { error: "dni" });
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("join_workshop_waitlist_guest", {
+    p_workshop_id: id,
+    p_first_name: firstName,
+    p_last_name: str(formData, "last_name").slice(0, 80),
+    p_phone: phone || null,
+    p_dni: dni || null,
+  });
+  if (error) to(back, { error: code(error) });
+  to(back, { aviso: "en-espera" });
+}
+
+/** Lista de espera: lo saca (o libera el lugar guardado, que pasa al siguiente). */
+export async function removeFromWaitlist(formData: FormData): Promise<void> {
+  const id = str(formData, "workshop_id");
+  const entryId = str(formData, "entry_id");
+  if (!UUID.test(id) || !UUID.test(entryId)) to("/admin/workshops", { error: "datos" });
+  const back = `/admin/workshops/${id}`;
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("leave_workshop_waitlist", { p_entry_id: entryId });
+  if (error) to(back, { error: code(error) });
+  to(back, { aviso: "quitado-lista" });
 }

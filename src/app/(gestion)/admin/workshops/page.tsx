@@ -32,7 +32,7 @@ function Item({ w }: { w: WorkshopRow }) {
         </span>
         <span className="shrink-0 text-sm font-semibold">
           {w.taken}/{w.capacity}
-          <span className="block text-xs font-normal text-muted">{seatsLabel(w.capacity, w.taken)}</span>
+          <span className="block text-xs font-normal text-muted">{seatsLabel(w.capacity, w.taken + w.held)}</span>
         </span>
       </Link>
     </li>
