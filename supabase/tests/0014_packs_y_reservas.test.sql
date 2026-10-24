@@ -207,16 +207,56 @@ begin
 end $$;
 
 reset role;
+-- 11. La grilla no borra clases con historial: con reservas confirmadas da error claro;
+--     con reservas ya canceladas, la clase queda suspendida (no se pierde el historial).
 do $$
-declare i ids;
+declare v_s uuid;
 begin
-  select * into i from ids;
+  select s.id into v_s from class_sessions s
+   where s.starts_at > now() + interval '1 day' and s.status = 'scheduled'
+     and not exists (select 1 from bookings b where b.session_id = s.id)
+   order by s.starts_at limit 1;
+  insert into bookings (academy_id, session_id, student_id, pay_kind, balance_id)
+  select academy_id, v_s, student_id, 'pack', id from class_balances where kind = 'pack' limit 1;
   begin
-    delete from class_sessions where id = i.cerca;
-    raise exception 'no debe borrar una clase con reservas';
-  exception when foreign_key_violation then null;
+    delete from class_sessions where id = v_s;
+    raise exception 'no debe borrar una clase con reservas confirmadas';
+  exception when raise_exception then
+    if sqlerrm not like 'Hay reservas confirmadas%' then raise; end if;
   end;
-  raise notice 'OK  clases con reservas protegidas';
+  select b.session_id into v_s from bookings b
+   where b.status = 'cancelled'
+     and not exists (select 1 from bookings b2 where b2.session_id = b.session_id and b2.status = 'confirmed')
+   limit 1;
+  assert v_s is not null, 'hay una clase con sólo reservas canceladas';
+  delete from class_sessions where id = v_s;
+  assert (select status from class_sessions where id = v_s) = 'cancelled', 'queda suspendida';
+  assert (select cancel_reason from class_sessions where id = v_s) = 'Se quitó de la grilla', 'con motivo';
+  delete from class_sessions where id = (select s.id from class_sessions s
+    where not exists (select 1 from bookings b where b.session_id = s.id) order by starts_at desc limit 1);
+  raise notice 'OK  clases con historial protegidas';
+end $$;
+
+-- 12. Un grupo cuyas clases sólo tuvieron reservas (aunque futuras) se cierra en vez de borrarse.
+do $$
+declare v_g uuid; v_s uuid; v_b uuid;
+begin
+  insert into class_groups (academy_id, style_id, age_category_id, capacity)
+  select id, (select id from dance_styles where name = 'Heels'), (select id from age_categories where name = 'Adultos'), 5
+  from academies limit 1 returning id into v_g;
+  insert into class_sessions (academy_id, group_id, starts_at, ends_at, room_id, capacity)
+  select academy_id, v_g, now() + interval '3 days', now() + interval '3 days 1 hour', (select id from rooms where name = 'Sala 2'), 5
+  from class_groups where id = v_g returning id into v_s;
+  insert into bookings (academy_id, session_id, student_id, pay_kind, balance_id, status, cancelled_at)
+  select academy_id, v_s, student_id, 'pack', id, 'cancelled', now() from class_balances where kind = 'pack' limit 1
+  returning id into v_b;
+  perform set_config('request.jwt.claims', '{"sub":"d0000000-0000-0000-0000-00000000000d"}', true);
+  set local role authenticated;
+  assert delete_group(v_g) = 'archived', 'se cierra';
+  reset role;
+  assert (select status from class_groups where id = v_g) = 'closed', 'grupo cerrado';
+  assert (select status from class_sessions where id = v_s) = 'cancelled', 'su clase queda suspendida';
+  raise notice 'OK  grupo con reservas canceladas se cierra';
 end $$;
 
 rollback;

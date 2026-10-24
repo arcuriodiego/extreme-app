@@ -210,7 +210,7 @@ export function grillaErrorCode(error: { code?: string; message?: string }): str
   const message = error.message ?? "";
   if (message.startsWith("El profe ya tiene") || message.includes("teacher_overlap")) return "profe-ocupado";
   if (message.includes("tiene alumnos fijos")) return "con-fijos";
-  if (message.includes("on table \"bookings\"")) return "con-reservas";
+  if (message.includes("on table \"bookings\"") || message.startsWith("Hay reservas confirmadas")) return "con-reservas";
   if (error.code === "23P01") return "sala-ocupada";
   if (error.code === "P0002") return "no-disponible";
   if (error.code === "22023") return "motivo";
