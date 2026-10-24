@@ -2,6 +2,10 @@ import { type CookieOptions, createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { HOME_PATH, SIGN_IN_PATH, routeAccess } from "@/domain/auth/routes";
 import { supabaseEnv } from "@/lib/supabase/env";
+import { academyConfig } from "@/config/academy";
+
+// La dirección vieja de la app lleva a la nueva (los avances de prueba de Vercel siguen funcionando).
+const OLD_HOSTS = new Set(["extreme-app-tau.vercel.app"]);
 
 type CookieToSet = { name: string; value: string; options: CookieOptions };
 
@@ -13,6 +17,9 @@ type CookieToSet = { name: string; value: string; options: CookieOptions };
  */
 
 export async function proxy(request: NextRequest) {
+  if (OLD_HOSTS.has(request.headers.get("host") ?? "")) {
+    return NextResponse.redirect(`${academyConfig.appUrl}${request.nextUrl.pathname}${request.nextUrl.search}`, 308);
+  }
   const env = supabaseEnv();
   let response = NextResponse.next({ request });
   if (!env) return response;
