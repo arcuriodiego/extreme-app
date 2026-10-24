@@ -31,7 +31,7 @@ begin
   begin
     update app_settings set value = -1 where academy_id = v_id and key = 'grace_days';
     raise exception 'debió rechazar un valor negativo';
-  exception when check_violation then null;
+  exception when check_violation or invalid_parameter_value then null;
   end;
   raise notice 'OK  validación de reglas';
 end $$;

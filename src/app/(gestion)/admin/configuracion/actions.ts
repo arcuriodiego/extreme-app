@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { parsePesos } from "@/domain/billing/prices";
+import { EDITABLE_RULES, validateRules } from "@/domain/settings/rules";
 import { createClient } from "@/lib/supabase/server";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -40,4 +41,19 @@ export async function removePrice(formData: FormData): Promise<void> {
   const { error } = await supabase.rpc("remove_plan_price", { p_price_id: id });
   if (error) to({ error: code(error) });
   to({ aviso: "precio-quitado" });
+}
+
+/** Guarda las reglas que cambiaron (administración). La base vuelve a validar rangos y permisos. */
+export async function saveRules(formData: FormData): Promise<void> {
+  const supabase = await createClient();
+  const { data } = await supabase.from("app_settings").select("key, value");
+  const current = Object.fromEntries(((data ?? []) as { key: string; value: number }[]).map((r) => [r.key, r.value]));
+  const input = Object.fromEntries(EDITABLE_RULES.map((r) => [r.key, formData.get(r.key)]));
+  const checked = validateRules(input, current);
+  if (!checked.ok) to({ error: "regla", k: checked.key, e: checked.error });
+  const count = Object.keys(checked.changed).length;
+  if (count === 0) to({ aviso: "reglas-sin-cambios" });
+  const { error } = await supabase.rpc("update_settings", { p_values: checked.changed });
+  if (error) to({ error: error.code === "42501" ? "sin-permiso" : "reglas" });
+  to({ aviso: "reglas-guardadas", n: String(count) });
 }

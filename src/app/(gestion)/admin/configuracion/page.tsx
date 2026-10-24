@@ -10,13 +10,15 @@ import { academyToday } from "@/lib/grilla";
 import { loadPlans } from "@/lib/prices";
 import { requireProfile } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
-import { removePrice, setPrice } from "./actions";
+import { removePrice, saveRules, setPrice } from "./actions";
+import { EDITABLE_RULES, RULE_GROUPS } from "@/domain/settings/rules";
 
 export const metadata: Metadata = { title: "Configuración" };
 
 const NOTICES: Record<string, string> = {
   "precio-guardado": "Listo, guardamos el precio. Rige desde la fecha que elegiste.",
   "precio-quitado": "Listo, quitamos el precio programado.",
+  "reglas-sin-cambios": "No cambiaste ninguna regla.",
 };
 const ERRORS: Record<string, string> = {
   monto: "Escribí el importe en pesos, por ejemplo 55.500.",
@@ -26,25 +28,22 @@ const ERRORS: Record<string, string> = {
   "sin-permiso": "No tenés permiso para cambiar precios.",
   datos: "Revisá los datos.",
   generico: "No pudimos guardar el cambio. Probá de nuevo.",
+  reglas: "No pudimos guardar las reglas. Revisá los valores y probá de nuevo.",
 };
 
-const RULES: Record<string, { label: string; unit: string }> = {
-  grace_days: { label: "Gracia de la cuota de profe", unit: "días" },
-  due_reminder_days: { label: "Aviso antes del vencimiento", unit: "días antes" },
-  suspension_alert_days: { label: "Alerta para decidir la baja tras la suspensión", unit: "días" },
-  cancel_hours: { label: "Anticipación para cancelar sin perder la clase", unit: "horas" },
-  credit_days: { label: "Vigencia del crédito para reservar", unit: "días" },
-  credit_class_window_days: { label: "La clase del crédito puede ser hasta", unit: "días después" },
-  booking_hold_minutes: { label: "Lugar guardado sin pagar", unit: "minutos" },
-  session_generation_weeks: { label: "Clases generadas por adelantado", unit: "semanas" },
-  checkin_before_minutes: { label: "Ingreso con QR desde antes de la clase", unit: "minutos antes" },
-  checkin_after_minutes: { label: "Ingreso con QR hasta después del inicio", unit: "minutos después" },
-};
+function ruleError(key: string | undefined, kind: string | undefined): string {
+  const rule = EDITABLE_RULES.find((r) => r.key === key);
+  if (!rule) return "Revisá las reglas.";
+  if (kind === "credito") return "La clase del crédito tiene que poder ser al menos hasta el último día para reservarla.";
+  if (kind === "numero") return `"${rule.label}": escribí un número entero.`;
+  return `"${rule.label}" tiene que estar entre ${rule.min} y ${rule.max}.`;
+}
+
 
 const dateFormat = new Intl.DateTimeFormat("es-AR", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
 const shortDate = (d: string) => dateFormat.format(new Date(`${d}T12:00:00Z`)).replace(".", "");
 
-export default async function ConfiguracionPage({ searchParams }: { searchParams: Promise<{ aviso?: string; error?: string }> }) {
+export default async function ConfiguracionPage({ searchParams }: { searchParams: Promise<{ aviso?: string; error?: string; k?: string; e?: string; n?: string }> }) {
   const [profile, params] = await Promise.all([requireProfile(), searchParams]);
   if (!canOpen(profile.access, "configuracion")) return <NoAccess />;
 
@@ -52,10 +51,30 @@ export default async function ConfiguracionPage({ searchParams }: { searchParams
   const supabase = await createClient();
   const [plans, { data: settings }] = await Promise.all([
     loadPlans(supabase, today),
-    supabase.from("app_settings").select("key, value"),
+    supabase.from("app_settings").select("key, value, updated_at, updated_by"),
   ]);
-  const notice = params.aviso ? NOTICES[params.aviso] : undefined;
-  const failure = params.error ? ERRORS[params.error] : undefined;
+  const notice =
+    params.aviso === "reglas-guardadas"
+      ? `Listo, guardamos ${params.n === "1" ? "la regla" : `${params.n ?? ""} reglas`}. Rigen desde ahora.`
+      : params.aviso
+        ? NOTICES[params.aviso]
+        : undefined;
+  const failure = params.error === "regla" ? ruleError(params.k, params.e) : params.error ? ERRORS[params.error] : undefined;
+  type SettingRow = {
+    key: string;
+    value: number;
+    updated_at: string;
+    updated_by: string | null;
+  };
+  const rows = (settings ?? []) as unknown as SettingRow[];
+  const valueOf = (key: string) => rows.find((r) => r.key === key)?.value;
+  const lastEdit = rows.filter((r) => r.updated_by).sort((a, b) => b.updated_at.localeCompare(a.updated_at))[0];
+  const editor = lastEdit?.updated_by
+    ? ((await supabase.from("profiles").select("first_name, last_name").eq("id", lastEdit.updated_by).maybeSingle()).data as {
+        first_name: string | null;
+        last_name: string | null;
+      } | null)
+    : null;
 
   return (
     <>
@@ -134,22 +153,49 @@ export default async function ConfiguracionPage({ searchParams }: { searchParams
         </div>
       </section>
 
-      <section className="flex flex-col gap-3 border-t border-line pt-6">
+      <section id="reglas" className="flex scroll-mt-6 flex-col gap-3 border-t border-line pt-6">
         <h2 className="font-display text-2xl font-bold uppercase tracking-wide">Reglas</h2>
-        <p className="text-[15px] text-muted">Los valores aprobados. Por ahora se cambian a pedido; más adelante, desde acá.</p>
-        <ul className="flex max-w-2xl flex-col">
-          {Object.entries(RULES).map(([key, rule]) => {
-            const value = (settings ?? []).find((s) => s.key === key)?.value;
-            return (
-              <li key={key} className="flex items-center justify-between gap-4 border-t border-line py-2.5 text-[15px]">
-                <span>{rule.label}</span>
-                <strong className="shrink-0">
-                  {value ?? "—"} {rule.unit}
-                </strong>
-              </li>
-            );
-          })}
-        </ul>
+        <p className="text-[15px] text-muted">
+          Cambian cómo funciona la app para todos. Cada cambio queda registrado con quién lo hizo.
+          {lastEdit
+            ? ` Último cambio: ${new Intl.DateTimeFormat("es-AR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "America/Argentina/Buenos_Aires" }).format(new Date(lastEdit.updated_at))}${
+                editor ? ` · ${[editor.first_name, editor.last_name].filter(Boolean).join(" ")}` : ""
+              }.`
+            : ""}
+        </p>
+        <form action={saveRules} className="flex max-w-3xl flex-col gap-6">
+          {RULE_GROUPS.map((g) => (
+            <fieldset key={g.title} className="flex flex-col">
+              <legend className="pb-1 font-semibold">{g.title}</legend>
+              {g.rules.map((r) => (
+                <div key={r.key} className="flex flex-wrap items-center justify-between gap-3 border-t border-line py-3">
+                  <label htmlFor={`regla-${r.key}`} className="flex min-w-0 flex-1 flex-col gap-0.5">
+                    <span className="text-[15px] font-semibold">{r.label}</span>
+                    <span className="text-sm text-muted">{r.help}</span>
+                  </label>
+                  <span className="flex shrink-0 items-center gap-2">
+                    <input
+                      id={`regla-${r.key}`}
+                      name={r.key}
+                      type="number"
+                      inputMode="numeric"
+                      min={r.min}
+                      max={r.max}
+                      step={1}
+                      required
+                      defaultValue={valueOf(r.key)}
+                      className="h-10 w-20 rounded-xl border border-[#cfcfcf] bg-white px-3 text-right text-base outline-none focus:border-ink"
+                    />
+                    <span className="w-28 text-sm text-muted">{r.unit}</span>
+                  </span>
+                </div>
+              ))}
+            </fieldset>
+          ))}
+          <div>
+            <SmallSubmit tone="dark">Guardar reglas</SmallSubmit>
+          </div>
+        </form>
       </section>
     </>
   );
