@@ -12,6 +12,8 @@ export const academyConfig = {
   appUrl: "https://app.extremedance.com.ar",
   /** Remitente de los emails (dominio verificado en Resend). */
   emailFrom: "Extreme Dance Academy <hola@extremedance.com.ar>",
+  /** Las respuestas a los emails de avisos llegan al Gmail de la academia. */
+  emailReplyTo: "academyextremedance@gmail.com",
   currency: "ARS",
   colors: {
     brand: "#D90000",

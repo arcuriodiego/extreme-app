@@ -31,11 +31,21 @@ export function noticeEmail(input: NoticeEmailInput, appUrl: string, academyName
 <tr><td style="font-size:20px;font-weight:bold;line-height:1.3;padding-bottom:10px">${escapeHtml(input.title)}</td></tr>
 ${bodyHtml ? `<tr><td style="font-size:15px;line-height:1.5;padding-bottom:20px">${bodyHtml}</td></tr>` : ""}
 <tr><td><a href="${escapeHtml(url)}" style="display:inline-block;background:#111111;color:#ffffff;text-decoration:none;font-weight:bold;font-size:15px;padding:12px 20px;border-radius:999px">Abrir la app</a></td></tr>
-<tr><td style="font-size:12px;color:#5c5c5c;padding-top:24px">Recibís este aviso porque tenés una cuenta en la app de ${escapeHtml(academyName)}.</td></tr>
+<tr><td style="font-size:13px;color:#3d3d3d;padding-top:24px">¿Tenés una consulta? Respondé este email y te contestamos.</td></tr>
+<tr><td style="font-size:12px;color:#5c5c5c;padding-top:8px">Recibís este aviso porque tenés una cuenta en la app de ${escapeHtml(academyName)}.</td></tr>
 </table>
 </td></tr>
 </table>
 </body></html>`;
-  const text = [hello, "", input.title, input.body ? `\n${input.body}` : "", "", `Abrir la app: ${url}`].join("\n");
+  const text = [
+    hello,
+    "",
+    input.title,
+    input.body ? `\n${input.body}` : "",
+    "",
+    `Abrir la app: ${url}`,
+    "",
+    "¿Tenés una consulta? Respondé este email y te contestamos.",
+  ].join("\n");
   return { subject, html, text };
 }

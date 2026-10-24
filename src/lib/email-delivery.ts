@@ -30,7 +30,14 @@ export async function deliverNotificationEmails(supabase: Client): Promise<void>
 
   const payload = batch.map((n) => {
     const e = noticeEmail({ firstName: n.first_name, title: n.title, body: n.body, link: n.link }, academyConfig.appUrl, academyConfig.name);
-    return { from: academyConfig.emailFrom, to: [n.email], subject: e.subject, html: e.html, text: e.text };
+    return {
+      from: academyConfig.emailFrom,
+      to: [n.email],
+      reply_to: academyConfig.emailReplyTo,
+      subject: e.subject,
+      html: e.html,
+      text: e.text,
+    };
   });
 
   let ok = false;
