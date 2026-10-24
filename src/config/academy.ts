@@ -8,6 +8,10 @@ export const academyConfig = {
   shortName: "Extreme Dance",
   timeZone: "America/Argentina/Buenos_Aires",
   locale: "es-AR",
+  /** Dirección pública de la app (enlaces de los emails). */
+  appUrl: "https://app.extremedance.com.ar",
+  /** Remitente de los emails (dominio verificado en Resend). */
+  emailFrom: "Extreme Dance Academy <hola@extremedance.com.ar>",
   currency: "ARS",
   colors: {
     brand: "#D90000",

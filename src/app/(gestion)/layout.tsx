@@ -6,6 +6,7 @@ import { academyConfig } from "@/config/academy";
 import { roleLabel } from "@/domain/auth/roles";
 import { gestionMenu } from "@/domain/navigation/menus";
 import { requireProfile } from "@/lib/session";
+import { runBackgroundTasks } from "@/lib/background";
 import { signOut } from "@/app/(cuenta)/actions";
 
 // Páginas del personal: se arman en cada visita, nunca durante la compilación.
@@ -17,6 +18,7 @@ export const dynamic = "force-dynamic";
  */
 export default async function GestionLayout({ children }: { children: React.ReactNode }) {
   const profile = await requireProfile();
+  await runBackgroundTasks();
   const menu = gestionMenu(profile.access);
   const mainRole = profile.access.roles.find((r) => r === "admin" || r === "reception");
 

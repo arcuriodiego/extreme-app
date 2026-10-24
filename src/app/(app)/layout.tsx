@@ -8,6 +8,7 @@ import { canSwitchMode, hasGestion, personalTabs, resolveMode } from "@/domain/n
 import { getActiveStudent } from "@/lib/active-student";
 import { countUnread } from "@/lib/notifications";
 import { requireProfile } from "@/lib/session";
+import { runBackgroundTasks } from "@/lib/background";
 import { createClient } from "@/lib/supabase/server";
 import { Icon } from "@/components/ui/Icon";
 
@@ -20,6 +21,7 @@ export const dynamic = "force-dynamic";
  */
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const profile = await requireProfile();
+  await runBackgroundTasks();
   const chosen = (await cookies()).get("modo")?.value;
   const tabs = personalTabs(profile.access, chosen);
   const mode = resolveMode(profile.access, chosen);
