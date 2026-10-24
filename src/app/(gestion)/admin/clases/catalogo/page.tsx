@@ -7,7 +7,9 @@ import { can } from "@/domain/auth/roles";
 import { type CatalogItem, loadCatalog } from "@/lib/grilla";
 import { requireProfile } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
-import { addCatalogItem, addRoom, renameTeacher, setCatalogItemActive } from "../actions";
+import { addCatalogItem, addRoom, removeTeacherPhoto, renameTeacher, setCatalogItemActive, setTeacherPhoto } from "../actions";
+import { ImagePicker } from "@/components/images/ImagePicker";
+import { TeacherAvatar } from "@/components/images/TeacherAvatar";
 import { ERRORS, NOTICES } from "../messages";
 import { SectionTabs } from "../SectionTabs";
 
@@ -103,13 +105,14 @@ export default async function CatalogoPage({ searchParams }: { searchParams: Pro
         <section className="flex flex-col gap-3">
           <h2 className="font-display text-2xl font-bold uppercase tracking-wide">Profes</h2>
           <p className="text-[15px] text-muted">
-            Se suman asignando el rol Profesor en <Link href="/admin/usuarios">Usuarios y roles</Link>. Acá podés cambiar el nombre que ven los alumnos.
+            Se suman asignando el rol Profesor en <Link href="/admin/usuarios">Usuarios y roles</Link>. Acá podés cambiar el nombre que ven los alumnos y subir su foto (aparece en las clases, así los reconocen más rápido).
           </p>
           {catalog.teachers.length === 0 && <p className="text-[15px] text-muted">Todavía no hay profes.</p>}
           <ul className="flex flex-col">
             {catalog.teachers.map((t) => (
-              <li key={t.id} className="border-t border-line py-2.5">
+              <li key={t.id} className="flex flex-col gap-2 border-t border-line py-2.5">
                 <form action={renameTeacher} className="flex items-center gap-2">
+                  <TeacherAvatar name={t.displayName} url={t.photoUrl} size={40} />
                   <input type="hidden" name="id" value={t.id} />
                   <label className="sr-only" htmlFor={`profe-${t.id}`}>
                     Nombre visible de {t.displayName}
@@ -118,6 +121,21 @@ export default async function CatalogoPage({ searchParams }: { searchParams: Pro
                   {!t.active && <span className="rounded-full bg-surface px-2 py-0.5 text-xs font-bold">SIN ROL</span>}
                   <SmallSubmit>Guardar</SmallSubmit>
                 </form>
+                <details className="pl-12">
+                  <summary className="cursor-pointer text-sm font-semibold">{t.photoUrl ? "Cambiar la foto" : "Agregar foto"}</summary>
+                  <div className="flex flex-col gap-3 pt-2">
+                    <form action={setTeacherPhoto} className="flex flex-col gap-3">
+                      <input type="hidden" name="id" value={t.id} />
+                      <ImagePicker kind="profes" current={t.photoUrl} label={`Foto de ${t.displayName}`} submitLabel="Subir foto" />
+                    </form>
+                    {t.photoUrl && (
+                      <form action={removeTeacherPhoto}>
+                        <input type="hidden" name="id" value={t.id} />
+                        <SmallSubmit tone="danger">Quitar la foto</SmallSubmit>
+                      </form>
+                    )}
+                  </div>
+                </details>
               </li>
             ))}
           </ul>

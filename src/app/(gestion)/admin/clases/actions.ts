@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { validateCapacity, validateCatalogName, validateSchedule } from "@/domain/classes/schedule";
 import { grillaErrorCode } from "@/lib/grilla";
+import { removeImage, replaceImage } from "@/lib/images";
 import { createClient } from "@/lib/supabase/server";
 
 /**
@@ -194,6 +195,22 @@ export async function renameTeacher(formData: FormData): Promise<void> {
   if (error) to(CATALOG, { error: grillaErrorCode(error) });
   if (!data || data.length === 0) to(CATALOG, { error: "sin-permiso" });
   to(CATALOG, { aviso: "profe-guardado" });
+}
+
+export async function setTeacherPhoto(formData: FormData): Promise<void> {
+  const id = str(formData, "id");
+  if (!UUID.test(id)) to(CATALOG, { error: "datos" });
+  const result = await replaceImage(await createClient(), "profes", id, formData.get("image"));
+  if (!result.ok) to(CATALOG, { error: result.error });
+  to(CATALOG, { aviso: "foto-guardada" });
+}
+
+export async function removeTeacherPhoto(formData: FormData): Promise<void> {
+  const id = str(formData, "id");
+  if (!UUID.test(id)) to(CATALOG, { error: "datos" });
+  const result = await removeImage(await createClient(), "profes", id);
+  if (!result.ok) to(CATALOG, { error: result.error });
+  to(CATALOG, { aviso: "foto-quitada" });
 }
 
 export async function deleteGroup(formData: FormData): Promise<void> {

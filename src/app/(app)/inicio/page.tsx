@@ -12,6 +12,7 @@ import { academyToday } from "@/lib/grilla";
 import { loadActiveMemberships } from "@/lib/memberships";
 import { requireProfile } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
+import { TeacherAvatar } from "@/components/images/TeacherAvatar";
 
 export const metadata: Metadata = { title: "Inicio" };
 
@@ -47,11 +48,14 @@ export default async function InicioPage({ searchParams }: { searchParams: Promi
 
       {memberships.map((m) => (
         <section key={m.id} aria-label={viewingChild ? `Cuota de ${active.firstName}` : "Tu cuota de profe"} className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-line p-5">
-          <div className="flex flex-col gap-0.5">
-            <span className="font-display text-xl font-bold uppercase tracking-wide">{m.planName}</span>
-            <span className="text-[15px] text-muted">
-              Prof. {m.teacherName} · {m.ageCategoryName}
-            </span>
+          <div className="flex items-center gap-3">
+            <TeacherAvatar name={m.teacherName} url={m.teacherPhotoUrl} size={48} />
+            <div className="flex min-w-0 flex-col gap-0.5">
+              <span className="font-display text-xl font-bold uppercase tracking-wide">{m.planName}</span>
+              <span className="text-[15px] text-muted">
+                Prof. {m.teacherName} · {m.ageCategoryName}
+              </span>
+            </div>
           </div>
           <ul className="flex flex-col gap-1.5">
             {m.enrollments.map((e) => (

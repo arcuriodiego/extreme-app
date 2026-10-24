@@ -2,6 +2,7 @@ import "server-only";
 import { academyConfig } from "@/config/academy";
 import { groupName, shortTime } from "@/domain/classes/schedule";
 import { calendarDateInZone } from "@/domain/shared/calendar-date";
+import { imageUrl } from "@/lib/image-url";
 import type { createClient } from "@/lib/supabase/server";
 
 type Client = Awaited<ReturnType<typeof createClient>>;
@@ -21,6 +22,7 @@ export interface Teacher {
   profileId: string;
   displayName: string;
   active: boolean;
+  photoUrl: string | null;
 }
 
 export interface Catalog {
@@ -37,7 +39,7 @@ export async function loadCatalog(supabase: Client): Promise<Catalog> {
     supabase.from("levels").select("id, name, active").order("sort_order").order("name"),
     supabase.from("age_categories").select("id, name, active").order("sort_order").order("name"),
     supabase.from("rooms").select("id, name, active, capacity").order("name"),
-    supabase.from("teachers").select("id, profile_id, display_name, active").order("display_name"),
+    supabase.from("teachers").select("id, profile_id, display_name, active, photo_path").order("display_name"),
   ]);
   const firstError = [styles, levels, ages, rooms, teachers].find((r) => r.error)?.error;
   if (firstError) throw new Error(`No se pudo cargar el catálogo: ${firstError.message}`);
@@ -52,6 +54,7 @@ export async function loadCatalog(supabase: Client): Promise<Catalog> {
       profileId: t.profile_id as string,
       displayName: t.display_name as string,
       active: t.active as boolean,
+      photoUrl: imageUrl(t.photo_path as string | null),
     })),
   };
 }
@@ -77,6 +80,7 @@ export interface GroupRow {
   levelId: string | null;
   teacherId: string | null;
   teacherName: string | null;
+  teacherPhotoUrl: string | null;
   teacherProfileId: string | null;
   capacity: number;
   allowsSingleBooking: boolean;
@@ -89,7 +93,7 @@ export interface GroupRow {
 const GROUP_SELECT = `
   id, style_id, age_category_id, level_id, teacher_id, capacity, allows_single_booking, description, status,
   style:dance_styles(name), age:age_categories(name), level:levels(name),
-  teacher:teachers(display_name, profile_id),
+  teacher:teachers(display_name, profile_id, photo_path),
   schedules:class_schedules(id, weekday, start_time, end_time, room_id, valid_from, valid_to, room:rooms(name))
 `;
 
@@ -106,7 +110,7 @@ interface RawGroup {
   style: { name: string } | null;
   age: { name: string } | null;
   level: { name: string } | null;
-  teacher: { display_name: string; profile_id: string } | null;
+  teacher: { display_name: string; profile_id: string; photo_path: string | null } | null;
   schedules:
     | {
         id: string;
@@ -134,6 +138,7 @@ function toGroup(raw: RawGroup, today: string): GroupRow {
     levelId: raw.level_id,
     teacherId: raw.teacher_id,
     teacherName: raw.teacher?.display_name ?? null,
+    teacherPhotoUrl: imageUrl(raw.teacher?.photo_path),
     teacherProfileId: raw.teacher?.profile_id ?? null,
     capacity: raw.capacity,
     allowsSingleBooking: raw.allows_single_booking,
@@ -180,6 +185,7 @@ export interface Slot {
   groupId: string;
   title: string;
   teacherName: string | null;
+  teacherPhotoUrl: string | null;
   roomName: string;
   capacity: number;
   allowsSingleBooking: boolean;
@@ -197,6 +203,7 @@ export function slotsOf(groups: readonly GroupRow[], today = academyToday()): Sl
       groupId: g.id,
       title: g.name,
       teacherName: g.teacherName,
+      teacherPhotoUrl: g.teacherPhotoUrl,
       roomName: s.roomName,
       capacity: g.capacity,
       allowsSingleBooking: g.allowsSingleBooking,

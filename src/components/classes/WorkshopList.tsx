@@ -42,6 +42,12 @@ export function WorkshopList({
           const full = w.taken + w.held >= w.capacity;
           return (
             <li key={w.id} className="flex flex-col gap-2 rounded-xl border border-line p-4">
+              {w.imageUrl && (
+                <a href={w.imageUrl} target="_blank" rel="noopener" className="-mx-1 -mt-1 block" aria-label={`Ver el flyer de ${w.title} completo`}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={w.imageUrl} alt={`Flyer de ${w.title}`} loading="lazy" className="max-h-[32rem] w-full rounded-lg bg-surface object-contain" />
+                </a>
+              )}
               <div className="flex items-start justify-between gap-3">
                 <span className="flex flex-col gap-0.5">
                   <span className="font-semibold">{w.title}</span>

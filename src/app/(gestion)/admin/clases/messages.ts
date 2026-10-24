@@ -1,3 +1,4 @@
+import { IMAGE_ERRORS } from "@/domain/images/images";
 import { GRILLA_ERRORS } from "@/lib/grilla";
 
 export const NOTICES: Record<string, string> = {
@@ -12,6 +13,8 @@ export const NOTICES: Record<string, string> = {
   activado: "Listo, quedó activo.",
   desactivado: "Listo, quedó desactivado. Ya no se ofrece para grupos nuevos.",
   "profe-guardado": "Listo, guardamos el nombre del profe.",
+  "foto-guardada": "Listo, subimos la foto del profe: ya aparece en las clases.",
+  "foto-quitada": "Listo, quitamos la foto del profe.",
   "clase-suspendida": "Listo, la clase quedó suspendida.",
   "clase-reactivada": "Listo, la clase vuelve a estar programada.",
   "reemplazo-guardado": "Listo, guardamos el reemplazo.",
@@ -22,6 +25,7 @@ export const NOTICES: Record<string, string> = {
 
 export const ERRORS: Record<string, string> = {
   ...GRILLA_ERRORS,
+  ...IMAGE_ERRORS,
   "falta-estilo": "Elegí el estilo.",
   "falta-categoria": "Elegí la categoría de edad.",
   cupo: "El cupo tiene que ser un número entre 1 y 200.",

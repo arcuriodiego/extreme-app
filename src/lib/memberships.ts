@@ -3,6 +3,7 @@ import { weekdayLabel } from "@/domain/classes/schedule";
 import { seatsLeft } from "@/domain/classes/seats";
 import type { GroupRow } from "@/lib/grilla";
 import type { createClient } from "@/lib/supabase/server";
+import { imageUrl } from "@/lib/image-url";
 
 type Client = Awaited<ReturnType<typeof createClient>>;
 
@@ -27,6 +28,7 @@ export interface MembershipRow {
   planName: string;
   teacherId: string;
   teacherName: string;
+  teacherPhotoUrl: string | null;
   ageCategoryId: string;
   ageCategoryName: string;
   anchorDay: number | null;
@@ -41,7 +43,7 @@ interface Raw {
   anchor_day: number | null;
   started_on: string;
   plan: { name: string } | null;
-  teacher: { display_name: string } | null;
+  teacher: { display_name: string; photo_path: string | null } | null;
   age: { name: string } | null;
   enrollments:
     | {
@@ -61,7 +63,7 @@ interface Raw {
 
 const SELECT = `
   id, teacher_id, age_category_id, anchor_day, started_on,
-  plan:plans(name), teacher:teachers(display_name), age:age_categories(name),
+  plan:plans(name), teacher:teachers(display_name, photo_path), age:age_categories(name),
   enrollments(id, status, schedule_id,
     schedule:class_schedules(weekday, start_time, end_time, room:rooms(name),
       group:class_groups(style:dance_styles(name), level:levels(name))))
@@ -73,6 +75,7 @@ function toRow(r: Raw): MembershipRow {
     planName: r.plan?.name ?? "Cuota de profe",
     teacherId: r.teacher_id,
     teacherName: r.teacher?.display_name ?? "",
+    teacherPhotoUrl: imageUrl(r.teacher?.photo_path),
     ageCategoryId: r.age_category_id,
     ageCategoryName: r.age?.name ?? "",
     anchorDay: r.anchor_day,

@@ -6,6 +6,7 @@ import { startOfDayInZone } from "@/domain/shared/calendar-date";
 import { validateWorkshop, validateWorkshopSession } from "@/domain/workshops/workshops";
 import { academyConfig } from "@/config/academy";
 import { academyToday } from "@/lib/grilla";
+import { removeImage, replaceImage } from "@/lib/images";
 import { createClient } from "@/lib/supabase/server";
 
 /**
@@ -282,4 +283,22 @@ export async function removeFromWaitlist(formData: FormData): Promise<void> {
   const { error } = await supabase.rpc("leave_workshop_waitlist", { p_entry_id: entryId });
   if (error) to(back, { error: code(error) });
   to(back, { aviso: "quitado-lista" });
+}
+
+export async function setWorkshopImage(formData: FormData): Promise<void> {
+  const id = str(formData, "id");
+  if (!UUID.test(id)) to("/admin/workshops", { error: "datos" });
+  const back = `/admin/workshops/${id}`;
+  const result = await replaceImage(await createClient(), "workshops", id, formData.get("image"));
+  if (!result.ok) to(back, { error: result.error });
+  to(back, { aviso: "flyer-guardado" });
+}
+
+export async function removeWorkshopImage(formData: FormData): Promise<void> {
+  const id = str(formData, "id");
+  if (!UUID.test(id)) to("/admin/workshops", { error: "datos" });
+  const back = `/admin/workshops/${id}`;
+  const result = await removeImage(await createClient(), "workshops", id);
+  if (!result.ok) to(back, { error: result.error });
+  to(back, { aviso: "flyer-quitado" });
 }

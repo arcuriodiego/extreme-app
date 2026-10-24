@@ -2,6 +2,7 @@ import "server-only";
 import { academyConfig } from "@/config/academy";
 import { calendarDateInZone, timeInZone } from "@/domain/shared/calendar-date";
 import { refundDeadline, refundIfCancelled } from "@/domain/workshops/workshops";
+import { imageUrl } from "@/lib/image-url";
 import type { createClient } from "@/lib/supabase/server";
 
 type Client = Awaited<ReturnType<typeof createClient>>;
@@ -24,6 +25,8 @@ export interface WorkshopRow {
   title: string;
   description: string;
   teacherName: string | null;
+  /** Flyer del workshop (enlace público), si lo cargaron. */
+  imageUrl: string | null;
   priceCents: number;
   capacity: number;
   status: WorkshopStatus;
@@ -41,13 +44,14 @@ interface RawWorkshop {
   title: string;
   description: string | null;
   teacher_name: string | null;
+  image_path: string | null;
   price_cents: number;
   capacity: number;
   status: WorkshopStatus;
   sessions: { id: string; starts_at: string; ends_at: string; room_id: string; room: { name: string } | null }[] | null;
 }
 
-const SELECT = "id, title, description, teacher_name, price_cents, capacity, status, sessions:workshop_sessions(id, starts_at, ends_at, room_id, room:rooms(name))";
+const SELECT = "id, title, description, teacher_name, image_path, price_cents, capacity, status, sessions:workshop_sessions(id, starts_at, ends_at, room_id, room:rooms(name))";
 
 export async function loadTakenCounts(supabase: Client): Promise<Map<string, { taken: number; held: number }>> {
   const { data } = await supabase.rpc("workshop_taken_counts");
@@ -78,6 +82,7 @@ function toRow(r: RawWorkshop, taken: Map<string, { taken: number; held: number 
     title: r.title,
     description: r.description ?? "",
     teacherName: r.teacher_name,
+    imageUrl: imageUrl(r.image_path),
     priceCents: Number(r.price_cents),
     capacity: r.capacity,
     status: r.status,

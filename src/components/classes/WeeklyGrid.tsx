@@ -1,3 +1,4 @@
+import { TeacherAvatar } from "@/components/images/TeacherAvatar";
 import Link from "next/link";
 import { weeklyGrid } from "@/domain/classes/schedule";
 import type { Slot } from "@/lib/grilla";
@@ -41,9 +42,12 @@ export function WeeklyGrid({
                   </span>
                   <span className="flex min-w-0 flex-col gap-0.5">
                     <span className="font-semibold leading-snug">{slot.title}</span>
-                    <span className="text-sm text-muted">
-                      {slot.teacherName ? `Prof. ${slot.teacherName}` : "Profe a confirmar"} · {slot.roomName}
-                      {showCapacity ? ` · Cupo ${slot.capacity}` : ""}
+                    <span className="flex items-center gap-1.5 text-sm text-muted">
+                      {slot.teacherPhotoUrl && <TeacherAvatar name={slot.teacherName ?? ""} url={slot.teacherPhotoUrl} size={24} />}
+                      <span>
+                        {slot.teacherName ? `Prof. ${slot.teacherName}` : "Profe a confirmar"} · {slot.roomName}
+                        {showCapacity ? ` · Cupo ${slot.capacity}` : ""}
+                      </span>
                     </span>
                     {(slot.startsOn || !slot.allowsSingleBooking) && (
                       <span className="flex flex-wrap gap-1.5 pt-1">

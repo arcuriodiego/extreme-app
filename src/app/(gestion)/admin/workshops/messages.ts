@@ -1,3 +1,5 @@
+import { IMAGE_ERRORS } from "@/domain/images/images";
+
 export const NOTICES: Record<string, string> = {
   creado: "Listo, creamos el workshop. Agregale sus fechas y publicalo.",
   guardado: "Listo, guardamos los cambios.",
@@ -13,6 +15,8 @@ export const NOTICES: Record<string, string> = {
   devuelto: "Listo, registramos la devolución.",
   "en-espera": "Listo, quedó anotado en la lista de espera.",
   "quitado-lista": "Listo, lo sacamos de la lista. Si tenía un lugar guardado, pasó al siguiente.",
+  "flyer-guardado": "Listo, subimos el flyer: los alumnos ya lo ven en el workshop.",
+  "flyer-quitado": "Listo, quitamos el flyer.",
 };
 
 export const ERRORS: Record<string, string> = {
@@ -44,6 +48,7 @@ export const ERRORS: Record<string, string> = {
   "no-disponible": "Eso cambió mientras tanto. Recargá la página.",
   datos: "Revisá los datos.",
   generico: "No pudimos guardar el cambio. Probá de nuevo.",
+  ...IMAGE_ERRORS,
 };
 
 export const STATUS = {

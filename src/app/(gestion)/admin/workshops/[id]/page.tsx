@@ -25,6 +25,8 @@ import {
   recordRefund,
   registerGuest,
   registerStudent,
+  removeWorkshopImage,
+  setWorkshopImage,
   removeFromWaitlist,
   removeWorkshopSession,
   waitlistGuest,
@@ -34,6 +36,7 @@ import {
 } from "../actions";
 import { ERRORS, NOTICES, STATUS } from "../messages";
 import { WorkshopForm } from "../WorkshopForm";
+import { ImagePicker } from "@/components/images/ImagePicker";
 
 export const metadata: Metadata = { title: "Workshop" };
 
@@ -182,6 +185,34 @@ export default async function WorkshopPage({
           </form>
         )}
       </section>
+
+      {(workshop.imageUrl || (canManage && workshop.status !== "cancelled")) && (
+        <section className="flex flex-col gap-3 border-t border-line pt-6">
+          <h2 className="font-display text-2xl font-bold uppercase tracking-wide">Flyer</h2>
+          {canManage && workshop.status !== "cancelled" ? (
+            <>
+              <p className="text-[15px] text-muted">
+                {workshop.imageUrl
+                  ? "Los alumnos lo ven arriba de todo en la info del workshop. Podés cambiarlo por otro."
+                  : "Subí el flyer o una foto: los alumnos lo ven arriba de todo en la info del workshop."}
+              </p>
+              <form action={setWorkshopImage} className="flex max-w-xl flex-col gap-3">
+                <input type="hidden" name="id" value={workshop.id} />
+                <ImagePicker kind="workshops" current={workshop.imageUrl} label={workshop.imageUrl ? "Cambiar el flyer" : "Elegir el flyer"} submitLabel="Subir flyer" />
+              </form>
+              {workshop.imageUrl && (
+                <form action={removeWorkshopImage}>
+                  <input type="hidden" name="id" value={workshop.id} />
+                  <SmallSubmit tone="danger">Quitar el flyer</SmallSubmit>
+                </form>
+              )}
+            </>
+          ) : (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={workshop.imageUrl!} alt={`Flyer de ${workshop.title}`} className="max-h-80 w-auto max-w-full self-start rounded-xl border border-line" />
+          )}
+        </section>
+      )}
 
       {(canPay || active.length > 0) && (
         <section className="flex flex-col gap-3 border-t border-line pt-6">
