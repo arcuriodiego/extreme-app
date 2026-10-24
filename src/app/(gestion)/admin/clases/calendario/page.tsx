@@ -10,7 +10,6 @@ import { dayStrip, longDate, pickDay } from "@/domain/classes/sessions";
 import { canOpen } from "@/domain/navigation/menus";
 import { academyToday, loadCatalog } from "@/lib/grilla";
 import { loadAvailability } from "@/lib/bookings";
-import { loadWaitlistCounts, refreshWaitlists } from "@/lib/waitlist";
 import { ensureSessions, loadSessions, loadUpcomingExceptions } from "@/lib/sessions";
 import { requireProfile } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
@@ -43,17 +42,10 @@ export default async function CalendarioPage({
     loadUpcomingExceptions(supabase, today),
     canManage ? loadCatalog(supabase) : Promise.resolve(null),
   ]);
-  await refreshWaitlists(supabase);
-  const [avail, waiting] = await Promise.all([
-    loadAvailability(
-      supabase,
-      sessions.map((s) => s.id),
-    ),
-    loadWaitlistCounts(
-      supabase,
-      sessions.map((s) => s.id),
-    ),
-  ]);
+  const avail = await loadAvailability(
+    supabase,
+    sessions.map((s) => s.id),
+  );
   const teachers = (catalog?.teachers ?? []).filter((t) => t.active);
   const dayException = exceptions.find((e) => e.date === day);
 
@@ -86,10 +78,7 @@ export default async function CalendarioPage({
                   <li key={s.id}>
                     <SessionCard session={s} extra={(() => {
                         const a = avail.get(s.id);
-                        const w = waiting.get(s.id) ?? 0;
-                        return a
-                          ? `${a.fixed} fijos + ${a.booked} reservas de ${a.capacity}${w > 0 ? ` · ${w} en lista de espera` : ""}`
-                          : `Cupo ${s.capacity}`;
+                        return a ? `${a.fixed} fijos + ${a.booked} reservas de ${a.capacity}` : `Cupo ${s.capacity}`;
                       })()}>
                       {canRoster && s.status === "scheduled" && (
                         <Link href={`/admin/clases/calendario/lista/${s.id}`} className="self-start text-sm font-semibold">

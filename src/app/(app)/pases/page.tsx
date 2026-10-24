@@ -10,11 +10,7 @@ import { loadActiveMemberships } from "@/lib/memberships";
 import { getActiveStudent } from "@/lib/active-student";
 import { requireProfile } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
-import { acceptMyOffer, cancelMyBooking, leaveMyWaitlist } from "../clases/actions";
-import { loadWaitlist, refreshWaitlists, type WaitEntry } from "@/lib/waitlist";
-import { loadSession } from "@/lib/sessions";
-import { academyConfig } from "@/config/academy";
-import { timeInZone } from "@/domain/shared/calendar-date";
+import { cancelMyBooking } from "../clases/actions";
 
 export const metadata: Metadata = { title: "Mis pases" };
 
@@ -23,19 +19,14 @@ export default async function PasesPage({ searchParams }: { searchParams: Promis
   const supabase = await createClient();
   const studentId = student?.id ?? null;
   const child = student !== null && !student.isSelf;
-  if (studentId) await refreshWaitlists(supabase);
-  const [memberships, balances, bookings, key, waits] = await Promise.all([
+  const [memberships, balances, bookings, key] = await Promise.all([
     studentId ? loadActiveMemberships(supabase, studentId).catch(() => []) : [],
     studentId ? loadBalances(supabase, studentId) : [],
     studentId ? loadUpcomingBookings(supabase, studentId) : [],
     studentId
       ? supabase.rpc("my_access_key", { p_student_id: studentId }).then((r) => r.data as { student_id: string; secret: string } | null)
       : null,
-    studentId ? loadWaitlist(supabase, studentId) : new Map<string, WaitEntry>(),
   ]);
-  const waitRows = (
-    await Promise.all([...waits.values()].map(async (w) => ({ w, s: await loadSession(supabase, w.sessionId) })))
-  ).filter((x): x is { w: typeof x.w; s: NonNullable<typeof x.s> } => x.s !== null);
   const serverNow = currentTimeMs();
   const active = balances.filter((b) => b.active);
 
@@ -121,51 +112,6 @@ export default async function PasesPage({ searchParams }: { searchParams: Promis
           </ul>
         )}
       </section>
-
-      {waitRows.length > 0 && (
-        <section className="flex flex-col gap-2">
-          <h2 className="font-display text-xl font-bold uppercase tracking-wide">Lista de espera</h2>
-          <ul className="flex flex-col gap-2">
-            {waitRows.map(({ w, s }) => (
-              <li key={w.id} className={`flex flex-col gap-2 rounded-xl border p-4 ${w.status === "offered" ? "border-ok bg-ok-soft" : "border-line"}`}>
-                <span className="flex flex-col gap-0.5">
-                  <span className="font-semibold">{s.title}</span>
-                  <span className="text-sm text-muted">
-                    {longDate(s.date)} · {s.start} a {s.end} · {s.roomName}
-                  </span>
-                </span>
-                {w.status === "offered" ? (
-                  <>
-                    <span className="text-[15px] font-semibold text-ok-ink">
-                      ¡Se liberó un lugar! Confirmalo antes de las{" "}
-                      {w.offerExpiresAt ? timeInZone(new Date(w.offerExpiresAt), academyConfig.timeZone) : ""}.
-                    </span>
-                    <div className="flex flex-wrap gap-2">
-                      <form action={acceptMyOffer}>
-                        <input type="hidden" name="entry_id" value={w.id} />
-                        <input type="hidden" name="back" value="/pases" />
-                        <SmallSubmit tone="dark">Confirmar lugar</SmallSubmit>
-                      </form>
-                      <form action={leaveMyWaitlist}>
-                        <input type="hidden" name="entry_id" value={w.id} />
-                        <input type="hidden" name="back" value="/pases" />
-                        <SmallSubmit>No puedo ir</SmallSubmit>
-                      </form>
-                    </div>
-                  </>
-                ) : (
-                  <form action={leaveMyWaitlist} className="flex flex-wrap items-center justify-between gap-2 border-t border-line pt-2">
-                    <input type="hidden" name="entry_id" value={w.id} />
-                    <input type="hidden" name="back" value="/pases" />
-                    <span className="text-sm">Puesto {w.position} en la lista</span>
-                    <SmallSubmit>Salir de la lista</SmallSubmit>
-                  </form>
-                )}
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
 
       {memberships.length > 0 && (
         <section className="flex flex-col gap-2">

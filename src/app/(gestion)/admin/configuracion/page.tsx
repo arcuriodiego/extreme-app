@@ -39,8 +39,6 @@ const RULES: Record<string, { label: string; unit: string }> = {
   session_generation_weeks: { label: "Clases generadas por adelantado", unit: "semanas" },
   checkin_before_minutes: { label: "Ingreso con QR desde antes de la clase", unit: "minutos antes" },
   checkin_after_minutes: { label: "Ingreso con QR hasta después del inicio", unit: "minutos después" },
-  waitlist_offer_minutes: { label: "Lista de espera: tiempo para confirmar un lugar liberado", unit: "minutos" },
-  waitlist_cutoff_minutes: { label: "Lista de espera: se cierra antes de la clase", unit: "minutos antes" },
 };
 
 const dateFormat = new Intl.DateTimeFormat("es-AR", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
