@@ -15,7 +15,10 @@ const KIND: Record<NotificationKind, { label: string; tone: string }> = {
   class_cancelled: { label: "Clase suspendida", tone: "bg-alert-soft text-alert-ink" },
   class_restored: { label: "Clase reprogramada", tone: "bg-ok-soft text-ok-ink" },
   announcement: { label: "Aviso de la academia", tone: "bg-ink text-white" },
+  waitlist_offer: { label: "Lugar liberado", tone: "bg-ok-soft text-ok-ink" },
 };
+
+const OTHER = { label: "Aviso", tone: "bg-surface text-ink" };
 
 const LINK_LABELS: Record<string, string> = { "/pagos": "Ver pagos", "/clases": "Ver clases" };
 
@@ -44,10 +47,12 @@ export default async function AvisosPage() {
         <p className="rounded-xl bg-surface px-4 py-3 text-[15px]">No tenés avisos por ahora.</p>
       ) : (
         <ul className="flex flex-col gap-2">
-          {items.map((n) => (
+          {items.map((n) => {
+            const kind = KIND[n.kind] ?? OTHER;
+            return (
             <li key={n.id} className={`flex flex-col gap-1.5 rounded-xl border p-4 ${n.read ? "border-line" : "border-ink"}`}>
               <span className="flex flex-wrap items-center gap-2">
-                <span className={`rounded-full px-2 py-0.5 text-xs font-bold uppercase ${KIND[n.kind].tone}`}>{KIND[n.kind].label}</span>
+                <span className={`rounded-full px-2 py-0.5 text-xs font-bold uppercase ${kind.tone}`}>{kind.label}</span>
                 {!n.read && <span className="rounded-full bg-brand px-2 py-0.5 text-xs font-bold text-white">NUEVO</span>}
                 <span className="text-sm text-muted">{dateFormat.format(new Date(n.createdAt))}</span>
               </span>
@@ -59,7 +64,8 @@ export default async function AvisosPage() {
                 </Link>
               )}
             </li>
-          ))}
+            );
+          })}
         </ul>
       )}
     </>
