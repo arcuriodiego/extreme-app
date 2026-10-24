@@ -20,6 +20,8 @@ import { ERRORS, NOTICES } from "../messages";
 import { StudentForm } from "../StudentForm";
 import { MembershipSection } from "./MembershipSection";
 import { PacksSection } from "./PacksSection";
+import { GuardiansSection } from "./GuardiansSection";
+import { loadGuardians, loadWards } from "@/lib/guardians";
 
 export const metadata: Metadata = { title: "Ficha del alumno" };
 
@@ -68,6 +70,10 @@ export default async function AlumnoPage({
     seesMoney ? loadPayments(supabase, id) : Promise.resolve([]),
   ]);
   if (!student) notFound();
+  const [guardians, wards] = await Promise.all([
+    loadGuardians(supabase, student.id),
+    student.profileId ? loadWards(supabase, student.profileId) : Promise.resolve([]),
+  ]);
   const monthlyPrice = plans.find((p) => p.kind === "teacher_monthly" && p.active)?.current?.amountCents ?? null;
 
   const notice = query.aviso ? NOTICES[query.aviso] : undefined;
@@ -103,6 +109,14 @@ export default async function AlumnoPage({
           <p className="text-sm text-muted">Nombre, email y teléfono los actualiza la persona desde la app, en Mi perfil.</p>
         )}
       </section>
+
+      <GuardiansSection
+        studentId={student.id}
+        guardians={guardians}
+        wards={wards}
+        canManage={canManage}
+        isMinor={student.birthDate ? ageOn(student.birthDate, today) < 18 : false}
+      />
 
       <MembershipSection
         supabase={supabase}

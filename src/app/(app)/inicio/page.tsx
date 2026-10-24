@@ -5,9 +5,10 @@ import { RoleBadges } from "@/components/status/RoleBadges";
 import { LinkCard } from "@/components/ui/basics";
 import { hasGestion } from "@/domain/navigation/menus";
 import { AccessLight } from "@/components/status/AccessLight";
-import { ensureCharges, lightFor, loadCharges, loadGraceDays, loadMyStudentId } from "@/lib/billing";
+import { getActiveStudent } from "@/lib/active-student";
+import { ensureCharges, lightFor, loadCharges, loadGraceDays } from "@/lib/billing";
 import { academyToday } from "@/lib/grilla";
-import { loadMyMemberships } from "@/lib/memberships";
+import { loadActiveMemberships } from "@/lib/memberships";
 import { requireProfile } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 
@@ -24,12 +25,10 @@ export default async function InicioPage({ searchParams }: { searchParams: Promi
   const showGestion = hasGestion(profile.access);
   const supabase = await createClient();
   const today = academyToday();
-  const [memberships, studentId, graceDays] = await Promise.all([
-    loadMyMemberships(supabase, profile.id).catch(() => []),
-    loadMyStudentId(supabase, profile.id),
-    loadGraceDays(supabase),
-    ensureCharges(supabase),
-  ]);
+  const [{ active }, graceDays] = await Promise.all([getActiveStudent(), loadGraceDays(supabase), ensureCharges(supabase)]);
+  const studentId = active?.id ?? null;
+  const viewingChild = active !== null && !active.isSelf;
+  const memberships = studentId ? await loadActiveMemberships(supabase, studentId).catch(() => []) : [];
   const charges = studentId && memberships.length > 0 ? await loadCharges(supabase, studentId).catch(() => []) : [];
 
   return (
@@ -40,12 +39,13 @@ export default async function InicioPage({ searchParams }: { searchParams: Promi
           Hola{profile.firstName ? `, ${profile.firstName}` : ""}
         </h1>
         <RoleBadges roles={profile.access.roles} />
+        {viewingChild && <p className="text-[15px] font-semibold">Estás viendo a {active.name}.</p>}
       </div>
 
       {showGestion && <LinkCard href="/admin" title="Gestión" description="Alumnos, clases, pagos y más" dark />}
 
       {memberships.map((m) => (
-        <section key={m.id} aria-label="Tu cuota de profe" className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-line p-5">
+        <section key={m.id} aria-label={viewingChild ? `Cuota de ${active.firstName}` : "Tu cuota de profe"} className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-line p-5">
           <div className="flex flex-col gap-0.5">
             <span className="font-display text-xl font-bold uppercase tracking-wide">{m.planName}</span>
             <span className="text-[15px] text-muted">
@@ -62,7 +62,7 @@ export default async function InicioPage({ searchParams }: { searchParams: Promi
           </ul>
           {m.anchorDay === null ? (
             <p className="rounded-xl bg-warn-soft px-3 py-2 text-sm font-semibold text-warn-ink">
-              Tu vencimiento se fija con tu primer pago. Acercate a recepción para abonar.
+              {viewingChild ? "El vencimiento se fija con el primer pago." : "Tu vencimiento se fija con tu primer pago."} Acercate a recepción para abonar.
             </p>
           ) : (
             <AccessLight
@@ -79,9 +79,11 @@ export default async function InicioPage({ searchParams }: { searchParams: Promi
 
       {memberships.length === 0 && (
         <section className="flex flex-col gap-2 rounded-[var(--radius-card)] border border-line p-5">
-          <span className="font-display text-xl font-bold uppercase tracking-wide">Tu cuenta está lista</span>
+          <span className="font-display text-xl font-bold uppercase tracking-wide">
+            {viewingChild ? `${active.firstName} no tiene cuota de profe` : "Tu cuenta está lista"}
+          </span>
           <p className="text-[15px] leading-snug text-muted">
-            Mirá la grilla en Clases. Para tener tu lugar fijo con un profe, inscribite en recepción.
+            Mirá la grilla en Clases. Para tener un lugar fijo con un profe, la inscripción se hace en recepción.
           </p>
         </section>
       )}

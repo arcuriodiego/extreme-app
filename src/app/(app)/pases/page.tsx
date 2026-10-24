@@ -5,9 +5,9 @@ import { FormAlert, SmallSubmit } from "@/components/forms/fields";
 import { PageHeader } from "@/components/ui/basics";
 import { BOOKING_ERRORS, BOOKING_NOTICES } from "@/domain/bookings/messages";
 import { longDate } from "@/domain/classes/sessions";
-import { loadMyStudentId } from "@/lib/billing";
 import { cancelPreview, loadBalances, loadUpcomingBookings } from "@/lib/bookings";
-import { loadMyMemberships } from "@/lib/memberships";
+import { loadActiveMemberships } from "@/lib/memberships";
+import { getActiveStudent } from "@/lib/active-student";
 import { requireProfile } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import { cancelMyBooking } from "../clases/actions";
@@ -15,37 +15,42 @@ import { cancelMyBooking } from "../clases/actions";
 export const metadata: Metadata = { title: "Mis pases" };
 
 export default async function PasesPage({ searchParams }: { searchParams: Promise<{ aviso?: string; error?: string }> }) {
-  const [profile, params] = await Promise.all([requireProfile(), searchParams]);
+  const [, params, { active: student }] = await Promise.all([requireProfile(), searchParams, getActiveStudent()]);
   const supabase = await createClient();
-  const [studentId, memberships] = await Promise.all([
-    loadMyStudentId(supabase, profile.id),
-    loadMyMemberships(supabase, profile.id).catch(() => []),
-  ]);
-  const [balances, bookings, key] = await Promise.all([
+  const studentId = student?.id ?? null;
+  const child = student !== null && !student.isSelf;
+  const [memberships, balances, bookings, key] = await Promise.all([
+    studentId ? loadActiveMemberships(supabase, studentId).catch(() => []) : [],
     studentId ? loadBalances(supabase, studentId) : [],
     studentId ? loadUpcomingBookings(supabase, studentId) : [],
-    studentId ? supabase.rpc("my_access_key").then((r) => r.data as { student_id: string; secret: string } | null) : null,
+    studentId
+      ? supabase.rpc("my_access_key", { p_student_id: studentId }).then((r) => r.data as { student_id: string; secret: string } | null)
+      : null,
   ]);
   const serverNow = currentTimeMs();
   const active = balances.filter((b) => b.active);
 
   return (
     <>
-      <PageHeader title="Mis pases" />
+      <PageHeader title={child ? `Pases de ${student.firstName}` : "Mis pases"} />
       {params.aviso && BOOKING_NOTICES[params.aviso] && <FormAlert kind="ok">{BOOKING_NOTICES[params.aviso]}</FormAlert>}
       {params.error && BOOKING_ERRORS[params.error] && <FormAlert kind="error">{BOOKING_ERRORS[params.error]}</FormAlert>}
 
       <section className="flex flex-col gap-2">
-        <h2 className="font-display text-xl font-bold uppercase tracking-wide">Tu pase de entrada</h2>
+        <h2 className="font-display text-xl font-bold uppercase tracking-wide">{child ? "Pase de entrada" : "Tu pase de entrada"}</h2>
         {key ? (
           <>
             <MyQr
               studentId={key.student_id}
               secret={key.secret}
               serverNow={serverNow}
-              name={[profile.firstName, profile.lastName].filter(Boolean).join(" ") || "Tu pase"}
+              name={student?.name || "Tu pase"}
             />
-            <p className="text-sm text-muted">Mostralo en recepción al llegar: queda registrada tu asistencia a la clase.</p>
+            <p className="text-sm text-muted">
+              {child
+                ? `Mostralo en recepción cuando ${student.firstName} llega a la clase: queda registrada su asistencia.`
+                : "Mostralo en recepción al llegar: queda registrada tu asistencia a la clase."}
+            </p>
           </>
         ) : (
           <p className="rounded-xl bg-surface px-4 py-3 text-[15px]">Tu cuenta todavía no tiene ficha de alumno. Pedila en recepción.</p>

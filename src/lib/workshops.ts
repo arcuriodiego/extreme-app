@@ -156,13 +156,9 @@ export async function loadRegistrations(supabase: Client, workshopId: string): P
   return ((data ?? []) as unknown as RawReg[]).map(toReg);
 }
 
-/** Workshops en los que está inscripta la persona con sesión (la base sólo devuelve los suyos). */
-export async function loadMyRegistrations(supabase: Client, profileId: string): Promise<RegistrationRow[]> {
-  const { data } = await supabase
-    .from("workshop_registrations")
-    .select(`${REG_SELECT}, me:students!inner(profile_id)`)
-    .eq("me.profile_id", profileId)
-    .eq("status", "confirmed");
+/** Workshops en los que está inscripto un alumno (por ficha). */
+export async function loadStudentRegistrations(supabase: Client, studentId: string): Promise<RegistrationRow[]> {
+  const { data } = await supabase.from("workshop_registrations").select(REG_SELECT).eq("student_id", studentId).eq("status", "confirmed");
   return ((data ?? []) as unknown as RawReg[]).map(toReg);
 }
 

@@ -3,25 +3,27 @@ import { DayStrip } from "@/components/classes/DayStrip";
 import { SessionCard } from "@/components/classes/SessionCard";
 import { WeeklyGrid } from "@/components/classes/WeeklyGrid";
 import { WorkshopList } from "@/components/classes/WorkshopList";
-import { loadMyRegistrations, loadWorkshops, type WorkshopRow } from "@/lib/workshops";
+import { loadStudentRegistrations, loadWorkshops, type WorkshopRow } from "@/lib/workshops";
 import { FormAlert } from "@/components/forms/fields";
 import { PageHeader } from "@/components/ui/basics";
 import { dayStrip, longDate, pickDay } from "@/domain/classes/sessions";
 import { academyToday, loadGroups, slotsOf } from "@/lib/grilla";
-import { loadMyMemberships } from "@/lib/memberships";
+import { loadActiveMemberships } from "@/lib/memberships";
+import { getActiveStudent } from "@/lib/active-student";
 import { requireProfile } from "@/lib/session";
 import { ensureSessions, loadSessions } from "@/lib/sessions";
 import { createClient } from "@/lib/supabase/server";
 import { SmallSubmit } from "@/components/forms/fields";
 import { BOOKING_ERRORS, BOOKING_NOTICES } from "@/domain/bookings/messages";
 import { type Availability, cancelPreview, loadAvailability, loadBalances, loadUpcomingBookings } from "@/lib/bookings";
-import { loadMyStudentId } from "@/lib/billing";
 import { bookMySession, cancelMyBooking } from "./actions";
 
 export const metadata: Metadata = { title: "Clases" };
 
 export default async function ClasesPage({ searchParams }: { searchParams: Promise<{ dia?: string; aviso?: string; error?: string }> }) {
-  const [profile, params] = await Promise.all([requireProfile(), searchParams]);
+  const [, params, { active }] = await Promise.all([requireProfile(), searchParams, getActiveStudent()]);
+  const studentId = active?.id ?? null;
+  const canBook = active?.canBook ?? false;
   const strip = dayStrip(academyToday());
   const day = pickDay(params.dia, strip);
 
@@ -41,11 +43,10 @@ export default async function ClasesPage({ searchParams }: { searchParams: Promi
       ensureSessions(supabase),
       loadSessions(supabase, day, day),
       loadGroups(supabase, { onlyActive: true }),
-      loadMyMemberships(supabase, profile.id),
+      studentId ? loadActiveMemberships(supabase, studentId) : Promise.resolve([]),
       loadWorkshops(supabase),
-      loadMyRegistrations(supabase, profile.id),
+      studentId ? loadStudentRegistrations(supabase, studentId) : Promise.resolve([]),
     ]);
-    const studentId = await loadMyStudentId(supabase, profile.id);
     const [avail, balances, bookings] = await Promise.all([
       loadAvailability(supabase, loaded.map((x) => x.id)),
       studentId ? loadBalances(supabase, studentId) : Promise.resolve([]),
@@ -101,7 +102,7 @@ export default async function ClasesPage({ searchParams }: { searchParams: Promi
                           tag={fixed ? "TU CLASE FIJA" : booking ? "RESERVADA" : undefined}
                           extra={open && !booking && a ? (a.seatsLeft === 0 ? "Completa" : a.seatsLeft === 1 ? "Queda 1 lugar" : `Quedan ${a.seatsLeft} lugares`) : undefined}
                         >
-                          {booking && (
+                          {booking && canBook && (
                             <form action={cancelMyBooking} className="flex flex-wrap items-center justify-between gap-2 border-t border-line pt-3">
                               <input type="hidden" name="booking_id" value={booking.id} />
                               <input type="hidden" name="back" value="/clases" />
@@ -114,7 +115,7 @@ export default async function ClasesPage({ searchParams }: { searchParams: Promi
                               <SmallSubmit tone="danger">Cancelar reserva</SmallSubmit>
                             </form>
                           )}
-                          {open && !booking && a && a.seatsLeft > 0 && hasBalance && (
+                          {open && !booking && a && a.seatsLeft > 0 && hasBalance && canBook && (
                             <form action={bookMySession} className="border-t border-line pt-3">
                               <input type="hidden" name="session_id" value={s.id} />
                               <input type="hidden" name="back" value="/clases" />

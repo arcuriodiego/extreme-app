@@ -198,8 +198,3 @@ export async function loadDebtors(supabase: Client, today: CalendarDate, graceDa
   });
 }
 
-/** Ficha de alumno de quien tiene la sesión, si tiene. */
-export async function loadMyStudentId(supabase: Client, profileId: string): Promise<string | null> {
-  const { data } = await supabase.from("students").select("id").eq("profile_id", profileId).maybeSingle();
-  return (data?.id as string | undefined) ?? null;
-}

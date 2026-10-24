@@ -287,3 +287,41 @@ export async function cancelStudentBooking(formData: FormData): Promise<void> {
   if (error) to(back, { error: bookingErrorCode(error) });
   to(back, { aviso: data ? "cancelada-devuelta" : "cancelada-tarde" });
 }
+
+function guardianErrorCode(error: { code?: string; message?: string }): string {
+  const m = error.message ?? "";
+  if (m.startsWith("No hay ninguna cuenta")) return "tutor-sin-cuenta";
+  if (m.startsWith("Esa cuenta es la del propio alumno")) return "tutor-mismo";
+  if (error.code === "42501") return "sin-permiso";
+  if (error.code === "P0002") return "no-disponible";
+  return "generico";
+}
+
+/** Recepción vincula un tutor (por el email de su cuenta) a un alumno. */
+export async function linkGuardian(formData: FormData): Promise<void> {
+  const studentId = String(formData.get("student_id") ?? "");
+  if (!UUID.test(studentId)) to("/admin/alumnos", { error: "datos" });
+  const back = `/admin/alumnos/${studentId}`;
+  const email = String(formData.get("email") ?? "").trim().slice(0, 200);
+  const rel = String(formData.get("relationship") ?? "");
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) to(back, { error: "tutor-email" });
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("link_guardian", {
+    p_student_id: studentId,
+    p_email: email,
+    p_relationship: ["madre", "padre", "tutor"].includes(rel) ? rel : null,
+  });
+  if (error) to(back, { error: guardianErrorCode(error) });
+  to(back, { aviso: "tutor-vinculado" });
+}
+
+export async function unlinkGuardian(formData: FormData): Promise<void> {
+  const studentId = String(formData.get("student_id") ?? "");
+  const linkId = String(formData.get("link_id") ?? "");
+  if (!UUID.test(studentId) || !UUID.test(linkId)) to("/admin/alumnos", { error: "datos" });
+  const back = `/admin/alumnos/${studentId}`;
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("unlink_guardian", { p_link_id: linkId });
+  if (error) to(back, { error: guardianErrorCode(error) });
+  to(back, { aviso: "tutor-desvinculado" });
+}

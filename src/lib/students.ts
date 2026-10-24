@@ -15,6 +15,8 @@ export interface StudentRow {
   status: StudentStatus;
   joinedAt: string;
   hasAccount: boolean;
+  /** Cuenta de la persona, si tiene. */
+  profileId: string | null;
   email: string | null;
 }
 
@@ -46,6 +48,7 @@ function toRow(r: Raw): StudentRow {
     status: r.status,
     joinedAt: r.joined_at,
     hasAccount: r.profile_id !== null,
+    profileId: r.profile_id,
     email: r.profile?.email ?? null,
   };
 }

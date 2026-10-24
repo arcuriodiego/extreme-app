@@ -1,9 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { cookies } from "next/headers";
+import { StudentSwitcher } from "@/components/nav/StudentSwitcher";
 import { TabBar } from "@/components/nav/TabBar";
 import { academyConfig } from "@/config/academy";
 import { canSwitchMode, hasGestion, personalTabs, resolveMode } from "@/domain/navigation/menus";
+import { getActiveStudent } from "@/lib/active-student";
 import { requireProfile } from "@/lib/session";
 
 // Páginas personales: se arman en cada visita, nunca durante la compilación.
@@ -18,6 +20,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const chosen = (await cookies()).get("modo")?.value;
   const tabs = personalTabs(profile.access, chosen);
   const mode = resolveMode(profile.access, chosen);
+  // Tutores: a quién se está viendo (él o uno de sus hijos).
+  const { active, options } = mode === "alumno" ? await getActiveStudent() : { active: null, options: [] };
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col">
@@ -50,6 +54,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           >
             Estás en la vista de {mode === "profe" ? "profe" : "alumno"} · Cambiar a {mode === "profe" ? "alumno" : "profe"}
           </a>
+        </div>
+      )}
+      {active && options.length > 1 && (
+        <div className="px-5 pt-3">
+          <StudentSwitcher options={options.map((o) => ({ id: o.id, label: o.isSelf ? "Yo" : o.firstName }))} activeId={active.id} />
         </div>
       )}
       <main className="flex flex-1 flex-col gap-6 px-5 pb-28 pt-6">{children}</main>

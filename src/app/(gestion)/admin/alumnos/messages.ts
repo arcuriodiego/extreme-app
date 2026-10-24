@@ -10,6 +10,8 @@ export const NOTICES: Record<string, string> = {
   baja: "Listo, dimos de baja la cuota y liberamos sus lugares.",
   "pago-registrado": "Listo, registramos el pago.",
   "pago-anulado": "Listo, anulamos el pago. Lo que cubría vuelve a figurar como pendiente.",
+  "tutor-vinculado": "Listo, vinculamos al tutor. Ya puede ver a este alumno desde su celular.",
+  "tutor-desvinculado": "Listo, desvinculamos al tutor.",
 };
 
 export const ERRORS: Record<string, string> = {
@@ -23,6 +25,9 @@ export const ERRORS: Record<string, string> = {
   "campo-status": "Elegí el estado.",
   "dni-repetido": "Ya hay otra ficha con ese DNI. Buscala en la lista.",
   "sin-permiso": "No tenés permiso para hacer este cambio.",
+  "tutor-email": "Escribí el email de la cuenta del tutor.",
+  "tutor-sin-cuenta": "No hay ninguna cuenta con ese email. Pedile al tutor que se registre en la app con ese email y volvé a vincularlo.",
+  "tutor-mismo": "Esa es la cuenta del propio alumno.",
   datos: "Revisá los datos: hay algo que no es válido.",
   generico: "No pudimos guardar el cambio. Probá de nuevo.",
   completo: "No hay lugar: uno de los horarios se completó. Elegí otro.",

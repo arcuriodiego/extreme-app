@@ -3,7 +3,8 @@ import { PageHeader } from "@/components/ui/basics";
 import { formatARS } from "@/domain/shared/money";
 import { academyToday } from "@/lib/grilla";
 import { methodLabel } from "@/domain/billing/payments";
-import { ensureCharges, loadCharges, loadMyStudentId, loadPayments } from "@/lib/billing";
+import { getActiveStudent } from "@/lib/active-student";
+import { ensureCharges, loadCharges, loadPayments } from "@/lib/billing";
 import { loadPlans } from "@/lib/prices";
 import { requireProfile } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
@@ -14,13 +15,11 @@ const dateFormat = new Intl.DateTimeFormat("es-AR", { day: "numeric", month: "lo
 
 export default async function PagosPage() {
   const today = academyToday();
-  const profile = await requireProfile();
+  await requireProfile();
   const supabase = await createClient();
-  const [allPlans, studentId] = await Promise.all([
-    loadPlans(supabase, today).catch(() => []),
-    loadMyStudentId(supabase, profile.id),
-    ensureCharges(supabase),
-  ]);
+  const [allPlans, { active }] = await Promise.all([loadPlans(supabase, today).catch(() => []), getActiveStudent(), ensureCharges(supabase)]);
+  const studentId = active?.id ?? null;
+  const child = active !== null && !active.isSelf;
   const plans = allPlans.filter((p) => p.active && p.current);
   const charges = studentId ? await loadCharges(supabase, studentId).catch(() => []) : [];
   const payments = studentId ? await loadPayments(supabase, studentId).catch(() => []) : [];
@@ -29,12 +28,12 @@ export default async function PagosPage() {
 
   return (
     <>
-      <PageHeader title="Pagos" />
+      <PageHeader title={child ? `Pagos de ${active.firstName}` : "Pagos"} />
       <section className="flex flex-col gap-3">
-        <h2 className="font-display text-2xl font-bold uppercase tracking-wide">Lo que debés</h2>
+        <h2 className="font-display text-2xl font-bold uppercase tracking-wide">{child ? "Lo que debe" : "Lo que debés"}</h2>
         {owed.length === 0 ? (
           <p className="rounded-xl bg-ok-soft px-4 py-3 text-[15px] font-semibold text-ok-ink">
-            <span aria-hidden="true">✓ </span>No tenés nada pendiente.
+            <span aria-hidden="true">✓ </span>{child ? "No tiene nada pendiente." : "No tenés nada pendiente."}
           </p>
         ) : (
           <ul className="flex flex-col gap-2">

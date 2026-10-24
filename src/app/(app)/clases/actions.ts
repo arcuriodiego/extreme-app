@@ -2,9 +2,13 @@
 
 import { redirect } from "next/navigation";
 import { bookingErrorCode } from "@/domain/bookings/messages";
+import { getActiveStudent } from "@/lib/active-student";
 import { createClient } from "@/lib/supabase/server";
 
-/** Reservas que hace el propio alumno desde la app. La base controla saldo, cupo y la regla de 12 h. */
+/**
+ * Reservas que hace el alumno (o su tutor, para el alumno que está viendo) desde la app.
+ * La base controla el vínculo, el saldo, el cupo y la regla de 12 h.
+ */
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -19,8 +23,8 @@ function back(formData: FormData, params: Record<string, string>): never {
 export async function bookMySession(formData: FormData): Promise<void> {
   const id = String(formData.get("session_id") ?? "");
   if (!UUID.test(id)) back(formData, { error: "generico" });
-  const supabase = await createClient();
-  const { error } = await supabase.rpc("book_session", { p_session_id: id });
+  const [supabase, { active }] = await Promise.all([createClient(), getActiveStudent()]);
+  const { error } = await supabase.rpc("book_session", active ? { p_session_id: id, p_student_id: active.id } : { p_session_id: id });
   if (error) back(formData, { error: bookingErrorCode(error) });
   back(formData, { aviso: "reservada" });
 }
