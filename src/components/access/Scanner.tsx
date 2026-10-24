@@ -121,7 +121,10 @@ export function Scanner({ onCode, onResult }: { onCode: (code: string) => Promis
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="relative overflow-hidden rounded-[var(--radius-card)] bg-ink" style={{ aspectRatio: "4 / 3" }}>
+      <div
+        className={`relative overflow-hidden rounded-[var(--radius-card)] bg-ink ${status === "on" ? "" : "min-h-44"}`}
+        style={status === "on" ? { aspectRatio: "4 / 3" } : undefined}
+      >
         <video ref={videoRef} playsInline muted className={`size-full object-cover ${status === "on" ? "" : "hidden"}`} />
         <canvas ref={canvasRef} className="hidden" />
         {status === "on" && (
