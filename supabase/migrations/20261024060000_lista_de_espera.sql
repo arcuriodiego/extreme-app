@@ -368,7 +368,7 @@ $$;
 
 -- Las anotaciones vigentes de un alumno, con su puesto en cada lista.
 create or replace function public.waitlist_for_student(p_student_id uuid)
-returns table (entry_id uuid, session_id uuid, status text, offer_expires_at timestamptz, position integer)
+returns table (entry_id uuid, session_id uuid, status text, offer_expires_at timestamptz, queue_position integer)
 language sql
 stable
 security definer

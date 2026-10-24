@@ -130,6 +130,8 @@ begin
   perform refresh_waitlists();
   assert (select count(*) from waitlist_entries where status in ('waiting', 'offered')) = 1, 'Lu ve sólo lo suyo';
   assert (select status from waitlist_entries where status in ('waiting', 'offered')) = 'offered', 'ahora el lugar es de Lu';
+  assert (select queue_position from waitlist_for_student((select lu from ids))) = 1, 'primera en la lista';
+  assert not exists (select 1 from waitlist_for_student((select sofi from ids))), 'no ve la lista de otra';
 end $$;
 reset role;
 do $$

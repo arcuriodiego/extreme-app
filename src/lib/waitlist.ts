@@ -20,8 +20,8 @@ export async function refreshWaitlists(supabase: Client): Promise<void> {
 export async function loadWaitlist(supabase: Client, studentId: string): Promise<Map<string, WaitEntry>> {
   const { data } = await supabase.rpc("waitlist_for_student", { p_student_id: studentId });
   const map = new Map<string, WaitEntry>();
-  for (const r of (data ?? []) as { entry_id: string; session_id: string; status: "waiting" | "offered"; offer_expires_at: string | null; position: number }[]) {
-    map.set(r.session_id, { id: r.entry_id, sessionId: r.session_id, status: r.status, offerExpiresAt: r.offer_expires_at, position: r.position });
+  for (const r of (data ?? []) as { entry_id: string; session_id: string; status: "waiting" | "offered"; offer_expires_at: string | null; queue_position: number }[]) {
+    map.set(r.session_id, { id: r.entry_id, sessionId: r.session_id, status: r.status, offerExpiresAt: r.offer_expires_at, position: r.queue_position });
   }
   return map;
 }
