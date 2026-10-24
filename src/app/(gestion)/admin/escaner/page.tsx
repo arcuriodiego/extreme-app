@@ -11,6 +11,7 @@ import { academyToday } from "@/lib/grilla";
 import { requireProfile } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import { ScanStation } from "./ScanStation";
+import { currentTimeMs } from "@/domain/access/qr";
 
 export const metadata: Metadata = { title: "Escáner QR" };
 
@@ -41,6 +42,8 @@ export default async function EscanerPage() {
 
   let logs: LogRow[] = [];
   let arrivals: ArrivalClass[] = [];
+  let window = { before: 30, after: 15 };
+  let next: { label: string; startsAt: string } | null = null;
   if (canSee) {
     const supabase = await createClient();
     const [{ data }, arrivalsRes] = await Promise.all([
@@ -52,6 +55,31 @@ export default async function EscanerPage() {
       .limit(40),
       supabase.rpc("arrivals_now"),
     ]);
+    const [{ data: rules }, { data: upcoming }] = await Promise.all([
+      supabase.from("app_settings").select("key, value").in("key", ["checkin_before_minutes", "checkin_after_minutes"]),
+      supabase
+        .from("class_sessions")
+        .select("starts_at, group:class_groups(style:dance_styles(name), age:age_categories(name), level:levels(name))")
+        .eq("status", "scheduled")
+        .gt("starts_at", new Date(currentTimeMs()).toISOString())
+        .order("starts_at")
+        .limit(1),
+    ]);
+    const r = (rules ?? []) as { key: string; value: number }[];
+    window = {
+      before: r.find((x) => x.key === "checkin_before_minutes")?.value ?? 30,
+      after: r.find((x) => x.key === "checkin_after_minutes")?.value ?? 15,
+    };
+    const u = ((upcoming ?? []) as unknown as {
+      starts_at: string;
+      group: { style: { name: string } | null; age: { name: string } | null; level: { name: string } | null } | null;
+    }[])[0];
+    if (u) {
+      next = {
+        startsAt: u.starts_at,
+        label: [u.group?.style?.name, u.group?.age?.name, u.group?.level?.name].filter(Boolean).join(" · "),
+      };
+    }
     logs = (data ?? []) as unknown as LogRow[];
     arrivals = (arrivalsRes.data ?? []) as ArrivalClass[];
   }
@@ -59,7 +87,7 @@ export default async function EscanerPage() {
   return (
     <>
       <PageHeader title="Escáner QR" subtitle="Escaneá el pase del alumno: la app dice si puede pasar y registra la asistencia de la clase." />
-      <ScanStation canSearch={canSee} arrivals={arrivals} />
+      <ScanStation canSearch={canSee} arrivals={arrivals} window={window} next={next} />
 
       {canSee && (
         <section className="flex flex-col gap-3">

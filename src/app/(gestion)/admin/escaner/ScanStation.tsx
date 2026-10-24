@@ -18,7 +18,27 @@ const TONES = {
 const timeFormat = new Intl.DateTimeFormat("es-AR", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "America/Argentina/Buenos_Aires" });
 
 /** Escáner + ingreso a mano: "Llegando ahora" (un toque) o buscando al alumno. */
-export function ScanStation({ canSearch, arrivals }: { canSearch: boolean; arrivals: ArrivalClass[] }) {
+const dayTime = new Intl.DateTimeFormat("es-AR", {
+  weekday: "long",
+  day: "numeric",
+  month: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+  timeZone: "America/Argentina/Buenos_Aires",
+});
+
+export function ScanStation({
+  canSearch,
+  arrivals,
+  window,
+  next,
+}: {
+  canSearch: boolean;
+  arrivals: ArrivalClass[];
+  window: { before: number; after: number };
+  next: { label: string; startsAt: string } | null;
+}) {
   const router = useRouter();
   const [q, setQ] = useState("");
   const [found, setFound] = useState<FoundStudent[] | null>(null);
@@ -62,8 +82,21 @@ export function ScanStation({ canSearch, arrivals }: { canSearch: boolean; arriv
       {canSearch && (
         <section className="flex flex-col gap-3">
           <h2 className="font-display text-2xl font-bold uppercase tracking-wide">Llegando ahora</h2>
+          <p className="text-sm text-muted">
+            Cada clase aparece acá desde {window.before} minutos antes hasta {window.after} minutos después de que empieza (se cambia en
+            Configuración → Reglas).
+          </p>
           {arrivals.length === 0 ? (
-            <p className="text-[15px] text-muted">No hay clases por empezar en este momento.</p>
+            <p className="rounded-xl bg-surface px-4 py-3 text-[15px]">
+              No hay clases en horario de ingreso.
+              {next && (
+                <>
+                  {" "}
+                  Próxima: <strong>{next.label}</strong>, {dayTime.format(new Date(next.startsAt))}. Aparece acá desde las{" "}
+                  <strong>{dayTime.format(new Date(new Date(next.startsAt).getTime() - window.before * 60_000)).split(" ").pop()}</strong>.
+                </>
+              )}
+            </p>
           ) : (
             arrivals.map((c) => (
               <div key={c.session_id} className="flex flex-col rounded-[var(--radius-card)] border border-line p-3.5">
