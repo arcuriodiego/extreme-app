@@ -31,7 +31,7 @@ export function attendanceErrorCode(message: string | undefined, code: string | 
 export const ATTENDANCE_ERRORS: Record<string, string> = {
   "no-habilitado": "No está habilitado para esta clase: que pase por recepción.",
   "fuera-de-horario": "La asistencia se toma desde un rato antes de la clase y hasta 7 días después.",
-  "sin-permiso": "Sólo podés tomar asistencia en tus clases.",
+  "sin-permiso": "Los presentes los registra sólo recepción.",
   "no-disponible": "Esa clase o ese alumno ya no están disponibles. Recargá la página.",
   generico: "No pudimos guardar la asistencia. Probá de nuevo.",
 };

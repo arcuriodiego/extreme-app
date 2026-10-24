@@ -5,7 +5,7 @@ import { attendanceErrorCode } from "@/lib/attendance";
 import { createClient } from "@/lib/supabase/server";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const BACKS = [/^\/profe\/asistencia\/[0-9a-f-]{36}$/, /^\/admin\/clases\/calendario\/lista\/[0-9a-f-]{36}$/];
+const BACKS = [/^\/admin\/clases\/calendario\/lista\/[0-9a-f-]{36}$/];
 
 /** Marca o desmarca presente a un alumno en una clase. */
 export async function toggleAttendance(formData: FormData): Promise<void> {

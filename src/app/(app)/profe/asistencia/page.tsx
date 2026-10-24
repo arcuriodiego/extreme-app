@@ -28,13 +28,10 @@ export default async function AsistenciaPage() {
 
   return (
     <>
-      <PageHeader title="Asistencia" subtitle="Elegí la clase para ver la lista y marcar presentes, o escaneá los pases." />
-      <Link
-        href="/profe/asistencia/escaner"
-        className="flex h-12 items-center justify-center gap-2 rounded-full bg-ink font-bold text-white no-underline hover:bg-[#262626] hover:text-white"
-      >
-        Escanear pases QR
-      </Link>
+      <PageHeader
+        title="Asistencia"
+        subtitle="Elegí la clase para ver quiénes vinieron. Los ingresos los registra recepción cuando cada alumno llega."
+      />
       {mine.length === 0 ? (
         <p className="rounded-xl bg-surface px-4 py-3 text-[15px]">No tenés clases hoy ni en los últimos 2 días.</p>
       ) : (

@@ -29,7 +29,7 @@ export function RosterList({ rows, sessionId, back, canMark }: { rows: RosterRow
                 <span className="rounded-full bg-surface px-2 py-0.5 text-[11px] font-bold">{KIND_LABELS[r.kind]}</span>
               </span>
               <span className={`text-sm ${r.enabled ? "text-muted" : "font-semibold text-alert-ink"}`}>
-                {r.present ? "Presente" : r.enabled ? "Todavía no llegó" : "No habilitado: que pase por recepción"}
+                {r.present ? "Presente" : r.enabled ? "Todavía no llegó" : "No habilitado: tiene que pasar por recepción"}
               </span>
             </span>
             {canMark && (r.enabled || r.present) && (

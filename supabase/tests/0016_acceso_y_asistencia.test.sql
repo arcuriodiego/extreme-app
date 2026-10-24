@@ -175,31 +175,42 @@ begin
   raise notice 'OK  workshop';
 end $$;
 
--- 5. El profe escanea: sólo ve habilitado / no habilitado, sin deudas.
+-- 5. El profe no escanea ni registra ingresos: eso lo hace sólo recepción (decisión de Diego).
 set local request.jwt.claims = '{"sub":"e0000000-0000-0000-0000-00000000000e"}';
 do $$
-declare r jsonb;
 begin
-  r := check_in((select lu from codes));
-  assert r ->> 'result' = 'denied' and r ->> 'reason' = 'no-habilitado', format('el profe no ve la deuda: %s', r);
-  r := check_in((select sofi from codes));
-  assert r ->> 'result' = 'allowed' and r ->> 'reason' = 'habilitado', 'la gracia el profe la ve como habilitado';
+  begin
+    perform check_in((select lu from codes));
+    raise exception 'el profe no escanea';
+  exception when insufficient_privilege then null;
+  end;
   begin
     perform check_in_student((select nico from ids));
-    raise exception 'el profe no registra ingresos a mano por búsqueda';
+    raise exception 'el profe no registra ingresos a mano';
   exception when insufficient_privilege then null;
   end;
   assert (select count(*) from access_logs) = 0, 'el profe no ve el registro de ingresos';
-  raise notice 'OK  el profe sólo ve habilitado';
+  raise notice 'OK  el profe no registra ingresos';
 end $$;
 
--- 6. Lista de la clase y asistencia a mano.
+-- 6. El profe ve la lista de su clase con los presentes, pero no marca; recepción sí.
 do $$
 declare v_c uuid := (select clase from ids);
 begin
   assert (select count(*) from session_roster(v_c)) = 4, 'tres fijas y una reserva';
   assert (select enabled from session_roster(v_c) where student_id = (select lu from ids)) = false, 'Lu no habilitada';
   assert (select present from session_roster(v_c) where student_id = (select vale from ids)), 'Vale presente';
+  begin
+    perform mark_attendance(v_c, (select sofi from ids), true);
+    raise exception 'el profe no marca presentes';
+  exception when insufficient_privilege then null;
+  end;
+  raise notice 'OK  el profe ve la lista sin marcar';
+end $$;
+set local request.jwt.claims = '{"sub":"a0000000-0000-0000-0000-00000000000a"}';
+do $$
+declare v_c uuid := (select clase from ids);
+begin
   begin
     perform mark_attendance(v_c, (select lu from ids), true);
     raise exception 'no se marca a quien no está habilitado';
@@ -215,7 +226,7 @@ begin
   assert not (select present from session_roster(v_c) where student_id = (select vale from ids)), 'desmarcada';
   perform mark_attendance(v_c, (select vale from ids), true);
   assert (select present from session_roster(v_c) where student_id = (select vale from ids)), 'marcada a mano';
-  raise notice 'OK  lista y asistencia a mano';
+  raise notice 'OK  recepción marca a mano';
 end $$;
 
 -- 7. Otro profe no ve la lista ni marca; la clase lejana no se marca todavía.
@@ -236,7 +247,7 @@ begin
   end;
   raise notice 'OK  listas ajenas protegidas';
 end $$;
-set local request.jwt.claims = '{"sub":"e0000000-0000-0000-0000-00000000000e"}';
+set local request.jwt.claims = '{"sub":"a0000000-0000-0000-0000-00000000000a"}';
 do $$
 begin
   perform mark_attendance((select id from class_sessions where schedule_id is null), (select sofi from ids), true);

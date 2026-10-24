@@ -13,7 +13,7 @@ const reception: Access = {
   roles: ["reception", "student"],
   permissions: ["people.view", "people.manage", "payments.register", "attendance.mark", "classes.view_roster"],
 };
-const teacher: Access = { roles: ["teacher", "student"], permissions: ["attendance.mark", "classes.view_roster"] };
+const teacher: Access = { roles: ["teacher", "student"], permissions: ["classes.view_roster"] };
 const student: Access = { roles: ["student"], permissions: [] };
 
 const keys = (items: { key: string }[]) => items.map((i) => i.key);
