@@ -13,6 +13,7 @@ const KIND: Record<NotificationKind, { label: string; tone: string }> = {
   suspended: { label: "Acceso suspendido", tone: "bg-alert-soft text-alert-ink" },
   pack_expiring: { label: "Pack", tone: "bg-surface text-ink" },
   class_cancelled: { label: "Clase suspendida", tone: "bg-alert-soft text-alert-ink" },
+  class_restored: { label: "Clase reprogramada", tone: "bg-ok-soft text-ok-ink" },
   announcement: { label: "Aviso de la academia", tone: "bg-ink text-white" },
 };
 

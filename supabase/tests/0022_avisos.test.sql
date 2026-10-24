@@ -80,6 +80,25 @@ begin
   raise notice 'OK  clase suspendida';
 end $$;
 
+-- 2b. Vuelve a programarse: avisa de nuevo; y una segunda suspensión también avisa.
+set local request.jwt.claims = '{"sub":"d0000000-0000-0000-0000-00000000000d"}';
+select restore_session((select id from class_sessions limit 1));
+set local request.jwt.claims = '{"sub":"c0000000-0000-0000-0000-00000000000c"}';
+do $$
+begin
+  assert (select count(*) from notifications where kind = 'class_restored') = 1, 'Laura sabe que vuelve la clase';
+  assert (select title from notifications where kind = 'class_restored') like 'Vuelve la clase de Mateo del %', 'con el nombre';
+  raise notice 'OK  clase reprogramada';
+end $$;
+set local request.jwt.claims = '{"sub":"d0000000-0000-0000-0000-00000000000d"}';
+select cancel_session((select id from class_sessions limit 1), 'Otra vez sin luz');
+set local request.jwt.claims = '{"sub":"c0000000-0000-0000-0000-00000000000c"}';
+do $$
+begin
+  assert (select count(*) from notifications where kind = 'class_cancelled') = 2, 'la segunda suspensión también avisa';
+  raise notice 'OK  segunda suspensión';
+end $$;
+
 -- 3. Envíos: la profe a su grupo; otra profe no; recepción a todos.
 set local request.jwt.claims = '{"sub":"e0000000-0000-0000-0000-00000000000e"}';
 do $$
