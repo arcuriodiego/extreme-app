@@ -3,7 +3,7 @@ import Link from "next/link";
 import { NoAccess } from "@/components/status/NoAccess";
 import { PageHeader } from "@/components/ui/basics";
 import { can } from "@/domain/auth/roles";
-import { ENTRY_TITLES, type EntryResult, entryReason } from "@/domain/access/messages";
+import { type ArrivalClass, ENTRY_TITLES, type EntryResult, entryReason } from "@/domain/access/messages";
 import { canOpen } from "@/domain/navigation/menus";
 import { startOfDayInZone } from "@/domain/shared/calendar-date";
 import { academyConfig } from "@/config/academy";
@@ -40,21 +40,26 @@ export default async function EscanerPage() {
   const canSee = can(profile.access, "people.view");
 
   let logs: LogRow[] = [];
+  let arrivals: ArrivalClass[] = [];
   if (canSee) {
     const supabase = await createClient();
-    const { data } = await supabase
+    const [{ data }, arrivalsRes] = await Promise.all([
+      supabase
       .from("access_logs")
       .select("id, created_at, result, reason, label, method, student_id, student:students(first_name, last_name)")
       .gte("created_at", startOfDayInZone(academyToday(), academyConfig.timeZone).toISOString())
       .order("created_at", { ascending: false })
-      .limit(40);
+      .limit(40),
+      supabase.rpc("arrivals_now"),
+    ]);
     logs = (data ?? []) as unknown as LogRow[];
+    arrivals = (arrivalsRes.data ?? []) as ArrivalClass[];
   }
 
   return (
     <>
       <PageHeader title="Escáner QR" subtitle="Escaneá el pase del alumno: la app dice si puede pasar y registra la asistencia de la clase." />
-      <ScanStation canSearch={canSee} />
+      <ScanStation canSearch={canSee} arrivals={arrivals} />
 
       {canSee && (
         <section className="flex flex-col gap-3">

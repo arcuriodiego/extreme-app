@@ -54,3 +54,30 @@ export const ENTRY_REASONS: Record<string, string> = {
 export function entryReason(reason: string): string {
   return ENTRY_REASONS[reason] ?? "No pudimos validar el ingreso.";
 }
+
+/** "Llegando ahora": alumnos de las clases en su ventana de ingreso, con su estado. */
+export type ArrivalState = "reserva" | "current" | "grace" | "suspended" | "unpaid_first";
+
+export interface ArrivalStudent {
+  student_id: string;
+  name: string;
+  kind: "fija" | "reserva";
+  state: ArrivalState;
+  present: boolean;
+}
+
+export interface ArrivalClass {
+  session_id: string;
+  starts_at: string;
+  label: string;
+  room: string;
+  students: ArrivalStudent[];
+}
+
+export const ARRIVAL_STATES: Record<ArrivalState, { label: string; tone: "ok" | "warn" | "alert"; canEnter: boolean }> = {
+  reserva: { label: "Con reserva", tone: "ok", canEnter: true },
+  current: { label: "Cuota al día", tone: "ok", canEnter: true },
+  grace: { label: "En gracia", tone: "warn", canEnter: true },
+  suspended: { label: "Cuota vencida", tone: "alert", canEnter: false },
+  unpaid_first: { label: "Falta el primer pago", tone: "alert", canEnter: false },
+};
