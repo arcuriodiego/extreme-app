@@ -15,7 +15,7 @@ const TONES = {
   alert: "bg-alert-soft text-alert-ink",
 } as const;
 
-const timeFormat = new Intl.DateTimeFormat("es-AR", { hour: "2-digit", minute: "2-digit", timeZone: "America/Argentina/Buenos_Aires" });
+const timeFormat = new Intl.DateTimeFormat("es-AR", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "America/Argentina/Buenos_Aires" });
 
 /** Escáner + ingreso a mano: "Llegando ahora" (un toque) o buscando al alumno. */
 export function ScanStation({ canSearch, arrivals }: { canSearch: boolean; arrivals: ArrivalClass[] }) {

@@ -7,7 +7,7 @@ const styles = {
   invalid: { box: "bg-surface border-line", badge: "bg-ink", text: "text-ink", icon: "M12 7v6M12 17h.01" },
 } as const;
 
-const timeFormat = new Intl.DateTimeFormat("es-AR", { hour: "2-digit", minute: "2-digit", timeZone: "America/Argentina/Buenos_Aires" });
+const timeFormat = new Intl.DateTimeFormat("es-AR", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "America/Argentina/Buenos_Aires" });
 
 /** Resultado de un ingreso: color, ícono y texto (se entiende aunque no se distinga el color). */
 export function EntryCard({ entry }: { entry: Entry }) {

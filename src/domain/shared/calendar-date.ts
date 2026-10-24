@@ -137,5 +137,5 @@ export function isoWeekday(date: CalendarDate): number {
 
 /** Hora local "HH:MM" de un instante en una zona horaria. */
 export function timeInZone(instant: Date, timeZone: string): string {
-  return new Intl.DateTimeFormat("en-GB", { timeZone, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(instant);
+  return new Intl.DateTimeFormat("en-GB", { timeZone, hour: "2-digit", minute: "2-digit", hour12: false, hourCycle: "h23" }).format(instant);
 }

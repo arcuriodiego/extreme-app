@@ -32,7 +32,7 @@ const tones: Record<EntryResult, string> = {
   invalid: "bg-surface text-ink",
 };
 
-const timeFormat = new Intl.DateTimeFormat("es-AR", { hour: "2-digit", minute: "2-digit", timeZone: academyConfig.timeZone });
+const timeFormat = new Intl.DateTimeFormat("es-AR", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: academyConfig.timeZone });
 
 export default async function EscanerPage() {
   const profile = await requireProfile();
