@@ -29,6 +29,33 @@ export async function bookMySession(formData: FormData): Promise<void> {
   back(formData, { aviso: "reservada" });
 }
 
+export async function joinMyWaitlist(formData: FormData): Promise<void> {
+  const id = String(formData.get("session_id") ?? "");
+  if (!UUID.test(id)) back(formData, { error: "generico" });
+  const [supabase, { active }] = await Promise.all([createClient(), getActiveStudent()]);
+  const { error } = await supabase.rpc("join_waitlist", active ? { p_session_id: id, p_student_id: active.id } : { p_session_id: id });
+  if (error) back(formData, { error: bookingErrorCode(error) });
+  back(formData, { aviso: "en-espera" });
+}
+
+export async function leaveMyWaitlist(formData: FormData): Promise<void> {
+  const id = String(formData.get("entry_id") ?? "");
+  if (!UUID.test(id)) back(formData, { error: "generico" });
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("leave_waitlist", { p_entry_id: id });
+  if (error) back(formData, { error: bookingErrorCode(error) });
+  back(formData, { aviso: "salio-lista" });
+}
+
+export async function acceptMyOffer(formData: FormData): Promise<void> {
+  const id = String(formData.get("entry_id") ?? "");
+  if (!UUID.test(id)) back(formData, { error: "generico" });
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("accept_waitlist_offer", { p_entry_id: id });
+  if (error) back(formData, { error: bookingErrorCode(error) });
+  back(formData, { aviso: "lugar-confirmado" });
+}
+
 export async function cancelMyBooking(formData: FormData): Promise<void> {
   const id = String(formData.get("booking_id") ?? "");
   if (!UUID.test(id)) back(formData, { error: "generico" });

@@ -16,9 +16,14 @@ import { createClient } from "@/lib/supabase/server";
 import { SmallSubmit } from "@/components/forms/fields";
 import { BOOKING_ERRORS, BOOKING_NOTICES } from "@/domain/bookings/messages";
 import { type Availability, cancelPreview, loadAvailability, loadBalances, loadUpcomingBookings } from "@/lib/bookings";
-import { bookMySession, cancelMyBooking } from "./actions";
+import { acceptMyOffer, bookMySession, cancelMyBooking, joinMyWaitlist, leaveMyWaitlist } from "./actions";
+import { loadWaitlist, refreshWaitlists, type WaitEntry } from "@/lib/waitlist";
+import { academyConfig } from "@/config/academy";
+import { timeInZone } from "@/domain/shared/calendar-date";
 
 export const metadata: Metadata = { title: "Clases" };
+
+const timeOf = (iso: string) => timeInZone(new Date(iso), academyConfig.timeZone);
 
 export default async function ClasesPage({ searchParams }: { searchParams: Promise<{ dia?: string; aviso?: string; error?: string }> }) {
   const [, params, { active }] = await Promise.all([requireProfile(), searchParams, getActiveStudent()]);
@@ -37,21 +42,25 @@ export default async function ClasesPage({ searchParams }: { searchParams: Promi
   let availability = new Map<string, Availability>();
   const myBookings = new Map<string, { id: string; startsAt: string }>();
   let hasBalance = false;
+  let waits = new Map<string, WaitEntry>();
   try {
     // Todo en paralelo: la generación diaria ya dejó listas las próximas semanas.
-    const [, loaded, groups, mine, ws, myRegs] = await Promise.all([
+    const [, , loaded, groups, mine, ws, myRegs] = await Promise.all([
       ensureSessions(supabase),
+      refreshWaitlists(supabase).then(() => undefined),
       loadSessions(supabase, day, day),
       loadGroups(supabase, { onlyActive: true }),
       studentId ? loadActiveMemberships(supabase, studentId) : Promise.resolve([]),
       loadWorkshops(supabase),
       studentId ? loadStudentRegistrations(supabase, studentId) : Promise.resolve([]),
     ]);
-    const [avail, balances, bookings] = await Promise.all([
+    const [avail, balances, bookings, myWaits] = await Promise.all([
       loadAvailability(supabase, loaded.map((x) => x.id)),
       studentId ? loadBalances(supabase, studentId) : Promise.resolve([]),
       studentId ? loadUpcomingBookings(supabase, studentId) : Promise.resolve([]),
+      studentId ? loadWaitlist(supabase, studentId) : Promise.resolve(new Map<string, WaitEntry>()),
     ]);
+    waits = myWaits;
     availability = avail;
     hasBalance = balances.some((b) => b.active);
     for (const b of bookings) myBookings.set(b.sessionId, { id: b.id, startsAt: b.startsAt });
@@ -115,7 +124,58 @@ export default async function ClasesPage({ searchParams }: { searchParams: Promi
                               <SmallSubmit tone="danger">Cancelar reserva</SmallSubmit>
                             </form>
                           )}
-                          {open && !booking && a && a.seatsLeft > 0 && hasBalance && canBook && (
+                          {(() => {
+                            const w = waits.get(s.id);
+                            if (!open || booking || fixed || !canBook) return null;
+                            if (w?.status === "offered") {
+                              return (
+                                <div className="flex flex-col gap-2 rounded-xl bg-ok-soft p-3">
+                                  <span className="text-[15px] font-semibold text-ok-ink">
+                                    ¡Se liberó un lugar para vos! Confirmalo antes de las{" "}
+                                    {w.offerExpiresAt ? timeOf(w.offerExpiresAt) : ""}.
+                                  </span>
+                                  <div className="flex flex-wrap gap-2">
+                                    <form action={acceptMyOffer}>
+                                      <input type="hidden" name="entry_id" value={w.id} />
+                                      <input type="hidden" name="back" value="/clases" />
+                                      <input type="hidden" name="dia" value={day} />
+                                      <SmallSubmit tone="dark">Confirmar lugar</SmallSubmit>
+                                    </form>
+                                    <form action={leaveMyWaitlist}>
+                                      <input type="hidden" name="entry_id" value={w.id} />
+                                      <input type="hidden" name="back" value="/clases" />
+                                      <input type="hidden" name="dia" value={day} />
+                                      <SmallSubmit>No puedo ir</SmallSubmit>
+                                    </form>
+                                  </div>
+                                </div>
+                              );
+                            }
+                            if (w?.status === "waiting") {
+                              return (
+                                <form action={leaveMyWaitlist} className="flex flex-wrap items-center justify-between gap-2 border-t border-line pt-3">
+                                  <input type="hidden" name="entry_id" value={w.id} />
+                                  <input type="hidden" name="back" value="/clases" />
+                                  <input type="hidden" name="dia" value={day} />
+                                  <span className="text-sm font-semibold">En lista de espera · puesto {w.position}</span>
+                                  <SmallSubmit>Salir de la lista</SmallSubmit>
+                                </form>
+                              );
+                            }
+                            if (a && a.seatsLeft === 0 && hasBalance && s.allowsSingleBooking) {
+                              return (
+                                <form action={joinMyWaitlist} className="flex flex-wrap items-center justify-between gap-2 border-t border-line pt-3">
+                                  <input type="hidden" name="session_id" value={s.id} />
+                                  <input type="hidden" name="back" value="/clases" />
+                                  <input type="hidden" name="dia" value={day} />
+                                  <span className="text-sm text-muted">Si se libera un lugar, te avisamos.</span>
+                                  <SmallSubmit>Anotarme en la lista de espera</SmallSubmit>
+                                </form>
+                              );
+                            }
+                            return null;
+                          })()}
+                          {open && !booking && a && a.seatsLeft > 0 && hasBalance && canBook && !waits.has(s.id) && (
                             <form action={bookMySession} className="border-t border-line pt-3">
                               <input type="hidden" name="session_id" value={s.id} />
                               <input type="hidden" name="back" value="/clases" />
