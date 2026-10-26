@@ -9,6 +9,7 @@ import { canOpen } from "@/domain/navigation/menus";
 import { ageOn, STUDENT_STATUS_LABELS } from "@/domain/people/student";
 import { academyToday, loadGroups } from "@/lib/grilla";
 import { loadPendingSignup, signupSlots, slotLabel } from "@/lib/signups";
+import { acceptancesOf, loadCurrentRegulation } from "@/lib/regulations";
 import { requireProfile } from "@/lib/session";
 import { loadStudent, loadStudentNotes } from "@/lib/students";
 import { createClient } from "@/lib/supabase/server";
@@ -76,6 +77,14 @@ export default async function AlumnoPage({
     student.profileId ? loadWards(supabase, student.profileId) : Promise.resolve([]),
     loadPendingSignup(supabase, student.id).catch(() => null),
   ]);
+  const [currentRegulation, acceptances] = await Promise.all([
+    loadCurrentRegulation(supabase),
+    acceptancesOf(supabase, [student.profileId, ...guardians.map((g) => g.profileId)].filter((x): x is string => !!x)),
+  ]);
+  const accepters = [
+    ...(student.profileId ? [{ name: "El alumno", profileId: student.profileId }] : []),
+    ...guardians.filter((g) => g.profileId).map((g) => ({ name: g.name, profileId: g.profileId! })),
+  ];
   const signupSlotsList = signup ? signupSlots(await loadGroups(supabase).catch(() => [])) : [];
   const monthlyPrice = plans.find((p) => p.kind === "teacher_monthly" && p.active)?.current?.amountCents ?? null;
 
@@ -101,6 +110,19 @@ export default async function AlumnoPage({
       </div>
       {notice && <FormAlert kind="ok">{notice}</FormAlert>}
       {failure && <FormAlert kind="error">{failure}</FormAlert>}
+      {currentRegulation && accepters.length > 0 && (
+        <p className="text-sm text-muted">
+          Reglamento:{" "}
+          {accepters
+            .map((a) => {
+              const acc = acceptances.get(a.profileId);
+              if (!acc) return `${a.name}, sin aceptar`;
+              const date = new Intl.DateTimeFormat("es-AR", { day: "numeric", month: "short", year: "numeric", timeZone: "America/Argentina/Buenos_Aires" }).format(new Date(acc.acceptedAt));
+              return `${a.name}, aceptó la versión ${acc.version}${acc.version < currentRegulation.version ? " (hay una nueva)" : ""} el ${date}`;
+            })
+            .join(" · ")}
+        </p>
+      )}
       {signup && (
         <div className="flex max-w-2xl flex-col gap-2 rounded-[var(--radius-card)] border-[1.5px] border-ink p-4">
           <span className="font-semibold">

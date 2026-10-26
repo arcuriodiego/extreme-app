@@ -31,6 +31,11 @@ export async function submitSignup(_prev: SignupFormState, formData: FormData): 
   const v = checked.value;
 
   const supabase = await createClient();
+  const accept = String(formData.get("accept_regulation") ?? "");
+  if (accept) {
+    const { error: acceptError } = await supabase.rpc("accept_regulation", { p_regulation_id: accept });
+    if (acceptError) return fail(acceptError.hint === "reglamento-cambio" ? "reglamento-cambio" : "generico");
+  }
   const { data: studentId, error } = await supabase.rpc("submit_signup", {
     p_for: v.for,
     p_first_name: v.firstName,

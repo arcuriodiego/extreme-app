@@ -24,6 +24,9 @@ export default async function PerfilPage() {
         }}
       />
       <div className="flex flex-col gap-3 border-t border-line pt-6">
+        <Link href="/documentos" className="font-semibold">
+          Reglamento y documentos
+        </Link>
         <Link href="/nueva-clave" className="font-semibold">
           Cambiar mi contraseña
         </Link>

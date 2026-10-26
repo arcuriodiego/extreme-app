@@ -3,8 +3,8 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   experimental: {
-    // Flyers y fotos: la app los achica antes de subir, pero dejamos margen por si el navegador no puede.
-    serverActions: { bodySizeLimit: "4mb" },
+    // Flyers y fotos (la app los achica) y documentos de hasta 4 MB (Vercel recibe hasta 4,5 MB por envío).
+    serverActions: { bodySizeLimit: "4.5mb" },
   },
   async headers() {
     return [

@@ -66,6 +66,12 @@ const paths: Record<IconName, React.ReactNode> = {
       <path d="m9 12 2.2 2.2L15.5 10" />
     </>
   ),
+  doc: (
+    <>
+      <path d="M7 3h7l4 4v14H7z" />
+      <path d="M14 3v4h4M10 12h5M10 16h5" />
+    </>
+  ),
   settings: (
     <>
       <circle cx="12" cy="12" r="3" />

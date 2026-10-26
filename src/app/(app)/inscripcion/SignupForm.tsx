@@ -15,6 +15,7 @@ export function SignupForm({
   birthDate,
   selfDone,
   canSelf,
+  regulation,
 }: {
   slots: readonly SignupSlot[];
   defaultFor: "self" | "child";
@@ -24,6 +25,8 @@ export function SignupForm({
   selfDone: boolean;
   /** Las cuentas de madre, padre o tutor sólo anotan a sus hijos. */
   canSelf: boolean;
+  /** Reglamento vigente que esta cuenta todavía no aceptó. */
+  regulation: { id: string; title: string; body: string } | null;
 }) {
   const [state, action] = useActionState(submitSignup, initial);
   const v = state.values ?? {};
@@ -129,6 +132,19 @@ export function SignupForm({
       </fieldset>
 
       <TextAreaField name="note" label="¿Algo que tengamos que saber?" maxLength={500} defaultValue={v.note} />
+
+      {regulation && (
+        <div className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-line p-4">
+          <details>
+            <summary className="cursor-pointer font-semibold">Leé el {regulation.title.toLowerCase().startsWith("reglamento") ? regulation.title : `reglamento: ${regulation.title}`}</summary>
+            <div className="max-h-80 overflow-y-auto whitespace-pre-line pt-3 text-[15px] leading-relaxed">{regulation.body}</div>
+          </details>
+          <label className="flex cursor-pointer items-start gap-3">
+            <input type="checkbox" name="accept_regulation" value={regulation.id} required className="mt-0.5 size-5 shrink-0 accent-ink" />
+            <span className="text-[15px] font-semibold">Leí y acepto el reglamento{who === "child" ? ", también en nombre de mi hijo/a" : ""}.</span>
+          </label>
+        </div>
+      )}
 
       <SubmitButton pendingText="Enviando…">Enviar inscripción</SubmitButton>
       <p className="-mt-3 text-sm text-muted">

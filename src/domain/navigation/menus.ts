@@ -21,6 +21,7 @@ export type IconName =
   | "people"
   | "scan"
   | "shield"
+  | "doc"
   | "settings";
 
 export interface NavItem {
@@ -59,6 +60,7 @@ const GESTION_ITEMS: readonly GestionItem[] = [
   { key: "pagos", href: "/admin/pagos", label: "Pagos", icon: "card", anyOf: ["payments.register", "finance.view"] },
   { key: "workshops", href: "/admin/workshops", label: "Workshops", icon: "ticket", anyOf: ["people.view", "classes.manage"] },
   { key: "avisos", href: "/admin/avisos", label: "Avisos", icon: "bell", anyOf: ["people.manage"] },
+  { key: "documentos", href: "/admin/documentos", label: "Reglamento y documentos", icon: "doc", anyOf: ["people.manage", "settings.manage"] },
   { key: "escaner", href: "/admin/escaner", label: "Escáner QR", icon: "scan", anyOf: ["attendance.mark"] },
   { key: "usuarios", href: "/admin/usuarios", label: "Usuarios y roles", icon: "shield", anyOf: ["roles.manage"] },
   { key: "configuracion", href: "/admin/configuracion", label: "Configuración", icon: "settings", anyOf: ["settings.manage"] },

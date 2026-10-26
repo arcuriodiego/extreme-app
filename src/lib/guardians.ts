@@ -14,6 +14,7 @@ export interface GuardianLink {
   relationship: Relationship | null;
   isPrimary: boolean;
   canBook: boolean;
+  profileId: string | null;
 }
 
 interface RawLink {
@@ -21,14 +22,14 @@ interface RawLink {
   relationship: Relationship | null;
   is_primary: boolean;
   can_book: boolean;
-  guardian: { profile: { first_name: string | null; last_name: string | null; email: string | null } | null } | null;
+  guardian: { profile_id: string; profile: { first_name: string | null; last_name: string | null; email: string | null } | null } | null;
 }
 
 /** Tutores de un alumno. */
 export async function loadGuardians(supabase: Client, studentId: string): Promise<GuardianLink[]> {
   const { data } = await supabase
     .from("guardian_students")
-    .select("id, relationship, is_primary, can_book, guardian:guardians(profile:profiles(first_name, last_name, email))")
+    .select("id, relationship, is_primary, can_book, guardian:guardians(profile_id, profile:profiles(first_name, last_name, email))")
     .eq("student_id", studentId)
     .order("created_at");
   return ((data ?? []) as unknown as RawLink[]).map((r) => {
@@ -40,6 +41,7 @@ export async function loadGuardians(supabase: Client, studentId: string): Promis
       relationship: r.relationship,
       isPrimary: r.is_primary,
       canBook: r.can_book,
+      profileId: r.guardian?.profile_id ?? null,
     };
   });
 }

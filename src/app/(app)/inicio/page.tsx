@@ -10,6 +10,7 @@ import { lightFor, loadCharges, loadGraceDays } from "@/lib/billing";
 import { ensureNotifications } from "@/lib/notifications";
 import { academyToday, loadGroups } from "@/lib/grilla";
 import { loadPendingSignup, signupSlots, slotLabel } from "@/lib/signups";
+import { regulationPending } from "@/lib/regulations";
 import { loadActiveMemberships } from "@/lib/memberships";
 import { requireProfile } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
@@ -19,6 +20,7 @@ export const metadata: Metadata = { title: "Inicio" };
 
 const notices: Record<string, string> = {
   "clave-actualizada": "Listo, tu contraseña nueva ya está activa.",
+  "reglamento-aceptado": "Listo, aceptaste el reglamento.",
   "inscripcion-enviada": "Listo, recibimos la inscripción. Pasá por recepción para pagar la cuota y confirmar el lugar.",
 };
 
@@ -37,6 +39,7 @@ export default async function InicioPage({ searchParams }: { searchParams: Promi
   const memberships = studentId ? await loadActiveMemberships(supabase, studentId).catch(() => []) : [];
   const pending = studentId && memberships.length === 0 ? await loadPendingSignup(supabase, studentId).catch(() => null) : null;
   const pendingSlots = pending ? signupSlots(await loadGroups(supabase, { onlyActive: true }).catch(() => [])) : [];
+  const mustAccept = (profile.access.roles.includes("student") || profile.access.roles.includes("guardian")) && (await regulationPending(supabase).catch(() => false));
   const charges = studentId && memberships.length > 0 ? await loadCharges(supabase, studentId).catch(() => []) : [];
 
   return (
@@ -49,6 +52,19 @@ export default async function InicioPage({ searchParams }: { searchParams: Promi
         <RoleBadges roles={profile.access.roles} />
         {viewingChild && <p className="text-[15px] font-semibold">Estás viendo a {active.name}.</p>}
       </div>
+
+      {mustAccept && (
+        <Link
+          href="/reglamento"
+          className="flex items-center justify-between gap-3 rounded-[var(--radius-card)] bg-warn-soft p-4 text-warn-ink no-underline"
+        >
+          <span className="flex flex-col gap-0.5">
+            <span className="font-semibold">Leé y aceptá el reglamento</span>
+            <span className="text-sm">Hay una versión nueva del reglamento de la academia.</span>
+          </span>
+          <span aria-hidden="true">›</span>
+        </Link>
+      )}
 
       {showGestion && <LinkCard href="/admin" title="Gestión" description="Alumnos, clases, pagos y más" dark />}
 

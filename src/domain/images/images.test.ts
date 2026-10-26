@@ -45,3 +45,11 @@ test("iniciales", () => {
   assert.equal(initials("Ana María López"), "AM");
   assert.equal(initials(""), "");
 });
+
+test("documentos: PDF o imágenes de hasta 4 MB", async () => {
+  const { checkDocument } = await import("./images.ts");
+  assert.deepEqual(checkDocument({ size: 3_000_000, type: "application/pdf" }), { ok: true, type: "application/pdf" });
+  assert.deepEqual(checkDocument({ size: 5 * 1024 * 1024, type: "application/pdf" }), { ok: false, error: "archivo-pesado" });
+  assert.deepEqual(checkDocument({ size: 10, type: "application/msword" }), { ok: false, error: "archivo-tipo" });
+  assert.deepEqual(checkDocument(null), { ok: false, error: "archivo-vacio" });
+});

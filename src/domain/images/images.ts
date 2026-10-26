@@ -74,3 +74,22 @@ export const IMAGE_ERRORS: Record<string, string> = {
   "imagen-pesada": "La imagen pesa demasiado (hasta 3 MB). Probá con otra o sacale una captura.",
   "imagen-subida": "No pudimos subir la imagen. Probá de nuevo.",
 };
+
+/** Documentos (bucket privado "documentos"): PDF o imágenes de hasta 4 MB (Vercel no recibe envíos de más de 4,5 MB). */
+export const DOCUMENT_TYPES = {
+  "application/pdf": "pdf",
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+} as const;
+export type DocumentType = keyof typeof DOCUMENT_TYPES;
+export const MAX_DOCUMENT_BYTES = 4 * 1024 * 1024;
+
+export function checkDocument(file: { size: number; type: string } | null | undefined):
+  | { ok: true; type: DocumentType }
+  | { ok: false; error: "archivo-vacio" | "archivo-tipo" | "archivo-pesado" } {
+  if (!file || file.size === 0) return { ok: false, error: "archivo-vacio" };
+  if (!(file.type in DOCUMENT_TYPES)) return { ok: false, error: "archivo-tipo" };
+  if (file.size > MAX_DOCUMENT_BYTES) return { ok: false, error: "archivo-pesado" };
+  return { ok: true, type: file.type as DocumentType };
+}

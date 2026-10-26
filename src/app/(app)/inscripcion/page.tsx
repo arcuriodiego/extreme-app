@@ -5,6 +5,7 @@ import { getActiveStudent } from "@/lib/active-student";
 import { loadGroups } from "@/lib/grilla";
 import { loadActiveMemberships } from "@/lib/memberships";
 import { requireProfile } from "@/lib/session";
+import { loadCurrentRegulation, myAcceptance } from "@/lib/regulations";
 import { loadPendingSignup, signupSlots } from "@/lib/signups";
 import { createClient } from "@/lib/supabase/server";
 import { SignupForm } from "./SignupForm";
@@ -21,6 +22,8 @@ export default async function InscripcionPage({ searchParams }: { searchParams: 
     self ? loadPendingSignup(supabase, self.id) : Promise.resolve(null),
   ]);
   const selfDone = selfMemberships.length > 0 || selfPending !== null;
+  const regulation = await loadCurrentRegulation(supabase);
+  const toAccept = regulation && !(await myAcceptance(supabase, regulation.id, profile.id)) ? regulation : null;
   const canSelf = profile.access.roles.includes("student");
   const defaultFor = !canSelf || params.para === "hijo" || selfDone ? "child" : "self";
 
@@ -30,7 +33,10 @@ export default async function InscripcionPage({ searchParams }: { searchParams: 
         ‹ Inicio
       </Link>
       <PageHeader title="Inscripción" subtitle={canSelf ? "Completá los datos y elegí tus clases. La cuota se paga en recepción." : "Cargá los datos de tu hijo/a y elegí sus clases. La cuota se paga en recepción."} />
-      <SignupForm slots={signupSlots(groups)} defaultFor={defaultFor} phone={profile.phone} birthDate={profile.birthDate} selfDone={selfDone} canSelf={canSelf} />
+      <SignupForm slots={signupSlots(groups)} defaultFor={defaultFor} phone={profile.phone} birthDate={profile.birthDate} selfDone={selfDone}
+        canSelf={canSelf}
+        regulation={toAccept ? { id: toAccept.id, title: toAccept.title, body: toAccept.body } : null}
+      />
     </>
   );
 }
