@@ -32,6 +32,8 @@ export default async function InicioPage({ searchParams }: { searchParams: Promi
   const [{ active }, graceDays] = await Promise.all([getActiveStudent(), loadGraceDays(supabase), ensureNotifications(supabase)]);
   const studentId = active?.id ?? null;
   const viewingChild = active !== null && !active.isSelf;
+  // Los padres no toman clases: su cuenta es sólo para manejar a sus hijos.
+  const guardianOnly = profile.access.roles.includes("guardian") && !profile.access.roles.includes("student");
   const memberships = studentId ? await loadActiveMemberships(supabase, studentId).catch(() => []) : [];
   const pending = studentId && memberships.length === 0 ? await loadPendingSignup(supabase, studentId).catch(() => null) : null;
   const pendingSlots = pending ? signupSlots(await loadGroups(supabase, { onlyActive: true }).catch(() => [])) : [];
@@ -106,7 +108,20 @@ export default async function InicioPage({ searchParams }: { searchParams: Promi
         </section>
       )}
 
-      {memberships.length === 0 && !pending && (
+      {memberships.length === 0 && !pending && guardianOnly && !viewingChild && (
+        <Link
+          href="/inscripcion?para=hijo"
+          className="flex items-center justify-between gap-3 rounded-[var(--radius-card)] border-[1.5px] border-ink p-5 text-ink no-underline hover:bg-surface"
+        >
+          <span className="flex flex-col gap-1">
+            <span className="font-display text-xl font-bold uppercase tracking-wide">Anotá a tu hijo/a</span>
+            <span className="text-[15px] leading-snug text-muted">Cargá sus datos y elegí sus clases. Desde tu cuenta vas a ver sus cuotas, clases, pases y pagos.</span>
+          </span>
+          <span aria-hidden="true">›</span>
+        </Link>
+      )}
+
+      {memberships.length === 0 && !pending && !(guardianOnly && !viewingChild) && (
         <Link
           href={viewingChild ? "/inscripcion?para=hijo" : "/inscripcion"}
           className="flex items-center justify-between gap-3 rounded-[var(--radius-card)] border-[1.5px] border-ink p-5 text-ink no-underline hover:bg-surface"
@@ -121,9 +136,9 @@ export default async function InicioPage({ searchParams }: { searchParams: Promi
         </Link>
       )}
 
-      {active?.isSelf && (
+      {(active?.isSelf || (guardianOnly && active)) && (
         <Link href="/inscripcion?para=hijo" className="self-start text-[15px] font-semibold">
-          Anotar a un hijo/a
+          {guardianOnly ? "Anotar a otro hijo/a" : "Anotar a un hijo/a"}
         </Link>
       )}
 

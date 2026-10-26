@@ -93,6 +93,7 @@ export const SIGNUP_ERRORS: Record<string, string> = {
   "muchos-horarios": "Elegí hasta 6 horarios.",
   horario: "Uno de los horarios ya no está disponible. Elegilos de nuevo.",
   "dni-repetido": "Ya hay un alumno con ese DNI en la academia. Pasá por recepción y lo vinculamos a tu cuenta.",
+  "cuenta-tutor": "Tu cuenta es de madre, padre o tutor/a: desde acá anotás a tus hijos.",
   limite: "Llegaste al máximo de inscripciones desde tu cuenta. Pasá por recepción.",
   generico: "No pudimos enviar la inscripción. Probá de nuevo.",
 };

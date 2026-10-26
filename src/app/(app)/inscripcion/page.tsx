@@ -21,15 +21,16 @@ export default async function InscripcionPage({ searchParams }: { searchParams: 
     self ? loadPendingSignup(supabase, self.id) : Promise.resolve(null),
   ]);
   const selfDone = selfMemberships.length > 0 || selfPending !== null;
-  const defaultFor = params.para === "hijo" || selfDone ? "child" : "self";
+  const canSelf = profile.access.roles.includes("student");
+  const defaultFor = !canSelf || params.para === "hijo" || selfDone ? "child" : "self";
 
   return (
     <>
       <Link href="/inicio" className="self-start text-sm font-semibold">
         ‹ Inicio
       </Link>
-      <PageHeader title="Inscripción" subtitle="Completá los datos y elegí tus clases. La cuota se paga en recepción." />
-      <SignupForm slots={signupSlots(groups)} defaultFor={defaultFor} phone={profile.phone} birthDate={profile.birthDate} selfDone={selfDone} />
+      <PageHeader title="Inscripción" subtitle={canSelf ? "Completá los datos y elegí tus clases. La cuota se paga en recepción." : "Cargá los datos de tu hijo/a y elegí sus clases. La cuota se paga en recepción."} />
+      <SignupForm slots={signupSlots(groups)} defaultFor={defaultFor} phone={profile.phone} birthDate={profile.birthDate} selfDone={selfDone} canSelf={canSelf} />
     </>
   );
 }

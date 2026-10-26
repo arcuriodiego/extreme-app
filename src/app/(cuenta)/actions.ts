@@ -57,6 +57,7 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
     firstName: text(formData, "firstName"),
     lastName: text(formData, "lastName"),
     email: normalizeEmail(text(formData, "email")),
+    accountType: text(formData, "accountType") === "guardian" ? "guardian" : "student",
   };
   const password = secret(formData, "password");
   const passwordConfirm = secret(formData, "passwordConfirm");
@@ -71,7 +72,7 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
     password,
     options: {
       emailRedirectTo: `${origin}/auth/callback?next=${HOME_PATH}`,
-      data: { first_name: values.firstName, last_name: values.lastName, academy: academyConfig.slug },
+      data: { first_name: values.firstName, last_name: values.lastName, academy: academyConfig.slug, account_type: values.accountType },
     },
   });
   if (error) return { error: authErrorMessage(error), values };

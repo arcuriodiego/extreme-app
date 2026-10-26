@@ -14,6 +14,7 @@ export function SignupForm({
   phone,
   birthDate,
   selfDone,
+  canSelf,
 }: {
   slots: readonly SignupSlot[];
   defaultFor: "self" | "child";
@@ -21,6 +22,8 @@ export function SignupForm({
   birthDate: string;
   /** Ya tiene clase o inscripción propia: se ofrece primero anotar a un hijo. */
   selfDone: boolean;
+  /** Las cuentas de madre, padre o tutor sólo anotan a sus hijos. */
+  canSelf: boolean;
 }) {
   const [state, action] = useActionState(submitSignup, initial);
   const v = state.values ?? {};
@@ -32,28 +35,32 @@ export function SignupForm({
     <form action={action} className="flex flex-col gap-6">
       {state.error && <FormAlert kind="error">{state.error}</FormAlert>}
 
-      <fieldset className="flex flex-col gap-2">
-        <legend className="pb-2 font-semibold">¿Para quién es la inscripción?</legend>
-        <div className="grid grid-cols-2 gap-2">
-          {(
-            [
-              ["self", "Para mí"],
-              ["child", "Para mi hijo/a"],
-            ] as const
-          ).map(([value, label]) => (
-            <label
-              key={value}
-              className={`flex h-12 cursor-pointer items-center justify-center rounded-xl border text-[15px] font-semibold ${
-                who === value ? "border-ink bg-ink text-white" : "border-[#cfcfcf] bg-white"
-              }`}
-            >
-              <input type="radio" name="for" value={value} checked={who === value} onChange={() => setWho(value)} className="sr-only" />
-              {label}
-            </label>
-          ))}
-        </div>
-        {who === "self" && selfDone && <p className="text-sm text-muted">Ya tenés una inscripción o clase. Si la mandás de nuevo, se actualiza.</p>}
-      </fieldset>
+      {canSelf ? (
+        <fieldset className="flex flex-col gap-2">
+          <legend className="pb-2 font-semibold">¿Para quién es la inscripción?</legend>
+          <div className="grid grid-cols-2 gap-2">
+            {(
+              [
+                ["self", "Para mí"],
+                ["child", "Para mi hijo/a"],
+              ] as const
+            ).map(([value, label]) => (
+              <label
+                key={value}
+                className={`flex h-12 cursor-pointer items-center justify-center rounded-xl border text-[15px] font-semibold ${
+                  who === value ? "border-ink bg-ink text-white" : "border-[#cfcfcf] bg-white"
+                }`}
+              >
+                <input type="radio" name="for" value={value} checked={who === value} onChange={() => setWho(value)} className="sr-only" />
+                {label}
+              </label>
+            ))}
+          </div>
+          {who === "self" && selfDone && <p className="text-sm text-muted">Ya tenés una inscripción o clase. Si la mandás de nuevo, se actualiza.</p>}
+        </fieldset>
+      ) : (
+        <input type="hidden" name="for" value="child" />
+      )}
 
       <fieldset key={who} className="flex flex-col gap-4">
         <legend className="pb-2 font-semibold">{who === "child" ? "Datos de tu hijo/a" : "Tus datos"}</legend>
