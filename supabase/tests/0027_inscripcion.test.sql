@@ -160,4 +160,32 @@ begin
   raise notice 'OK  profes sin acceso';
 end $$;
 
+-- 6. Las fichas que el personal carga desde Gestión no cuentan para el límite.
+reset role;
+insert into students (academy_id, first_name, created_by)
+select a.id, 'Cargado ' || n, 'd0000000-0000-0000-0000-00000000000d' from academies a, generate_series(1, 9) n;
+set local role authenticated;
+set local request.jwt.claims = '{"sub":"d0000000-0000-0000-0000-00000000000d"}';
+do $$
+begin
+  perform submit_signup('child', 'Hijo', 'De Diego', '56000001', date '2016-01-01', '11 4444-0000', 'padre',
+                        array(select id from sch where weekday = 1), null);
+  raise notice 'OK  el personal no tiene límite';
+end $$;
+set local request.jwt.claims = '{"sub":"c1000000-0000-0000-0000-00000000000c"}';
+do $$
+begin
+  for i in 1..8 loop
+    perform submit_signup('child', 'Hijo' || i, 'X', '5700000' || i, date '2016-01-01', '11 4444-0000', 'padre',
+                          array(select id from sch where weekday = 1), null);
+  end loop;
+  begin
+    perform submit_signup('child', 'Hijo9', 'X', '57000009', date '2016-01-01', '11 4444-0000', 'padre',
+                          array(select id from sch where weekday = 1), null);
+    raise exception 'el noveno pasa';
+  exception when program_limit_exceeded then null;
+  end;
+  raise notice 'OK  hasta 8 hijos por cuenta desde la app';
+end $$;
+
 rollback;
