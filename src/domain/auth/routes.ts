@@ -3,7 +3,7 @@
  */
 
 /** Páginas sólo para usuarios con sesión. */
-const PROTECTED_PREFIXES = ["/inicio", "/clases", "/pases", "/pagos", "/perfil", "/profe", "/nueva-clave", "/admin"];
+const PROTECTED_PREFIXES = ["/inicio", "/inscripcion", "/clases", "/pases", "/pagos", "/perfil", "/profe", "/nueva-clave", "/admin"];
 
 /** Páginas que no tienen sentido con la sesión ya iniciada. */
 const GUEST_ONLY = ["/ingresar", "/registro"];

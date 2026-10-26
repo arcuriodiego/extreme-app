@@ -14,6 +14,7 @@ import { loadDashboard } from "@/lib/dashboard";
 import { ensureSessions } from "@/lib/sessions";
 import { requireProfile } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
+import { countPendingSignups } from "@/lib/signups";
 
 export const metadata: Metadata = { title: "Panel" };
 
@@ -57,7 +58,7 @@ export default async function PanelPage() {
 
   const supabase = await createClient();
   await Promise.all([ensureSessions(supabase), ensureCharges(supabase)]);
-  const d = await loadDashboard(supabase);
+  const [d, signups] = await Promise.all([loadDashboard(supabase), countPendingSignups(supabase).catch(() => 0)]);
 
   const m = d.memberships;
   const month = d.month ? monthRows(d.month.by_concept, d.month.refunds) : null;
@@ -67,6 +68,21 @@ export default async function PanelPage() {
   return (
     <>
       <PageHeader eyebrow={`Hoy · ${longDate(d.today)}`} title="Panel" subtitle="El día y el mes de la academia, de un vistazo." />
+
+      {signups > 0 && (
+        <Link
+          href="/admin/inscripciones"
+          className="flex max-w-2xl items-center justify-between gap-3 rounded-[var(--radius-card)] border-[1.5px] border-ink p-4 text-ink no-underline hover:bg-surface"
+        >
+          <span className="flex flex-col gap-0.5">
+            <span className="font-semibold">
+              {signups === 1 ? "1 inscripción nueva desde la app" : `${signups} inscripciones nuevas desde la app`}
+            </span>
+            <span className="text-sm text-muted">Revisalas y dales la cuota cuando pasen a pagar.</span>
+          </span>
+          <span aria-hidden="true">›</span>
+        </Link>
+      )}
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {d.cash_today !== undefined && <Tile label="Caja de hoy" value={formatARS(d.cash_today)} note="Cobros menos devoluciones" href="/admin/pagos" />}

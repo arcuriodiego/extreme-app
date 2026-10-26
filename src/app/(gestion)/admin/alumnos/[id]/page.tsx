@@ -7,7 +7,8 @@ import { PageHeader } from "@/components/ui/basics";
 import { can } from "@/domain/auth/roles";
 import { canOpen } from "@/domain/navigation/menus";
 import { ageOn, STUDENT_STATUS_LABELS } from "@/domain/people/student";
-import { academyToday } from "@/lib/grilla";
+import { academyToday, loadGroups } from "@/lib/grilla";
+import { loadPendingSignup, signupSlots, slotLabel } from "@/lib/signups";
 import { requireProfile } from "@/lib/session";
 import { loadStudent, loadStudentNotes } from "@/lib/students";
 import { createClient } from "@/lib/supabase/server";
@@ -70,10 +71,12 @@ export default async function AlumnoPage({
     seesMoney ? loadPayments(supabase, id) : Promise.resolve([]),
   ]);
   if (!student) notFound();
-  const [guardians, wards] = await Promise.all([
+  const [guardians, wards, signup] = await Promise.all([
     loadGuardians(supabase, student.id),
     student.profileId ? loadWards(supabase, student.profileId) : Promise.resolve([]),
+    loadPendingSignup(supabase, student.id).catch(() => null),
   ]);
+  const signupSlotsList = signup ? signupSlots(await loadGroups(supabase).catch(() => [])) : [];
   const monthlyPrice = plans.find((p) => p.kind === "teacher_monthly" && p.active)?.current?.amountCents ?? null;
 
   const notice = query.aviso ? NOTICES[query.aviso] : undefined;
@@ -98,6 +101,20 @@ export default async function AlumnoPage({
       </div>
       {notice && <FormAlert kind="ok">{notice}</FormAlert>}
       {failure && <FormAlert kind="error">{failure}</FormAlert>}
+      {signup && (
+        <div className="flex max-w-2xl flex-col gap-2 rounded-[var(--radius-card)] border-[1.5px] border-ink p-4">
+          <span className="font-semibold">
+            Se inscribió desde la app{signup.byGuardian ? ` (lo anotó ${signup.requestedBy.name})` : ""} y pidió:
+          </span>
+          <ul className="flex flex-col gap-1 text-[15px]">
+            {signup.scheduleIds.map((sid) => (
+              <li key={sid}>{slotLabel(signupSlotsList.find((s) => s.id === sid))}</li>
+            ))}
+          </ul>
+          {signup.note && <p className="text-[15px] text-muted">“{signup.note}”</p>}
+          <p className="text-sm text-muted">Al darle la cuota de profe (más abajo), la inscripción queda confirmada sola.</p>
+        </div>
+      )}
 
       <section className="flex flex-col gap-2">
         <h2 className="font-display text-2xl font-bold uppercase tracking-wide">Contacto</h2>

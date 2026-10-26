@@ -54,6 +54,7 @@ const TEACHER_TABS: readonly NavItem[] = [
 const GESTION_ITEMS: readonly GestionItem[] = [
   { key: "panel", href: "/admin", label: "Panel", icon: "dashboard", anyOf: ["people.view"] },
   { key: "alumnos", href: "/admin/alumnos", label: "Alumnos", icon: "people", anyOf: ["people.view"] },
+  { key: "inscripciones", href: "/admin/inscripciones", label: "Inscripciones", icon: "check", anyOf: ["people.view"] },
   { key: "clases", href: "/admin/clases", label: "Clases y grilla", icon: "calendar", anyOf: ["classes.manage", "classes.view_roster"] },
   { key: "pagos", href: "/admin/pagos", label: "Pagos", icon: "card", anyOf: ["payments.register", "finance.view"] },
   { key: "workshops", href: "/admin/workshops", label: "Workshops", icon: "ticket", anyOf: ["people.view", "classes.manage"] },

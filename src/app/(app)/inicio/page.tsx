@@ -8,7 +8,8 @@ import { AccessLight } from "@/components/status/AccessLight";
 import { getActiveStudent } from "@/lib/active-student";
 import { lightFor, loadCharges, loadGraceDays } from "@/lib/billing";
 import { ensureNotifications } from "@/lib/notifications";
-import { academyToday } from "@/lib/grilla";
+import { academyToday, loadGroups } from "@/lib/grilla";
+import { loadPendingSignup, signupSlots, slotLabel } from "@/lib/signups";
 import { loadActiveMemberships } from "@/lib/memberships";
 import { requireProfile } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
@@ -18,6 +19,7 @@ export const metadata: Metadata = { title: "Inicio" };
 
 const notices: Record<string, string> = {
   "clave-actualizada": "Listo, tu contraseña nueva ya está activa.",
+  "inscripcion-enviada": "Listo, recibimos la inscripción. Pasá por recepción para pagar la cuota y confirmar el lugar.",
 };
 
 export default async function InicioPage({ searchParams }: { searchParams: Promise<{ aviso?: string }> }) {
@@ -31,6 +33,8 @@ export default async function InicioPage({ searchParams }: { searchParams: Promi
   const studentId = active?.id ?? null;
   const viewingChild = active !== null && !active.isSelf;
   const memberships = studentId ? await loadActiveMemberships(supabase, studentId).catch(() => []) : [];
+  const pending = studentId && memberships.length === 0 ? await loadPendingSignup(supabase, studentId).catch(() => null) : null;
+  const pendingSlots = pending ? signupSlots(await loadGroups(supabase, { onlyActive: true }).catch(() => [])) : [];
   const charges = studentId && memberships.length > 0 ? await loadCharges(supabase, studentId).catch(() => []) : [];
 
   return (
@@ -82,15 +86,45 @@ export default async function InicioPage({ searchParams }: { searchParams: Promi
         </section>
       ))}
 
-      {memberships.length === 0 && (
-        <section className="flex flex-col gap-2 rounded-[var(--radius-card)] border border-line p-5">
-          <span className="font-display text-xl font-bold uppercase tracking-wide">
-            {viewingChild ? `${active.firstName} no tiene cuota de profe` : "Tu cuenta está lista"}
-          </span>
-          <p className="text-[15px] leading-snug text-muted">
-            Mirá la grilla en Clases. Para tener un lugar fijo con un profe, la inscripción se hace en recepción.
-          </p>
+      {memberships.length === 0 && pending && (
+        <section className="flex flex-col gap-3 rounded-[var(--radius-card)] border-[1.5px] border-ink p-5">
+          <div className="flex flex-col gap-1">
+            <span className="self-start rounded-full bg-warn-soft px-2 py-0.5 text-xs font-bold text-warn-ink">PENDIENTE</span>
+            <span className="font-display text-xl font-bold uppercase tracking-wide">Inscripción enviada</span>
+            <p className="text-[15px] leading-snug text-muted">
+              Pasá por recepción para pagar la cuota: ahí {viewingChild ? `confirmamos el lugar de ${active.firstName}` : "confirmamos tu lugar"}.
+            </p>
+          </div>
+          <ul className="flex flex-col gap-1.5 text-[15px]">
+            {pending.scheduleIds.map((id) => (
+              <li key={id}>{slotLabel(pendingSlots.find((s) => s.id === id))}</li>
+            ))}
+          </ul>
+          <Link href={viewingChild ? "/inscripcion?para=hijo" : "/inscripcion"} className="self-start text-sm font-semibold">
+            Cambiar los horarios
+          </Link>
         </section>
+      )}
+
+      {memberships.length === 0 && !pending && (
+        <Link
+          href={viewingChild ? "/inscripcion?para=hijo" : "/inscripcion"}
+          className="flex items-center justify-between gap-3 rounded-[var(--radius-card)] border-[1.5px] border-ink p-5 text-ink no-underline hover:bg-surface"
+        >
+          <span className="flex flex-col gap-1">
+            <span className="font-display text-xl font-bold uppercase tracking-wide">
+              {viewingChild ? `Inscribí a ${active.firstName} a sus clases` : "Inscribite a tus clases"}
+            </span>
+            <span className="text-[15px] leading-snug text-muted">Completá los datos y elegí los horarios. La cuota se paga en recepción.</span>
+          </span>
+          <span aria-hidden="true">›</span>
+        </Link>
+      )}
+
+      {active?.isSelf && (
+        <Link href="/inscripcion?para=hijo" className="self-start text-[15px] font-semibold">
+          Anotar a un hijo/a
+        </Link>
       )}
 
       {missingData && (
