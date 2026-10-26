@@ -123,6 +123,23 @@ exception when insufficient_privilege then
   raise notice 'OK  sólo el personal resuelve';
 end $$;
 
+-- 3b. A recepción y administración les llega el aviso (no a quien la envió).
+set local request.jwt.claims = '{"sub":"a0000000-0000-0000-0000-00000000000a"}';
+do $$
+begin
+  assert (select count(*) from notifications where kind = 'signup_new') = 2, format('Paula recibe 2 avisos: %s', (select count(*) from notifications where kind = 'signup_new'));
+  assert exists (select 1 from notifications where kind = 'signup_new' and title = 'Nueva inscripción: Mateo Fernández'
+                 and body like 'La envió Laura (madre). Pidió: miércoles 18:00 (Coreografía · Infantil).%'), (select string_agg(title || ' | ' || body, E'\n') from notifications);
+  assert (select link from notifications where kind = 'signup_new' limit 1) = '/admin/inscripciones', 'enlace';
+  raise notice 'OK  aviso de inscripción nueva';
+end $$;
+set local request.jwt.claims = '{"sub":"e0000000-0000-0000-0000-00000000000e"}';
+do $$
+begin
+  assert not exists (select 1 from notifications where kind = 'signup_new'), 'la profe no recibe';
+  raise notice 'OK  la profe no recibe el aviso';
+end $$;
+
 -- 4. Recepción ve las pendientes; al darle la cuota a Mateo se confirma sola; descarta otra.
 set local request.jwt.claims = '{"sub":"a0000000-0000-0000-0000-00000000000a"}';
 do $$
