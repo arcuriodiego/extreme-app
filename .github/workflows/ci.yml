@@ -46,7 +46,13 @@ jobs:
       # Cuando exista package-lock.json conviene cambiar a "npm ci".
       - run: npm install --no-audit --no-fund
       - run: npm run typecheck
-      - run: npm run lint
+      - name: Lint
+        run: |
+          set -o pipefail
+          if ! npm run lint 2>&1 | tee lint.log; then
+            echo "::error title=Falló el lint::$(grep -E 'error|warning|^/' lint.log | head -n 30 | sed -e 's/%/%25/g' | sed ':a;N;$!ba;s/\n/%0A/g')"
+            exit 1
+          fi
       - name: Compilar
         run: |
           set -o pipefail
