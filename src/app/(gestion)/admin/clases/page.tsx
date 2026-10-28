@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { WeeklyGrid } from "@/components/classes/WeeklyGrid";
 import { FormAlert } from "@/components/forms/fields";
 import { NoAccess } from "@/components/status/NoAccess";
@@ -15,10 +16,16 @@ import { SectionTabs } from "./SectionTabs";
 
 export const metadata: Metadata = { title: "Clases y grilla" };
 
-export default async function ClasesAdminPage({ searchParams }: { searchParams: Promise<{ error?: string; aviso?: string; cerrados?: string }> }) {
+export default async function ClasesAdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string; aviso?: string; cerrados?: string; vista?: string }>;
+}) {
   const [profile, params] = await Promise.all([requireProfile(), searchParams]);
   if (!canOpen(profile.access, "clases")) return <NoAccess />;
   const canManage = can(profile.access, "classes.manage");
+  // Administración entra por los profes (Diego, 28 oct); "Todos los grupos" sigue disponible.
+  if (canManage && Object.keys(params).length === 0) redirect("/admin/clases/profes");
 
   const supabase = await createClient();
   const groups = await loadGroups(supabase);

@@ -1,9 +1,10 @@
 import Link from "next/link";
 
 /** Pestañas de la sección Clases y grilla. */
-export function SectionTabs({ current, canManage }: { current: "grilla" | "calendario" | "catalogo"; canManage: boolean }) {
+export function SectionTabs({ current, canManage }: { current: "profes" | "grilla" | "calendario" | "catalogo"; canManage: boolean }) {
   const tabs = [
-    { key: "grilla", href: "/admin/clases", label: "Grupos y horarios" },
+    ...(canManage ? [{ key: "profes", href: "/admin/clases/profes", label: "Profes" }] : []),
+    { key: "grilla", href: "/admin/clases?vista=grupos", label: "Todos los grupos" },
     { key: "calendario", href: "/admin/clases/calendario", label: "Calendario" },
     ...(canManage ? [{ key: "catalogo", href: "/admin/clases/catalogo", label: "Catálogo y salas" }] : []),
   ];

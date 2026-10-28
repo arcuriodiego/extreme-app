@@ -24,6 +24,12 @@ function optionalUuid(value: string): string | null | undefined {
   return UUID.test(value) ? value : undefined; // undefined = inválido
 }
 
+/** Volver a la pantalla desde la que se hizo el cambio (sólo dentro de Clases y grilla). */
+function backTo(formData: FormData, fallback: string): string {
+  const v = str(formData, "back");
+  return /^\/admin\/clases(\/[a-z0-9-]+)*$/.test(v) ? v : fallback;
+}
+
 function to(path: string, params: Record<string, string>): never {
   redirect(`${path}?${new URLSearchParams(params).toString()}`);
 }
@@ -93,7 +99,7 @@ export async function updateGroup(formData: FormData): Promise<void> {
 export async function addSchedule(formData: FormData): Promise<void> {
   const groupId = str(formData, "group_id");
   if (!UUID.test(groupId)) to("/admin/clases", { error: "datos" });
-  const back = `/admin/clases/${groupId}`;
+  const back = backTo(formData, `/admin/clases/${groupId}`);
 
   const checked = validateSchedule({
     weekday: str(formData, "weekday"),
@@ -123,7 +129,7 @@ export async function removeSchedule(formData: FormData): Promise<void> {
   const groupId = str(formData, "group_id");
   const id = str(formData, "id");
   if (!UUID.test(groupId) || !UUID.test(id)) to("/admin/clases", { error: "datos" });
-  const back = `/admin/clases/${groupId}`;
+  const back = backTo(formData, `/admin/clases/${groupId}`);
 
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("remove_schedule", { p_schedule_id: id });
@@ -185,43 +191,47 @@ export async function addRoom(formData: FormData): Promise<void> {
 }
 
 export async function renameTeacher(formData: FormData): Promise<void> {
+  const back = backTo(formData, CATALOG);
   const id = str(formData, "id");
   const name = str(formData, "display_name").replace(/\s+/g, " ");
-  if (!UUID.test(id)) to(CATALOG, { error: "datos" });
-  if (!name || name.length > 60) to(CATALOG, { error: "nombre-profe" });
+  if (!UUID.test(id)) to(back, { error: "datos" });
+  if (!name || name.length > 60) to(back, { error: "nombre-profe" });
 
   const supabase = await createClient();
   const { data, error } = await supabase.from("teachers").update({ display_name: name }).eq("id", id).select("id");
-  if (error) to(CATALOG, { error: grillaErrorCode(error) });
-  if (!data || data.length === 0) to(CATALOG, { error: "sin-permiso" });
-  to(CATALOG, { aviso: "profe-guardado" });
+  if (error) to(back, { error: grillaErrorCode(error) });
+  if (!data || data.length === 0) to(back, { error: "sin-permiso" });
+  to(back, { aviso: "profe-guardado" });
 }
 
 export async function setTeacherPayPeriod(formData: FormData): Promise<void> {
+  const back = backTo(formData, CATALOG);
   const id = str(formData, "id");
   const period = str(formData, "pay_period");
-  if (!UUID.test(id) || (period !== "month" && period !== "fortnight")) to(CATALOG, { error: "datos" });
+  if (!UUID.test(id) || (period !== "month" && period !== "fortnight")) to(back, { error: "datos" });
   const supabase = await createClient();
   const { data, error } = await supabase.from("teachers").update({ pay_period: period }).eq("id", id).select("id");
-  if (error) to(CATALOG, { error: grillaErrorCode(error) });
-  if (!data || data.length === 0) to(CATALOG, { error: "sin-permiso" });
-  to(CATALOG, { aviso: "cobro-guardado" });
+  if (error) to(back, { error: grillaErrorCode(error) });
+  if (!data || data.length === 0) to(back, { error: "sin-permiso" });
+  to(back, { aviso: "cobro-guardado" });
 }
 
 export async function setTeacherPhoto(formData: FormData): Promise<void> {
+  const back = backTo(formData, CATALOG);
   const id = str(formData, "id");
-  if (!UUID.test(id)) to(CATALOG, { error: "datos" });
+  if (!UUID.test(id)) to(back, { error: "datos" });
   const result = await replaceImage(await createClient(), "profes", id, formData.get("image"));
-  if (!result.ok) to(CATALOG, { error: result.error });
-  to(CATALOG, { aviso: "foto-guardada" });
+  if (!result.ok) to(back, { error: result.error });
+  to(back, { aviso: "foto-guardada" });
 }
 
 export async function removeTeacherPhoto(formData: FormData): Promise<void> {
+  const back = backTo(formData, CATALOG);
   const id = str(formData, "id");
-  if (!UUID.test(id)) to(CATALOG, { error: "datos" });
+  if (!UUID.test(id)) to(back, { error: "datos" });
   const result = await removeImage(await createClient(), "profes", id);
-  if (!result.ok) to(CATALOG, { error: result.error });
-  to(CATALOG, { aviso: "foto-quitada" });
+  if (!result.ok) to(back, { error: result.error });
+  to(back, { aviso: "foto-quitada" });
 }
 
 export async function deleteGroup(formData: FormData): Promise<void> {
@@ -231,4 +241,43 @@ export async function deleteGroup(formData: FormData): Promise<void> {
   const { data, error } = await supabase.rpc("delete_group", { p_group_id: id });
   if (error) to(`/admin/clases/${id}`, { error: grillaErrorCode(error) });
   to("/admin/clases", { aviso: data === "archived" ? "grupo-archivado" : "grupo-eliminado" });
+}
+
+/** Desde el perfil de un profe: crea la clase (grupo) con ese profe y su primer horario, en un paso. */
+export async function createTeacherClass(formData: FormData): Promise<void> {
+  const teacherId = str(formData, "teacher_id");
+  if (!UUID.test(teacherId)) to("/admin/clases/profes", { error: "datos" });
+  const back = `/admin/clases/profes/${teacherId}`;
+
+  const parsed = parseGroup(formData);
+  if ("error" in parsed) to(back, { error: parsed.error ?? "datos" });
+  const checked = validateSchedule({
+    weekday: str(formData, "weekday"),
+    start: str(formData, "start"),
+    end: str(formData, "end"),
+    roomId: str(formData, "room_id"),
+  });
+  if (!checked.ok) to(back, { error: `horario-${Object.keys(checked.errors)[0] ?? "datos"}` });
+  if (!UUID.test(checked.value.roomId)) to(back, { error: "horario-roomId" });
+
+  const supabase = await createClient();
+  const { data: group, error } = await supabase
+    .from("class_groups")
+    .insert({ ...parsed.value, teacher_id: teacherId, status: "active" })
+    .select("id")
+    .single();
+  if (error || !group) to(back, { error: error ? grillaErrorCode(error) : "generico" });
+  const { error: scheduleError } = await supabase.from("class_schedules").insert({
+    group_id: group.id,
+    weekday: checked.value.weekday,
+    start_time: checked.value.start,
+    end_time: checked.value.end,
+    room_id: checked.value.roomId,
+  });
+  if (scheduleError) {
+    // Sin horario la clase no sirve: se deshace (todavía no tiene alumnos ni clases).
+    await supabase.rpc("delete_group", { p_group_id: group.id });
+    to(back, { error: grillaErrorCode(scheduleError) });
+  }
+  to(back, { aviso: "clase-creada" });
 }
