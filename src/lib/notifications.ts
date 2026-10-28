@@ -3,7 +3,7 @@ import type { createClient } from "@/lib/supabase/server";
 
 type Client = Awaited<ReturnType<typeof createClient>>;
 
-export type NotificationKind = "due_soon" | "grace" | "suspended" | "pack_expiring" | "class_cancelled" | "class_restored" | "announcement" | "waitlist_offer" | "signup_new";
+export type NotificationKind = "due_soon" | "grace" | "suspended" | "pack_expiring" | "class_cancelled" | "class_restored" | "announcement" | "waitlist_offer" | "signup_new" | "signup_confirmed";
 
 export interface NotificationRow {
   id: string;

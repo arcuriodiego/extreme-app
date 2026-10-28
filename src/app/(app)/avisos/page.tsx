@@ -20,11 +20,12 @@ const KIND: Record<NotificationKind, { label: string; tone: string }> = {
   announcement: { label: "Aviso de la academia", tone: "bg-ink text-white" },
   waitlist_offer: { label: "Lugar liberado", tone: "bg-ok-soft text-ok-ink" },
   signup_new: { label: "Inscripción nueva", tone: "bg-warn-soft text-warn-ink" },
+  signup_confirmed: { label: "Inscripción confirmada", tone: "bg-ok-soft text-ok-ink" },
 };
 
 const OTHER = { label: "Aviso", tone: "bg-surface text-ink" };
 
-const LINK_LABELS: Record<string, string> = { "/pagos": "Ver pagos", "/clases": "Ver clases", "/admin/inscripciones": "Ver inscripciones" };
+const LINK_LABELS: Record<string, string> = { "/pagos": "Ver pagos", "/clases": "Ver clases", "/admin/inscripciones": "Ver inscripciones", "/inicio": "Ver mis clases" };
 
 const dateFormat = new Intl.DateTimeFormat("es-AR", {
   weekday: "short",
