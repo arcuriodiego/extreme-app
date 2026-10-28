@@ -1,4 +1,7 @@
+import { academyConfig } from "@/config/academy";
 import type { Platform } from "@/domain/install/platform";
+
+const HOST = academyConfig.appUrl.replace(/^https?:\/\//, "");
 
 /** Ícono de Compartir de Safari (cuadrado con flecha hacia arriba). */
 function ShareIcon() {
@@ -34,7 +37,7 @@ export function InstallSteps({ platform }: { platform: Platform }) {
     return (
       <ol className="flex flex-col gap-3">
         <Step n={1}>
-          Abrí <strong>app.extremedance.com.ar</strong> en <strong>Chrome</strong>.
+          Abrí <strong>{HOST}</strong> en <strong>Chrome</strong>.
         </Step>
         <Step n={2}>
           Tocá el menú <strong>⋮</strong> (arriba a la derecha).
@@ -50,12 +53,12 @@ export function InstallSteps({ platform }: { platform: Platform }) {
     <ol className="flex flex-col gap-3">
       {platform === "ios-other" ? (
         <Step n={1}>
-          Abrí <strong>app.extremedance.com.ar</strong> en <strong>Safari</strong> (la brújula azul). Desde Instagram u otro navegador no se puede
+          Abrí <strong>{HOST}</strong> en <strong>Safari</strong> (la brújula azul). Desde Instagram u otro navegador no se puede
           instalar.
         </Step>
       ) : (
         <Step n={1}>
-          Abrí <strong>app.extremedance.com.ar</strong> en <strong>Safari</strong>.
+          Abrí <strong>{HOST}</strong> en <strong>Safari</strong>.
         </Step>
       )}
       <Step n={2}>

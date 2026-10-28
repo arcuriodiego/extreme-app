@@ -4,7 +4,7 @@ import { HOME_PATH, SIGN_IN_PATH, routeAccess } from "@/domain/auth/routes";
 import { supabaseEnv } from "@/lib/supabase/env";
 import { academyConfig } from "@/config/academy";
 
-// La dirección vieja de la app lleva a la nueva (los avances de prueba de Vercel siguen funcionando).
+// La dirección vieja de Vercel lleva a la pública de este entorno (los avances de prueba siguen funcionando).
 const OLD_HOSTS = new Set(["extreme-app-tau.vercel.app"]);
 
 type CookieToSet = { name: string; value: string; options: CookieOptions };

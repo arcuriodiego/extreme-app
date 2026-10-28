@@ -3,7 +3,7 @@ name: Verificación
 
 on:
   push:
-    branches: [main]
+    branches: [main, produccion]
   pull_request:
 
 jobs:
@@ -104,5 +104,44 @@ jobs:
           set -o pipefail
           if ! supabase db push 2>&1 | tee push.log; then
             echo "::error title=supabase db push::$(tail -n 15 push.log | tr '\n' ' ' | cut -c1-900)"
+            exit 1
+          fi
+
+  # Producción: se publica sólo al subir la rama "produccion" (después de probar en pruebas
+  # y con el OK de Diego). Usa los secretos PROD_* de la cuenta de Supabase de la academia.
+  publicar-base-produccion:
+    name: Publicar base en producción
+    needs: [base-de-datos, reglas]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/produccion'
+    runs-on: ubuntu-latest
+    concurrency: base-produccion
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.PROD_SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.PROD_SUPABASE_DB_PASSWORD }}
+      SUPABASE_PROJECT_REF: ${{ secrets.PROD_SUPABASE_PROJECT_REF }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: Verificar credenciales
+        id: creds
+        run: |
+          if [ -z "$SUPABASE_ACCESS_TOKEN" ] || [ -z "$SUPABASE_DB_PASSWORD" ] || [ -z "$SUPABASE_PROJECT_REF" ]; then
+            echo "::error::Faltan los secretos PROD_SUPABASE_* en GitHub; no se publicó la base de producción."
+            exit 1
+          fi
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - run: |
+          set -o pipefail
+          if ! supabase link --project-ref "$SUPABASE_PROJECT_REF" 2>&1 | tee link.log; then
+            echo "::error title=supabase link (producción)::$(tail -n 15 link.log | tr '\n' ' ' | cut -c1-900)"
+            exit 1
+          fi
+      - name: Migraciones que se van a aplicar
+        run: supabase migration list 2>&1 | tail -n 40
+      - run: |
+          set -o pipefail
+          if ! supabase db push 2>&1 | tee push.log; then
+            echo "::error title=supabase db push (producción)::$(tail -n 15 push.log | tr '\n' ' ' | cut -c1-900)"
             exit 1
           fi

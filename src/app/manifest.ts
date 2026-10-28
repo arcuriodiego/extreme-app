@@ -1,11 +1,12 @@
 import type { MetadataRoute } from "next";
 import { academyConfig } from "@/config/academy";
+import { installName } from "@/domain/env/app-env";
 
 // Hace que la app se pueda instalar en el celular (PWA).
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: academyConfig.name,
-    short_name: academyConfig.shortName,
+    name: academyConfig.env === "staging" ? `${academyConfig.name} (pruebas)` : academyConfig.name,
+    short_name: installName(academyConfig.shortName, academyConfig.env),
     lang: academyConfig.locale,
     id: "/",
     start_url: "/",

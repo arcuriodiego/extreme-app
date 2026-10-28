@@ -9,7 +9,7 @@ import { createClient } from "@/lib/supabase/server";
 export const metadata: Metadata = { title: "Diagnóstico" };
 
 const REGIONS: Record<string, string> = {
-  gru1: "São Paulo",
+  gru1: "São Paulo (junto a la base de producción)",
   iad1: "Washington",
   pdx1: "Portland (junto a la base de staging, en Oregón)",
   local: "Computadora local",
