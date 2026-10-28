@@ -4,6 +4,8 @@ import { PageHeader } from "@/components/ui/basics";
 import { ensureNotifications, loadMyNotifications, type NotificationKind } from "@/lib/notifications";
 import { requireProfile } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
+import { PushToggle } from "@/components/push/PushToggle";
+import { vapidKeys } from "@/lib/push-delivery";
 
 export const metadata: Metadata = { title: "Avisos" };
 
@@ -44,6 +46,7 @@ export default async function AvisosPage() {
   return (
     <>
       <PageHeader title="Avisos" subtitle="Lo que la academia te avisa: cuotas, packs, clases suspendidas y mensajes." />
+      <PushToggle publicKey={vapidKeys()?.publicKey ?? null} />
       {items.length === 0 ? (
         <p className="rounded-xl bg-surface px-4 py-3 text-[15px]">No tenés avisos por ahora.</p>
       ) : (

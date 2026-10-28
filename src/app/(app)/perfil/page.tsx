@@ -3,6 +3,8 @@ import { signOut } from "@/app/(cuenta)/actions";
 import { ProfileForm } from "@/app/(cuenta)/forms";
 import Link from "next/link";
 import { requireProfile } from "@/lib/session";
+import { PushToggle } from "@/components/push/PushToggle";
+import { vapidKeys } from "@/lib/push-delivery";
 
 export const metadata: Metadata = { title: "Mi perfil" };
 
@@ -23,6 +25,7 @@ export default async function PerfilPage() {
           birthDate: profile.birthDate,
         }}
       />
+      <PushToggle publicKey={vapidKeys()?.publicKey ?? null} />
       <div className="flex flex-col gap-3 border-t border-line pt-6">
         <Link href="/documentos" className="font-semibold">
           Reglamento y documentos

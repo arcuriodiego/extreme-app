@@ -9,6 +9,14 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        // El service worker de las notificaciones: siempre la última versión.
+        source: "/sw.js",
+        headers: [
+          { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+          { key: "Content-Type", value: "application/javascript; charset=utf-8" },
+        ],
+      },
+      {
         source: "/:path*",
         headers: [
           { key: "X-Content-Type-Options", value: "nosniff" },

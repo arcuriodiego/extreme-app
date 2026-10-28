@@ -82,9 +82,14 @@ export default async function ConfiguracionPage({ searchParams }: { searchParams
     <>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <PageHeader title="Configuración" subtitle="Precios y reglas de la academia." />
-        <Link href="/admin/diagnostico" className="text-sm font-semibold">
-          Diagnóstico de velocidad
-        </Link>
+<span className="flex flex-wrap gap-4">
+          <Link href="/admin/configuracion/notificaciones" className="text-sm font-semibold">
+            Notificaciones al celular
+          </Link>
+          <Link href="/admin/diagnostico" className="text-sm font-semibold">
+            Diagnóstico de velocidad
+          </Link>
+        </span>
       </div>
       {notice && <FormAlert kind="ok">{notice}</FormAlert>}
       {failure && <FormAlert kind="error">{failure}</FormAlert>}

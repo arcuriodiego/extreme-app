@@ -72,6 +72,6 @@ function redirectKeepingCookies(url: URL, from: NextResponse) {
 export const config = {
   matcher: [
     // Todas las páginas menos archivos estáticos, imágenes y los íconos de la app.
-    "/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|apple-icon.png|brand/|.*\\.(?:png|jpg|jpeg|svg|webp|ico)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|sw.js|apple-icon.png|brand/|.*\\.(?:png|jpg|jpeg|svg|webp|ico)$).*)",
   ],
 };
