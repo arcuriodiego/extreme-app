@@ -96,6 +96,7 @@ test("con precio en efectivo, también dice cuánto es en efectivo", () => {
     nextDueDate: null,
     charges: [{ dueDate: "2026-11-10", totalCents: 6_776_000, paidCents: 0, cashCents: 5_600_000 }],
   });
-  assert.equal(light.light, "grace");
-  assert.ok(light.light !== "current" && light.amountDueCents === 6_776_000 && light.cashDueCents === 5_600_000);
+  if (light.light !== "grace") throw new Error(`esperaba gracia, vino ${light.light}`);
+  assert.equal(light.amountDueCents, 6_776_000);
+  assert.equal(light.cashDueCents, 5_600_000);
 });
