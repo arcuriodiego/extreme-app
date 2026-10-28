@@ -8,7 +8,9 @@ import { ROLE_LABELS, parseMonth, shiftMonth, summarizeTeachers } from "@/domain
 import { academyToday } from "@/lib/grilla";
 import { requireProfile } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
-import { loadTeacherReport } from "@/lib/teacher-report";
+import { loadTeacherPayroll, loadTeacherReport, loadTeacherSharePct } from "@/lib/teacher-report";
+import { PAYROLL_LABELS, summarizePayroll } from "@/domain/reports/payroll";
+import { formatARS } from "@/domain/shared/money";
 
 export const metadata: Metadata = { title: "Reporte de profes" };
 
@@ -36,14 +38,21 @@ export default async function ReporteProfesPage({ searchParams }: { searchParams
   const [profile, params] = await Promise.all([requireProfile(), searchParams]);
   if (!canOpen(profile.access, "reportes")) return <NoAccess />;
   const month = parseMonth(params.mes, academyToday());
-  const rows = await loadTeacherReport(await createClient(), month);
+  const supabase = await createClient();
+  const [rows, payrollLines, sharePct] = await Promise.all([
+    loadTeacherReport(supabase, month),
+    loadTeacherPayroll(supabase, month),
+    loadTeacherSharePct(supabase),
+  ]);
   const teachers = summarizeTeachers(rows, new Date());
+  const payroll = summarizePayroll(payrollLines);
+  const payrollTotal = payroll.reduce((s, p) => s + p.totalCents, 0);
   const label = monthName.format(new Date(`${month}T12:00:00Z`));
   const mes = month.slice(0, 7);
 
   return (
     <>
-      <PageHeader title="Reporte de profes" subtitle="Clases dictadas, reemplazos y presentes de cada profe, para liquidar sueldos." />
+      <PageHeader title="Reporte de profes" subtitle="Cuánto le corresponde a cada profe, y sus clases dictadas, reemplazos y presentes." />
       <div className="flex flex-wrap items-center gap-3">
         <Link href={`?mes=${shiftMonth(month, -1)}`} className="text-sm font-semibold" aria-label="Mes anterior">
           ‹ Anterior
@@ -52,9 +61,93 @@ export default async function ReporteProfesPage({ searchParams }: { searchParams
         <Link href={`?mes=${shiftMonth(month, 1)}`} className="text-sm font-semibold" aria-label="Mes siguiente">
           Siguiente ›
         </Link>
+      </div>
+
+      <section className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <h2 className="font-display text-2xl font-bold uppercase tracking-wide">Liquidación</h2>
+          {payroll.length > 0 && (
+            <a href={`/admin/reportes/profes/csv?mes=${mes}&tipo=liquidacion`} className="inline-flex h-9 items-center rounded-full border border-[#cfcfcf] px-3.5 text-sm font-semibold no-underline">
+              Descargar liquidación para Excel
+            </a>
+          )}
+        </div>
+        <p className="text-sm text-muted">
+          Cada profe cobra el <strong>{sharePct} %</strong> del precio en efectivo: de cada cuota pagada en el mes (al profe de la cuota), y de cada clase
+          de pack, suelta o con crédito que ya se dio (al profe que la dio). Pack: precio ÷ cantidad de clases. Workshops no entran. El porcentaje se cambia
+          en Configuración → Reglas.
+        </p>
+        {payroll.length === 0 ? (
+          <p className="text-[15px] text-muted">No hay nada para liquidar en este mes.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[720px] text-left text-[15px]">
+              <thead className="border-b border-line text-sm text-muted">
+                <tr>
+                  <th className="py-2 pr-3 font-semibold">Profe</th>
+                  <th className="py-2 pr-3 text-right font-semibold">Cuotas</th>
+                  <th className="py-2 pr-3 text-right font-semibold">Clases de pack</th>
+                  <th className="py-2 pr-3 text-right font-semibold">Sueltas</th>
+                  <th className="py-2 pr-3 text-right font-semibold">Con crédito</th>
+                  <th className="py-2 text-right font-semibold">A pagar</th>
+                </tr>
+              </thead>
+              <tbody>
+                {payroll.map((p) => (
+                  <tr key={p.teacherId} className="border-b border-line">
+                    <td className="py-2.5 pr-3 font-semibold">{p.name}</td>
+                    {(["cuota", "pack", "suelta", "credito"] as const).map((k) => (
+                      <td key={k} className="py-2.5 pr-3 text-right tabular-nums">
+                        {p.byConcept[k].count > 0 ? (
+                          <>
+                            {formatARS(p.byConcept[k].cents)}
+                            <span className="block text-xs text-muted">
+                              {p.byConcept[k].count} {k === "cuota" ? (p.byConcept[k].count === 1 ? "cuota" : "cuotas") : p.byConcept[k].count === 1 ? "clase" : "clases"}
+                            </span>
+                          </>
+                        ) : (
+                          <span className="text-muted">—</span>
+                        )}
+                      </td>
+                    ))}
+                    <td className="py-2.5 text-right font-display text-xl font-bold tabular-nums">{formatARS(p.totalCents)}</td>
+                  </tr>
+                ))}
+                <tr>
+                  <td className="py-2.5 pr-3 font-semibold" colSpan={5}>
+                    Total del mes
+                  </td>
+                  <td className="py-2.5 text-right font-display text-xl font-bold tabular-nums">{formatARS(payrollTotal)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        )}
+        {payroll.map((p) => (
+          <details key={p.teacherId} className="rounded-xl border border-line p-3">
+            <summary className="cursor-pointer font-semibold">
+              {p.name} · {formatARS(p.totalCents)}
+            </summary>
+            <ul className="flex flex-col pt-2">
+              {p.lines.map((l, i) => (
+                <li key={i} className="flex flex-wrap items-center justify-between gap-2 border-t border-line py-2 text-[15px]">
+                  <span>
+                    <span className="capitalize">{when.format(new Date(l.occurredAt))}</span> · {PAYROLL_LABELS[l.concept]} · {l.studentName}
+                    <span className="text-sm text-muted"> · {l.detail} · base {formatARS(l.baseCents)}</span>
+                  </span>
+                  <strong className="tabular-nums">{formatARS(l.shareCents)}</strong>
+                </li>
+              ))}
+            </ul>
+          </details>
+        ))}
+      </section>
+
+      <div className="flex flex-wrap items-end justify-between gap-3 border-t border-line pt-6">
+        <h2 className="font-display text-2xl font-bold uppercase tracking-wide">Clases y asistencia</h2>
         {teachers.length > 0 && (
-          <a href={`/admin/reportes/profes/csv?mes=${mes}`} className="ml-auto inline-flex h-9 items-center rounded-full border border-[#cfcfcf] px-3.5 text-sm font-semibold no-underline">
-            Descargar para Excel
+          <a href={`/admin/reportes/profes/csv?mes=${mes}`} className="inline-flex h-9 items-center rounded-full border border-[#cfcfcf] px-3.5 text-sm font-semibold no-underline">
+            Descargar clases para Excel
           </a>
         )}
       </div>
@@ -101,7 +194,7 @@ export default async function ReporteProfesPage({ searchParams }: { searchParams
           </p>
 
           <section className="flex flex-col gap-3">
-            <h2 className="font-display text-2xl font-bold uppercase tracking-wide">Detalle</h2>
+            <h2 className="font-display text-xl font-bold uppercase tracking-wide">Detalle de clases</h2>
             {teachers.map((t) => (
               <details key={t.teacherId} className="rounded-xl border border-line p-3">
                 <summary className="cursor-pointer font-semibold">

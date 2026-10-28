@@ -32,6 +32,19 @@ export const RULE_GROUPS: readonly RuleGroup[] = [
     ],
   },
   {
+    title: "Profes",
+    rules: [
+      {
+        key: "teacher_share_pct",
+        label: "Porcentaje que cobra cada profe",
+        unit: "% del precio",
+        min: 0,
+        max: 100,
+        help: "Sobre el precio en efectivo de cuotas, clases de pack, sueltas y créditos (no workshops). Se usa en el Reporte de profes.",
+      },
+    ],
+  },
+  {
     title: "Cuotas",
     rules: [
       { key: "grace_days", label: "Días de gracia después del vencimiento", unit: "días", min: 0, max: 15, help: "Durante la gracia el alumno puede seguir viniendo. Vale desde ya para todas las cuotas vencidas." },

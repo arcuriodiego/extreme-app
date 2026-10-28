@@ -5,7 +5,8 @@ import { parseMonth, summarizeTeachers, teachersCsv } from "@/domain/reports/tea
 import { academyToday } from "@/lib/grilla";
 import { requireProfile } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
-import { loadTeacherReport } from "@/lib/teacher-report";
+import { loadTeacherPayroll, loadTeacherReport } from "@/lib/teacher-report";
+import { payrollCsv, summarizePayroll } from "@/domain/reports/payroll";
 
 const fmt = new Intl.DateTimeFormat("es-AR", {
   day: "2-digit",
@@ -22,12 +23,15 @@ export async function GET(request: NextRequest) {
   const profile = await requireProfile();
   if (!canOpen(profile.access, "reportes")) return new NextResponse("No tenés permiso.", { status: 403 });
   const month = parseMonth(request.nextUrl.searchParams.get("mes") ?? undefined, academyToday());
-  const rows = await loadTeacherReport(await createClient(), month);
-  const csv = teachersCsv(summarizeTeachers(rows, new Date()), (iso) => fmt.format(new Date(iso)));
+  const payroll = request.nextUrl.searchParams.get("tipo") === "liquidacion";
+  const supabase = await createClient();
+  const csv = payroll
+    ? payrollCsv(summarizePayroll(await loadTeacherPayroll(supabase, month)), (iso) => fmt.format(new Date(iso)))
+    : teachersCsv(summarizeTeachers(await loadTeacherReport(supabase, month), new Date()), (iso) => fmt.format(new Date(iso)));
   return new NextResponse(csv, {
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename="reporte-profes-${month.slice(0, 7)}.csv"`,
+      "Content-Disposition": `attachment; filename="${payroll ? "liquidacion" : "clases"}-profes-${month.slice(0, 7)}.csv"`,
       "Cache-Control": "no-store",
     },
   });
