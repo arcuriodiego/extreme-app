@@ -22,7 +22,7 @@ export default async function CartelPage({ searchParams }: { searchParams: Promi
         @page { size: A4; margin: 0; }
         html, body { background: #fff; }
         .cartel-a4 { width: 210mm; height: 297mm; padding: 18mm 16mm 14mm; justify-content: space-between; }
-        .cartel-historia { width: 100vw; height: 177.78vw; padding: 12.96vw 8.33vw 11.11vw; justify-content: space-between; }
+        .cartel-historia { width: 100vw; height: 177.78vw; padding: 12.96vw 8.33vw 11.11vw; justify-content: space-between; margin-top: max(0px, calc((100dvh - 177.78vw) / 2)); }
         .cartel .qr svg { width: 100%; height: 100%; display: block; }
         @media print { .cartel { box-shadow: none; } }
       `}</style>
