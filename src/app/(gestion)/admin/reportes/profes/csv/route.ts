@@ -5,7 +5,7 @@ import { parseMonth, summarizeTeachers, teachersCsv } from "@/domain/reports/tea
 import { academyToday } from "@/lib/grilla";
 import { requireProfile } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
-import { loadTeacherPayroll, loadTeacherReport } from "@/lib/teacher-report";
+import { academyDayOf, loadTeacherPayroll, loadTeacherReport } from "@/lib/teacher-report";
 import { payrollCsv, summarizePayroll } from "@/domain/reports/payroll";
 
 const fmt = new Intl.DateTimeFormat("es-AR", {
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
   const payroll = request.nextUrl.searchParams.get("tipo") === "liquidacion";
   const supabase = await createClient();
   const csv = payroll
-    ? payrollCsv(summarizePayroll(await loadTeacherPayroll(supabase, month)), (iso) => fmt.format(new Date(iso)))
+    ? payrollCsv(summarizePayroll(await loadTeacherPayroll(supabase, month), academyDayOf), (iso) => fmt.format(new Date(iso)), academyDayOf)
     : teachersCsv(summarizeTeachers(await loadTeacherReport(supabase, month), new Date()), (iso) => fmt.format(new Date(iso)));
   return new NextResponse(csv, {
     headers: {

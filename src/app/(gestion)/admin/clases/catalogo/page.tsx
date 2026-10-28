@@ -7,7 +7,7 @@ import { can } from "@/domain/auth/roles";
 import { type CatalogItem, loadCatalog } from "@/lib/grilla";
 import { requireProfile } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
-import { addCatalogItem, addRoom, removeTeacherPhoto, renameTeacher, setCatalogItemActive, setTeacherPhoto } from "../actions";
+import { addCatalogItem, addRoom, removeTeacherPhoto, renameTeacher, setCatalogItemActive, setTeacherPayPeriod, setTeacherPhoto } from "../actions";
 import { ImagePicker } from "@/components/images/ImagePicker";
 import { TeacherAvatar } from "@/components/images/TeacherAvatar";
 import { ERRORS, NOTICES } from "../messages";
@@ -119,6 +119,17 @@ export default async function CatalogoPage({ searchParams }: { searchParams: Pro
                   </label>
                   <input id={`profe-${t.id}`} name="display_name" defaultValue={t.displayName} maxLength={60} required className={`${input} flex-1`} />
                   {!t.active && <span className="rounded-full bg-surface px-2 py-0.5 text-xs font-bold">SIN ROL</span>}
+                  <SmallSubmit>Guardar</SmallSubmit>
+                </form>
+                <form action={setTeacherPayPeriod} className="flex flex-wrap items-center gap-2 pl-12">
+                  <input type="hidden" name="id" value={t.id} />
+                  <label htmlFor={`cobro-${t.id}`} className="text-sm font-semibold">
+                    Cobra
+                  </label>
+                  <select id={`cobro-${t.id}`} name="pay_period" defaultValue={t.payPeriod} className={`${input} h-9`}>
+                    <option value="month">Mes completo</option>
+                    <option value="fortnight">Por quincena</option>
+                  </select>
                   <SmallSubmit>Guardar</SmallSubmit>
                 </form>
                 <details className="pl-12">

@@ -1,4 +1,5 @@
 import "server-only";
+import { academyConfig } from "@/config/academy";
 import type { PayrollLine } from "@/domain/reports/payroll";
 import type { ReportSession } from "@/domain/reports/teachers";
 import type { createClient } from "@/lib/supabase/server";
@@ -29,6 +30,7 @@ export async function loadTeacherPayroll(supabase: Client, monthFirstDay: string
   return ((data ?? []) as Record<string, unknown>[]).map((r) => ({
     teacherId: r.teacher_id as string,
     teacherName: (r.teacher_name as string | null) ?? "Sin nombre",
+    payPeriod: r.pay_period === "fortnight" ? "fortnight" : "month",
     concept: r.concept as PayrollLine["concept"],
     occurredAt: r.occurred_at as string,
     studentName: (r.student_name as string | null) ?? "",
@@ -41,4 +43,10 @@ export async function loadTeacherPayroll(supabase: Client, monthFirstDay: string
 export async function loadTeacherSharePct(supabase: Client): Promise<number> {
   const { data } = await supabase.from("app_settings").select("value").eq("key", "teacher_share_pct").maybeSingle();
   return Number((data as { value: number } | null)?.value ?? 50);
+}
+
+const dayFormat = new Intl.DateTimeFormat("en-US", { day: "numeric", timeZone: academyConfig.timeZone });
+/** Día del mes en la hora de la academia (para separar quincenas). */
+export function academyDayOf(iso: string): number {
+  return Number(dayFormat.format(new Date(iso)));
 }

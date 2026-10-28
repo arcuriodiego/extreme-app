@@ -8,8 +8,8 @@ import { ROLE_LABELS, parseMonth, shiftMonth, summarizeTeachers } from "@/domain
 import { academyToday } from "@/lib/grilla";
 import { requireProfile } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
-import { loadTeacherPayroll, loadTeacherReport, loadTeacherSharePct } from "@/lib/teacher-report";
-import { PAYROLL_LABELS, summarizePayroll } from "@/domain/reports/payroll";
+import { academyDayOf, loadTeacherPayroll, loadTeacherReport, loadTeacherSharePct } from "@/lib/teacher-report";
+import { PAYROLL_LABELS, PERIOD_LABELS, summarizePayroll } from "@/domain/reports/payroll";
 import { formatARS } from "@/domain/shared/money";
 
 export const metadata: Metadata = { title: "Reporte de profes" };
@@ -45,7 +45,7 @@ export default async function ReporteProfesPage({ searchParams }: { searchParams
     loadTeacherSharePct(supabase),
   ]);
   const teachers = summarizeTeachers(rows, new Date());
-  const payroll = summarizePayroll(payrollLines);
+  const payroll = summarizePayroll(payrollLines, academyDayOf);
   const payrollTotal = payroll.reduce((s, p) => s + p.totalCents, 0);
   const label = monthName.format(new Date(`${month}T12:00:00Z`));
   const mes = month.slice(0, 7);
@@ -74,8 +74,9 @@ export default async function ReporteProfesPage({ searchParams }: { searchParams
         </div>
         <p className="text-sm text-muted">
           Cada profe cobra el <strong>{sharePct} %</strong> del precio en efectivo: de cada cuota pagada en el mes (al profe de la cuota), y de cada clase
-          de pack, suelta o con crédito que ya se dio (al profe que la dio). Pack: precio ÷ cantidad de clases. Workshops no entran. El porcentaje se cambia
-          en Configuración → Reglas.
+          de pack, suelta o con crédito que ya se dio (al profe que la dio). Pack: precio ÷ cantidad de clases. Workshops no entran. Quien cobra por
+          quincena ve separado lo del 1 al 15 y lo del 16 a fin de mes. El porcentaje se cambia en Configuración → Reglas; la modalidad de cada profe,
+          en Clases y grilla → Catálogo → Profes.
         </p>
         {payroll.length === 0 ? (
           <p className="text-[15px] text-muted">No hay nada para liquidar en este mes.</p>
@@ -95,7 +96,10 @@ export default async function ReporteProfesPage({ searchParams }: { searchParams
               <tbody>
                 {payroll.map((p) => (
                   <tr key={p.teacherId} className="border-b border-line">
-                    <td className="py-2.5 pr-3 font-semibold">{p.name}</td>
+                    <td className="py-2.5 pr-3 font-semibold">
+                      {p.name}
+                      <span className="block text-xs font-normal text-muted">{PERIOD_LABELS[p.payPeriod]}</span>
+                    </td>
                     {(["cuota", "pack", "suelta", "credito"] as const).map((k) => (
                       <td key={k} className="py-2.5 pr-3 text-right tabular-nums">
                         {p.byConcept[k].count > 0 ? (
@@ -110,7 +114,14 @@ export default async function ReporteProfesPage({ searchParams }: { searchParams
                         )}
                       </td>
                     ))}
-                    <td className="py-2.5 text-right font-display text-xl font-bold tabular-nums">{formatARS(p.totalCents)}</td>
+                    <td className="py-2.5 text-right tabular-nums">
+                      <span className="font-display text-xl font-bold">{formatARS(p.totalCents)}</span>
+                      {p.payPeriod === "fortnight" && (
+                        <span className="block text-xs text-muted">
+                          1ª quincena {formatARS(p.halves.first)} · 2ª quincena {formatARS(p.halves.second)}
+                        </span>
+                      )}
+                    </td>
                   </tr>
                 ))}
                 <tr>

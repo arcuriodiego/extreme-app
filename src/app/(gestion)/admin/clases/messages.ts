@@ -13,6 +13,7 @@ export const NOTICES: Record<string, string> = {
   activado: "Listo, quedó activo.",
   desactivado: "Listo, quedó desactivado. Ya no se ofrece para grupos nuevos.",
   "profe-guardado": "Listo, guardamos el nombre del profe.",
+  "cobro-guardado": "Listo, guardamos cómo cobra el profe.",
   "foto-guardada": "Listo, subimos la foto del profe: ya aparece en las clases.",
   "foto-quitada": "Listo, quitamos la foto del profe.",
   "clase-suspendida": "Listo, la clase quedó suspendida.",

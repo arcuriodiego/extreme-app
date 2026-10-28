@@ -23,6 +23,7 @@ export interface Teacher {
   displayName: string;
   active: boolean;
   photoUrl: string | null;
+  payPeriod: "month" | "fortnight";
 }
 
 export interface Catalog {
@@ -39,7 +40,7 @@ export async function loadCatalog(supabase: Client): Promise<Catalog> {
     supabase.from("levels").select("id, name, active").order("sort_order").order("name"),
     supabase.from("age_categories").select("id, name, active").order("sort_order").order("name"),
     supabase.from("rooms").select("id, name, active, capacity").order("name"),
-    supabase.from("teachers").select("id, profile_id, display_name, active, photo_path").order("display_name"),
+    supabase.from("teachers").select("id, profile_id, display_name, active, photo_path, pay_period").order("display_name"),
   ]);
   const firstError = [styles, levels, ages, rooms, teachers].find((r) => r.error)?.error;
   if (firstError) throw new Error(`No se pudo cargar el catálogo: ${firstError.message}`);
@@ -55,6 +56,7 @@ export async function loadCatalog(supabase: Client): Promise<Catalog> {
       displayName: t.display_name as string,
       active: t.active as boolean,
       photoUrl: imageUrl(t.photo_path as string | null),
+      payPeriod: t.pay_period === "fortnight" ? "fortnight" : "month",
     })),
   };
 }

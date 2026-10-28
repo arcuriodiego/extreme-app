@@ -101,4 +101,16 @@ exception when insufficient_privilege then
   raise notice 'OK  sólo administración';
 end $$;
 
+-- Modalidad: Luli cobra por quincena.
+reset role;
+update teachers set pay_period = 'fortnight' where id = (select luli from ids);
+set local role authenticated;
+set local request.jwt.claims = '{"sub":"d0000000-0000-0000-0000-00000000000d"}';
+do $$
+begin
+  assert (select pay_period from teacher_payroll('2026-10-01') where concept = 'pack') = 'fortnight', 'Luli por quincena';
+  assert (select pay_period from teacher_payroll('2026-10-01') where concept = 'cuota') = 'month', 'Agustina mensual';
+  raise notice 'OK  modalidad de cobro';
+end $$;
+
 rollback;

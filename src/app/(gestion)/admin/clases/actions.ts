@@ -197,6 +197,17 @@ export async function renameTeacher(formData: FormData): Promise<void> {
   to(CATALOG, { aviso: "profe-guardado" });
 }
 
+export async function setTeacherPayPeriod(formData: FormData): Promise<void> {
+  const id = str(formData, "id");
+  const period = str(formData, "pay_period");
+  if (!UUID.test(id) || (period !== "month" && period !== "fortnight")) to(CATALOG, { error: "datos" });
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("teachers").update({ pay_period: period }).eq("id", id).select("id");
+  if (error) to(CATALOG, { error: grillaErrorCode(error) });
+  if (!data || data.length === 0) to(CATALOG, { error: "sin-permiso" });
+  to(CATALOG, { aviso: "cobro-guardado" });
+}
+
 export async function setTeacherPhoto(formData: FormData): Promise<void> {
   const id = str(formData, "id");
   if (!UUID.test(id)) to(CATALOG, { error: "datos" });
