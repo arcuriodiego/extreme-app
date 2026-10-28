@@ -87,4 +87,10 @@ jobs:
       - if: steps.creds.outputs.ok == 'true'
         run: supabase link --project-ref "$SUPABASE_PROJECT_REF"
       - if: steps.creds.outputs.ok == 'true'
-        run: supabase db push
+        # Si falla, el error queda como anotación del job (se lee sin descargar el registro completo).
+        run: |
+          set -o pipefail
+          if ! supabase db push 2>&1 | tee push.log; then
+            echo "::error title=supabase db push::$(tail -n 15 push.log | tr '\n' ' ' | cut -c1-900)"
+            exit 1
+          fi
