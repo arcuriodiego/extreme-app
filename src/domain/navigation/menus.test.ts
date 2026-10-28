@@ -38,7 +38,7 @@ test("recepción: operación diaria, sin roles ni configuración", () => {
 
 test("administración: todo el menú", () => {
   assert.deepEqual(keys(gestionMenu(admin)), [
-    "panel", "alumnos", "inscripciones", "clases", "pagos", "workshops", "avisos", "documentos", "escaner", "usuarios", "configuracion",
+    "panel", "alumnos", "inscripciones", "clases", "pagos", "reportes", "workshops", "avisos", "documentos", "escaner", "usuarios", "configuracion",
   ]);
 });
 

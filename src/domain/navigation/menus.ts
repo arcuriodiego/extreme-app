@@ -58,6 +58,7 @@ const GESTION_ITEMS: readonly GestionItem[] = [
   { key: "inscripciones", href: "/admin/inscripciones", label: "Inscripciones", icon: "check", anyOf: ["people.view"] },
   { key: "clases", href: "/admin/clases", label: "Clases y grilla", icon: "calendar", anyOf: ["classes.manage", "classes.view_roster"] },
   { key: "pagos", href: "/admin/pagos", label: "Pagos", icon: "card", anyOf: ["payments.register", "finance.view"] },
+  { key: "reportes", href: "/admin/reportes/profes", label: "Reporte de profes", icon: "check", anyOf: ["finance.view"] },
   { key: "workshops", href: "/admin/workshops", label: "Workshops", icon: "ticket", anyOf: ["people.view", "classes.manage"] },
   { key: "avisos", href: "/admin/avisos", label: "Avisos", icon: "bell", anyOf: ["people.manage"] },
   { key: "documentos", href: "/admin/documentos", label: "Reglamento y documentos", icon: "doc", anyOf: ["people.manage", "settings.manage"] },
