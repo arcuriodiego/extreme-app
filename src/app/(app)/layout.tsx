@@ -10,7 +10,7 @@ import { countUnread } from "@/lib/notifications";
 import { requireProfile } from "@/lib/session";
 import { runBackgroundTasks } from "@/lib/background";
 import { createClient } from "@/lib/supabase/server";
-import { Icon } from "@/components/ui/Icon";
+import { Bell } from "@/components/notices/Bell";
 import { InstallBanner } from "@/components/install/InstallBanner";
 
 // Páginas personales: se arman en cada visita, nunca durante la compilación.
@@ -35,18 +35,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col">
       <header className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 px-5 pt-4">
-        <Link
-          href="/avisos"
-          aria-label={unread > 0 ? `Avisos: ${unread} sin leer` : "Avisos"}
-          className="relative flex size-11 items-center justify-center justify-self-start rounded-full border border-line text-ink hover:border-ink hover:text-ink"
-        >
-          <Icon name="bell" size={22} />
-          {unread > 0 && (
-            <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-brand px-1 text-xs font-bold text-white">
-              {unread > 9 ? "9+" : unread}
-            </span>
-          )}
-        </Link>
+        <Bell initial={unread} className="justify-self-start" />
         <Link href="/inicio" aria-label="Ir a mi inicio">
           <Image
             src={academyConfig.logo.light}

@@ -5,6 +5,7 @@ import { ensureNotifications, loadMyNotifications, type NotificationKind } from 
 import { requireProfile } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import { PushToggle } from "@/components/push/PushToggle";
+import { MarkNoticesRead } from "@/components/notices/MarkNoticesRead";
 import { vapidKeys } from "@/lib/push-delivery";
 
 export const metadata: Metadata = { title: "Avisos" };
@@ -40,13 +41,14 @@ export default async function AvisosPage() {
   const supabase = await createClient();
   await ensureNotifications(supabase);
   const items = await loadMyNotifications(supabase);
-  // Se muestran como "nuevos" en esta visita y quedan leídos para la próxima.
-  if (items.some((n) => !n.read)) await supabase.rpc("mark_notifications_read");
+  // Se muestran como "nuevos" en esta visita; el componente los marca leídos y pone la campanita en cero.
+  const hasUnread = items.some((n) => !n.read);
 
   return (
     <>
       <PageHeader title="Avisos" subtitle="Lo que la academia te avisa: cuotas, packs, clases suspendidas y mensajes." />
       <PushToggle publicKey={vapidKeys()?.publicKey ?? null} />
+      {hasUnread && <MarkNoticesRead />}
       {items.length === 0 ? (
         <p className="rounded-xl bg-surface px-4 py-3 text-[15px]">No tenés avisos por ahora.</p>
       ) : (

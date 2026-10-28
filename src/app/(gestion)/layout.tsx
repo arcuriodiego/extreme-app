@@ -8,7 +8,7 @@ import { gestionMenu } from "@/domain/navigation/menus";
 import { requireProfile } from "@/lib/session";
 import { runBackgroundTasks } from "@/lib/background";
 import { signOut } from "@/app/(cuenta)/actions";
-import { Icon } from "@/components/ui/Icon";
+import { Bell } from "@/components/notices/Bell";
 import { countUnread } from "@/lib/notifications";
 import { createClient } from "@/lib/supabase/server";
 
@@ -47,18 +47,7 @@ export default async function GestionLayout({ children }: { children: React.Reac
               {profile.firstName ? ` · ${profile.firstName}` : ""}
             </span>
           )}
-          <Link
-            href="/avisos"
-            aria-label={unread > 0 ? `Avisos: ${unread} sin leer` : "Avisos"}
-            className="relative flex size-10 items-center justify-center rounded-full border border-line text-ink hover:border-ink"
-          >
-            <Icon name="bell" size={20} />
-            {unread > 0 && (
-              <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-brand px-1 text-xs font-bold text-white">
-                {unread > 9 ? "9+" : unread}
-              </span>
-            )}
-          </Link>
+          <Bell initial={unread} size={40} iconSize={20} />
           <Link href="/inicio" className="text-ink no-underline hover:underline">
             Mi inicio
           </Link>
