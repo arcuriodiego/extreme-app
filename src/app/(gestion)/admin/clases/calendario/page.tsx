@@ -62,7 +62,7 @@ export default async function CalendarioPage({
       <div className="grid gap-10 xl:grid-cols-[minmax(0,1fr)_340px]">
         <section className="flex min-w-0 flex-col gap-4">
           <DayStrip days={strip} selected={day} hrefFor={(d) => `/admin/clases/calendario?dia=${d}`} />
-          <h2 className="font-display text-2xl font-bold uppercase tracking-wide">{longDate(day)}</h2>
+          <h2 className="font-display text-2xl font-bold uppercase tracking-wide text-brand">{longDate(day)}</h2>
           {dayException && (
             <p className="rounded-xl bg-alert-soft px-4 py-3 text-[15px] font-semibold text-alert-ink">
               {dayException.kind === "holiday" ? "Feriado" : "Cierre"}: {dayException.description}. Las clases de este día no se dictan.

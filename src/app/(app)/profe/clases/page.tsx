@@ -57,7 +57,7 @@ export default async function ProfeClasesPage() {
       ) : (
         days.map((date) => (
           <section key={date} className="flex flex-col gap-2">
-            <h2 className="font-display text-xl font-bold uppercase tracking-wide">{date === today ? `Hoy · ${longDate(date)}` : longDate(date)}</h2>
+            <h2 className="font-display text-xl font-bold uppercase tracking-wide text-brand">{date === today ? `Hoy · ${longDate(date)}` : longDate(date)}</h2>
             <ul className="flex flex-col gap-2">
               {mine
                 .filter((x) => x.s.date === date)

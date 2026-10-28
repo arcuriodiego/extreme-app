@@ -80,7 +80,7 @@ export default async function ProfePage({ params, searchParams }: { params: Prom
                 {g.schedules.map((s) => (
                   <li key={s.id} className="flex items-center justify-between gap-2 border-t border-line py-2 text-[15px]">
                     <span>
-                      <strong>{weekdayLabel(s.weekday)}</strong> {s.start} a {s.end} · {s.roomName}
+                      <strong className="text-brand">{weekdayLabel(s.weekday)}</strong> {s.start} a {s.end} · {s.roomName}
                     </span>
                     <form action={removeSchedule}>
                       <input type="hidden" name="group_id" value={g.id} />

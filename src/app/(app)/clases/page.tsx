@@ -88,7 +88,7 @@ export default async function ClasesPage({ searchParams }: { searchParams: Promi
         <>
           <DayStrip days={strip} selected={day} hrefFor={(d) => `/clases?dia=${d}`} />
           <section aria-labelledby="dia-elegido" className="flex flex-col gap-2">
-            <h2 id="dia-elegido" className="font-display text-xl font-bold uppercase tracking-wide">
+            <h2 id="dia-elegido" className="font-display text-xl font-bold uppercase tracking-wide text-brand">
               {longDate(day)}
             </h2>
             {sessions.length === 0 ? (

@@ -29,7 +29,7 @@ export function WeeklyGrid({
     <div className={wide ? "grid gap-6 md:grid-cols-2 xl:grid-cols-3" : "flex flex-col gap-6"}>
       {days.map((day) => (
         <section key={day.weekday} aria-labelledby={`dia-${day.weekday}`} className="flex flex-col gap-2">
-          <h2 id={`dia-${day.weekday}`} className="font-display text-xl font-bold uppercase tracking-wide">
+          <h2 id={`dia-${day.weekday}`} className="font-display text-xl font-bold uppercase tracking-wide text-brand">
             {day.label}
           </h2>
           <ul className="flex flex-col gap-2">
