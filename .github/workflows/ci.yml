@@ -85,7 +85,13 @@ jobs:
         with:
           version: latest
       - if: steps.creds.outputs.ok == 'true'
-        run: supabase link --project-ref "$SUPABASE_PROJECT_REF"
+        run: |
+          set -o pipefail
+          supabase --version
+          if ! supabase link --project-ref "$SUPABASE_PROJECT_REF" 2>&1 | tee link.log; then
+            echo "::error title=supabase link::$(supabase --version) $(tail -n 15 link.log | tr '\n' ' ' | cut -c1-900)"
+            exit 1
+          fi
       - if: steps.creds.outputs.ok == 'true'
         # Si falla, el error queda como anotación del job (se lee sin descargar el registro completo).
         run: |
