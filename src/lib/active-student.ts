@@ -19,7 +19,10 @@ export const ACTIVE_STUDENT_COOKIE = "alumno";
  * Un tutor elige entre él y sus hijos; la elección queda en una cookie y se valida acá
  * contra los vínculos reales (la base además controla cada dato).
  */
-export const getActiveStudent = cache(async (): Promise<{ active: MyStudent | null; options: MyStudent[] }> => {
+/** Valor de la cookie para la vista de toda la familia (Inicio). */
+export const FAMILY_VIEW = "todos";
+
+export const getActiveStudent = cache(async (): Promise<{ active: MyStudent | null; options: MyStudent[]; family: boolean }> => {
   const supabase = await createClient();
   const [{ data }, jar] = await Promise.all([supabase.rpc("my_students"), cookies()]);
   const options = ((data ?? []) as { student_id: string; full_name: string; first_name: string; is_self: boolean; can_book: boolean }[]).map(
@@ -27,5 +30,6 @@ export const getActiveStudent = cache(async (): Promise<{ active: MyStudent | nu
   );
   const chosen = jar.get(ACTIVE_STUDENT_COOKIE)?.value;
   const active = options.find((o) => o.id === chosen) ?? options.find((o) => o.isSelf) ?? options[0] ?? null;
-  return { active, options };
+  // "Todos" sólo cambia Inicio; las demás pantallas siguen mostrando a una persona.
+  return { active, options, family: chosen === FAMILY_VIEW && options.length > 1 };
 });

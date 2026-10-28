@@ -14,6 +14,12 @@ export function GET(request: NextRequest) {
   url.pathname = PAGES.includes(to) ? to : "/inicio";
   url.search = "";
   const res = NextResponse.redirect(url);
+  if (id === "todos") {
+    url.pathname = "/inicio";
+    const res2 = NextResponse.redirect(url);
+    res2.cookies.set("alumno", "todos", { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax", httpOnly: true, secure: true });
+    return res2;
+  }
   if (UUID.test(id)) {
     res.cookies.set("alumno", id, { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax", httpOnly: true, secure: true });
   }

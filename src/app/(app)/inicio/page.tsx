@@ -15,6 +15,7 @@ import { loadActiveMemberships } from "@/lib/memberships";
 import { requireProfile } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import { TeacherAvatar } from "@/components/images/TeacherAvatar";
+import { FamilyOverview } from "./FamilyOverview";
 
 export const metadata: Metadata = { title: "Inicio" };
 
@@ -31,7 +32,7 @@ export default async function InicioPage({ searchParams }: { searchParams: Promi
   const showGestion = hasGestion(profile.access);
   const supabase = await createClient();
   const today = academyToday();
-  const [{ active }, graceDays] = await Promise.all([getActiveStudent(), loadGraceDays(supabase), ensureNotifications(supabase)]);
+  const [{ active, options, family }, graceDays] = await Promise.all([getActiveStudent(), loadGraceDays(supabase), ensureNotifications(supabase)]);
   const studentId = active?.id ?? null;
   const viewingChild = active !== null && !active.isSelf;
   // Los padres no toman clases: su cuenta es sólo para manejar a sus hijos.
@@ -50,7 +51,8 @@ export default async function InicioPage({ searchParams }: { searchParams: Promi
           Hola{profile.firstName ? `, ${profile.firstName}` : ""}
         </h1>
         <RoleBadges roles={profile.access.roles} />
-        {viewingChild && <p className="text-[15px] font-semibold">Estás viendo a {active.name}.</p>}
+        {viewingChild && !family && <p className="text-[15px] font-semibold">Estás viendo a {active.name}.</p>}
+        {family && <p className="text-[15px] font-semibold">Resumen de toda la familia.</p>}
       </div>
 
       {mustAccept && (
@@ -67,6 +69,10 @@ export default async function InicioPage({ searchParams }: { searchParams: Promi
       )}
 
       {showGestion && <LinkCard href="/admin" title="Gestión" description="Alumnos, clases, pagos y más" dark />}
+
+      {family && <FamilyOverview supabase={supabase} people={options} today={today} graceDays={graceDays} />}
+      {!family && (
+        <>
 
       {memberships.map((m) => (
         <section key={m.id} aria-label={viewingChild ? `Cuota de ${active.firstName}` : "Tu cuota de profe"} className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-line p-5">
@@ -169,6 +175,8 @@ export default async function InicioPage({ searchParams }: { searchParams: Promi
           </span>
           <span aria-hidden="true">›</span>
         </Link>
+      )}
+        </>
       )}
     </>
   );

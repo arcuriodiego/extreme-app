@@ -3,13 +3,16 @@
 import { usePathname } from "next/navigation";
 
 /** Selector de a quién ver, para tutores: "Yo · Mateo · Sofía". */
-export function StudentSwitcher({ options, activeId }: { options: { id: string; label: string }[]; activeId: string }) {
+export function StudentSwitcher({ options, activeId, family = false }: { options: { id: string; label: string }[]; activeId: string; family?: boolean }) {
   const pathname = usePathname();
   const page = ["/inicio", "/clases", "/pases", "/pagos"].find((p) => pathname.startsWith(p)) ?? "/inicio";
+  // "Todos" (resumen de la familia) existe sólo en Inicio.
+  const all = [{ id: "todos", label: "Todos" }, ...options];
+  const current = family && page === "/inicio" ? "todos" : activeId;
   return (
     <nav aria-label="Ver a" className="flex gap-2 overflow-x-auto">
-      {options.map((o) => {
-        const on = o.id === activeId;
+      {(options.length > 1 ? all : options).map((o) => {
+        const on = o.id === current;
         return (
           <a
             key={o.id}

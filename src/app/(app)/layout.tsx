@@ -27,8 +27,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const tabs = personalTabs(profile.access, chosen);
   const mode = resolveMode(profile.access, chosen);
   // Tutores: a quién se está viendo (él o uno de sus hijos).
-  const [{ active, options }, unread] = await Promise.all([
-    mode === "alumno" ? getActiveStudent() : Promise.resolve({ active: null, options: [] }),
+  const [{ active, options, family }, unread] = await Promise.all([
+    mode === "alumno" ? getActiveStudent() : Promise.resolve({ active: null, options: [], family: false }),
     createClient().then(countUnread),
   ]);
 
@@ -67,7 +67,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       )}
       {active && options.length > 1 && (
         <div className="px-5 pt-3">
-          <StudentSwitcher options={options.map((o) => ({ id: o.id, label: o.isSelf ? "Yo" : o.firstName }))} activeId={active.id} />
+          <StudentSwitcher options={options.map((o) => ({ id: o.id, label: o.isSelf ? "Yo" : o.firstName }))} activeId={active.id} family={family} />
         </div>
       )}
       <InstallBanner />
