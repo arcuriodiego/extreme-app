@@ -16,7 +16,7 @@ import { createClient } from "@/lib/supabase/server";
 import { saveNotes, updateStudent, voidPayment } from "../actions";
 import { methodLabel } from "@/domain/billing/payments";
 import { formatARS } from "@/domain/shared/money";
-import { ensureCharges, loadCharges, loadGraceDays, loadPayments } from "@/lib/billing";
+import { ensureCharges, loadCharges, loadGraceDays, loadPayments, loadSurcharge } from "@/lib/billing";
 import { loadPlans } from "@/lib/prices";
 import { ERRORS, NOTICES } from "../messages";
 import { StudentForm } from "../StudentForm";
@@ -60,12 +60,13 @@ export default async function AlumnoPage({
   const canVoid = can(profile.access, "finance.view");
   const seesMoney = canPay || canVoid;
   // La generación diaria de cuotas corre antes de leer los cargos (es instantánea si ya corrió hoy).
-  const [, student, notes, graceDays, plans] = await Promise.all([
+  const [, student, notes, graceDays, plans, surcharge] = await Promise.all([
     ensureCharges(supabase),
     loadStudent(supabase, id),
     loadStudentNotes(supabase, id),
     loadGraceDays(supabase),
     loadPlans(supabase, today),
+    loadSurcharge(supabase),
   ]);
   const [charges, payments] = await Promise.all([
     seesMoney ? loadCharges(supabase, id) : Promise.resolve([]),
@@ -168,9 +169,10 @@ export default async function AlumnoPage({
         today={today}
         graceDays={graceDays}
         monthlyPriceCents={monthlyPrice}
+        surchargePct={surcharge}
       />
 
-      <PacksSection supabase={supabase} studentId={student.id} canPay={canPay} canManage={canManage} plans={plans} today={today} />
+      <PacksSection supabase={supabase} studentId={student.id} canPay={canPay} canManage={canManage} plans={plans} today={today} surchargePct={surcharge} />
 
       {seesMoney && (
         <section className="flex flex-col gap-3 border-t border-line pt-6">

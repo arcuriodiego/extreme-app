@@ -9,6 +9,8 @@ insert into auth.users (id, email, raw_user_meta_data) values
 insert into academies (slug, name) values ('otra-academia', 'Otra Academia');
 
 select bootstrap_admin('diego@example.com');
+-- Precio único (sin recargo por otros medios): estas pruebas son anteriores al precio en efectivo (0030).
+update app_settings set value = 0 where key = 'non_cash_surcharge_pct';
 
 -- 1. El catálogo aprobado se carga en cada academia.
 do $$

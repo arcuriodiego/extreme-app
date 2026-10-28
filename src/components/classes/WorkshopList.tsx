@@ -53,7 +53,10 @@ export function WorkshopList({
                   <span className="font-semibold">{w.title}</span>
                   {w.teacherName && <span className="text-sm text-muted">{w.teacherName}</span>}
                 </span>
-                <strong className="shrink-0 font-display text-xl">{formatARS(w.priceCents)}</strong>
+                <span className="flex shrink-0 flex-col items-end">
+                  <strong className="font-display text-xl">{formatARS(w.nonCashPriceCents)}</strong>
+                  {w.nonCashPriceCents > w.priceCents && <span className="text-xs text-muted">{formatARS(w.priceCents)} en efectivo</span>}
+                </span>
               </div>
               <ul className="flex flex-col gap-0.5 text-sm">
                 {w.sessions.map((s) => (
@@ -75,7 +78,8 @@ export function WorkshopList({
                 <div className="flex flex-col gap-2 rounded-xl bg-ok-soft p-3">
                   <span className="text-[15px] font-semibold text-ok-ink">
                     ¡Se liberó un lugar! Te lo guardamos hasta el {wait.offerExpiresAt ? until.format(new Date(wait.offerExpiresAt)) : ""}. Pagá{" "}
-                    {formatARS(w.priceCents)} en recepción antes de esa hora para quedarte con él.
+                    {formatARS(w.nonCashPriceCents)}
+                    {w.nonCashPriceCents > w.priceCents ? ` (o ${formatARS(w.priceCents)} en efectivo)` : ""} en recepción antes de esa hora para quedarte con él.
                   </span>
                   {canJoin && (
                     <form action={leaveWorkshopWaitlist}>

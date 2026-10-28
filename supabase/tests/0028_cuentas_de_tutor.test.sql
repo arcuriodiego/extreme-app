@@ -8,6 +8,8 @@ insert into auth.users (id, email, raw_user_meta_data) values
   ('c1000000-0000-0000-0000-00000000000c', 'pablo@example.com', '{"first_name":"Pablo","academy":"extreme-dance"}'),
   ('c2000000-0000-0000-0000-00000000000c', 'sofi@example.com', '{"first_name":"Sofía","academy":"extreme-dance"}');
 select bootstrap_admin('diego@example.com');
+-- Precio único (sin recargo por otros medios): estas pruebas son anteriores al precio en efectivo (0030).
+update app_settings set value = 0 where key = 'non_cash_surcharge_pct';
 insert into teachers (academy_id, profile_id, display_name) select academy_id, id, 'Diego' from profiles where email = 'diego@example.com';
 
 insert into rooms (academy_id, branch_id, name, capacity) select academy_id, id, 'Sala 1', 25 from branches;

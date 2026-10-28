@@ -19,6 +19,19 @@ export interface RuleGroup {
 
 export const RULE_GROUPS: readonly RuleGroup[] = [
   {
+    title: "Precios",
+    rules: [
+      {
+        key: "non_cash_surcharge_pct",
+        label: "Recargo por pagar con otros medios",
+        unit: "% sobre efectivo",
+        min: 0,
+        max: 50,
+        help: "Se suma al precio en efectivo al pagar con transferencia, QR, tarjeta o la app. Rige para lo que se emita desde ahora.",
+      },
+    ],
+  },
+  {
     title: "Cuotas",
     rules: [
       { key: "grace_days", label: "Días de gracia después del vencimiento", unit: "días", min: 0, max: 15, help: "Durante la gracia el alumno puede seguir viniendo. Vale desde ya para todas las cuotas vencidas." },

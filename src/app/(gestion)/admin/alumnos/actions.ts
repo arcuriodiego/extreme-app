@@ -180,8 +180,9 @@ export async function registerFirstPayment(formData: FormData): Promise<void> {
   if (!UUID.test(studentId) || !UUID.test(membershipId)) to("/admin/alumnos", { error: "datos" });
   const back = `/admin/alumnos/${studentId}`;
   const pending = Number(formData.get("pending_cents") ?? 0);
+  const cash = Number(formData.get("cash_cents") ?? 0);
 
-  const checked = validatePaymentForm(readPayment(formData), Number.isSafeInteger(pending) && pending > 0 ? pending : 0);
+  const checked = validatePaymentForm(readPayment(formData), Number.isSafeInteger(pending) && pending > 0 ? pending : 0, Number.isSafeInteger(cash) && cash > 0 ? cash : null);
   if (!checked.ok) to(back, { error: `pago-${checked.error}` });
 
   const supabase = await createClient();
@@ -201,8 +202,9 @@ export async function registerChargePayment(formData: FormData): Promise<void> {
   if (!UUID.test(studentId) || !UUID.test(chargeId)) to("/admin/alumnos", { error: "datos" });
   const back = `/admin/alumnos/${studentId}`;
   const pending = Number(formData.get("pending_cents") ?? 0);
+  const cash = Number(formData.get("cash_cents") ?? 0);
 
-  const checked = validatePaymentForm(readPayment(formData), Number.isSafeInteger(pending) && pending > 0 ? pending : 0);
+  const checked = validatePaymentForm(readPayment(formData), Number.isSafeInteger(pending) && pending > 0 ? pending : 0, Number.isSafeInteger(cash) && cash > 0 ? cash : null);
   if (!checked.ok) to(back, { error: `pago-${checked.error}` });
 
   const supabase = await createClient();

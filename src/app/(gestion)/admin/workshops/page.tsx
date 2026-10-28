@@ -27,7 +27,7 @@ function Item({ w }: { w: WorkshopRow }) {
           <span className="text-sm text-muted">
             {first ? `${longDate(first.date)} ${first.start}` : "Sin fechas"}
             {w.sessions.length > 1 ? ` (+${w.sessions.length - 1} ${w.sessions.length === 2 ? "fecha" : "fechas"})` : ""}
-            {w.teacherName ? ` · ${w.teacherName}` : ""} · {formatARS(w.priceCents)}
+            {w.teacherName ? ` · ${w.teacherName}` : ""} · {formatARS(w.priceCents)} en efectivo · {formatARS(w.nonCashPriceCents)} otros medios
           </span>
         </span>
         <span className="shrink-0 text-sm font-semibold">

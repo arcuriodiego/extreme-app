@@ -13,6 +13,8 @@ import { seatsLabel } from "@/domain/workshops/workshops";
 import { academyConfig } from "@/config/academy";
 import { academyToday, loadCatalog } from "@/lib/grilla";
 import { requireProfile } from "@/lib/session";
+import { loadSurcharge } from "@/lib/billing";
+import { nonCashPrice } from "@/domain/billing/cash-price";
 import { searchStudents } from "@/lib/students";
 import { createClient } from "@/lib/supabase/server";
 import { loadRegistrations, loadWorkshop, loadWorkshopWaitlist, refreshWorkshopWaitlists, refundPreview } from "@/lib/workshops";
@@ -91,12 +93,13 @@ export default async function WorkshopPage({
   const q = (query.q ?? "").trim().slice(0, 80);
   const seesPeople = canPay || can(profile.access, "people.view");
   if (seesPeople) await refreshWorkshopWaitlists(supabase);
-  const [workshop, registrations, catalog, found, waitlist] = await Promise.all([
+  const [workshop, registrations, catalog, found, waitlist, surcharge] = await Promise.all([
     loadWorkshop(supabase, id),
     canPay || can(profile.access, "people.view") ? loadRegistrations(supabase, id) : Promise.resolve([]),
     canManage ? loadCatalog(supabase) : Promise.resolve(null),
     q && canPay ? searchStudents(supabase, q) : Promise.resolve({ rows: [], error: false }),
     seesPeople ? loadWorkshopWaitlist(supabase, id) : Promise.resolve([]),
+    loadSurcharge(supabase),
   ]);
   if (!workshop) notFound();
 
@@ -119,7 +122,7 @@ export default async function WorkshopPage({
       <div className="flex flex-col gap-2">
         <PageHeader
           title={workshop.title}
-          subtitle={[workshop.teacherName, formatARS(workshop.priceCents), `${workshop.taken} de ${workshop.capacity} inscriptos${workshop.held > 0 ? ` · ${workshop.held} ${workshop.held === 1 ? "lugar guardado" : "lugares guardados"}` : ""}`]
+          subtitle={[workshop.teacherName, `${formatARS(workshop.priceCents)} en efectivo · ${formatARS(nonCashPrice(workshop.priceCents, surcharge))} otros medios`, `${workshop.taken} de ${workshop.capacity} inscriptos${workshop.held > 0 ? ` · ${workshop.held} ${workshop.held === 1 ? "lugar guardado" : "lugares guardados"}` : ""}`]
             .filter(Boolean)
             .join(" · ")}
         />
@@ -249,7 +252,12 @@ export default async function WorkshopPage({
                             <input type="hidden" name="workshop_id" value={workshop.id} />
                             <input type="hidden" name="charge_id" value={r.chargeId} />
                             <input type="hidden" name="pending_cents" value={pending} />
-                            <PaymentFields idPrefix={`w-${r.id}`} defaultPesos={pesosText(pending)} />
+                            <input type="hidden" name="cash_cents" value={r.cashCents ?? ""} />
+                            <PaymentFields
+                              idPrefix={`w-${r.id}`}
+                              defaultPesos={pesosText(pending)}
+                              cashPesos={r.cashCents !== null ? pesosText(r.cashCents) : null}
+                            />
                             <div>
                               <SmallSubmit tone="dark">Registrar pago</SmallSubmit>
                             </div>
@@ -344,7 +352,7 @@ export default async function WorkshopPage({
                                 <input type="hidden" name="student_id" value={e.studentId} />
                                 <PayInputs idPrefix={`le-${e.id}`} />
                                 <div>
-                                  <SmallSubmit tone="dark">Cobrar {formatARS(workshop.priceCents)} e inscribir</SmallSubmit>
+                                  <SmallSubmit tone="dark">Cobrar e inscribir</SmallSubmit>
                                 </div>
                               </form>
                             </details>
@@ -403,7 +411,7 @@ export default async function WorkshopPage({
                             <input type="hidden" name="student_id" value={s.id} />
                             <PayInputs idPrefix={`al-${s.id}`} />
                             <div>
-                              <SmallSubmit tone="dark">Cobrar {formatARS(workshop.priceCents)} e inscribir</SmallSubmit>
+                              <SmallSubmit tone="dark">Cobrar e inscribir</SmallSubmit>
                             </div>
                           </form>
                         </details>
@@ -424,7 +432,7 @@ export default async function WorkshopPage({
                 </div>
                 {!full && <PayInputs idPrefix="externo" />}
                 <div>
-                  <SmallSubmit tone="dark">{full ? "Anotar en la lista de espera" : `Cobrar ${formatARS(workshop.priceCents)} e inscribir`}</SmallSubmit>
+                  <SmallSubmit tone="dark">{full ? "Anotar en la lista de espera" : "Cobrar e inscribir"}</SmallSubmit>
                 </div>
               </form>
             </div>

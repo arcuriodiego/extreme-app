@@ -8,7 +8,7 @@ export function WorkshopForm({ workshop, action }: { workshop?: WorkshopRow; act
       {workshop && <input type="hidden" name="id" value={workshop.id} />}
       <TextField name="title" label="Nombre" required defaultValue={workshop?.title} hint="Ej.: Heels intensivo con invitada" />
       <div className="grid gap-5 sm:grid-cols-3">
-        <TextField name="price" label="Precio" inputMode="numeric" required defaultValue={workshop ? pesosText(workshop.priceCents) : ""} hint="En pesos" />
+        <TextField name="price" label="Precio en efectivo" inputMode="numeric" required defaultValue={workshop ? pesosText(workshop.priceCents) : ""} hint="En pesos. Con otros medios se suma el recargo de Configuración." />
         <TextField name="capacity" label="Cupo" inputMode="numeric" required defaultValue={String(workshop?.capacity ?? 20)} />
         <TextField name="teacher_name" label="Profe" defaultValue={workshop?.teacherName ?? ""} />
       </div>

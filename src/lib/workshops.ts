@@ -2,6 +2,8 @@ import "server-only";
 import { academyConfig } from "@/config/academy";
 import { calendarDateInZone, timeInZone } from "@/domain/shared/calendar-date";
 import { refundDeadline, refundIfCancelled } from "@/domain/workshops/workshops";
+import { cashDue, nonCashPrice } from "@/domain/billing/cash-price";
+import { loadSurcharge } from "@/lib/billing";
 import { imageUrl } from "@/lib/image-url";
 import type { createClient } from "@/lib/supabase/server";
 
@@ -27,7 +29,10 @@ export interface WorkshopRow {
   teacherName: string | null;
   /** Flyer del workshop (enlace público), si lo cargaron. */
   imageUrl: string | null;
+  /** Precio en efectivo (el que se carga). */
   priceCents: number;
+  /** Precio con otros medios de pago (efectivo + recargo). */
+  nonCashPriceCents: number;
   capacity: number;
   status: WorkshopStatus;
   sessions: WorkshopSessionRow[];
@@ -60,7 +65,7 @@ export async function loadTakenCounts(supabase: Client): Promise<Map<string, { t
   return map;
 }
 
-function toRow(r: RawWorkshop, taken: Map<string, { taken: number; held: number }>, now: number): WorkshopRow {
+function toRow(r: RawWorkshop, taken: Map<string, { taken: number; held: number }>, now: number, surcharge: number): WorkshopRow {
   const sessions = (r.sessions ?? [])
     .map((s) => {
       const st = new Date(s.starts_at);
@@ -84,6 +89,7 @@ function toRow(r: RawWorkshop, taken: Map<string, { taken: number; held: number 
     teacherName: r.teacher_name,
     imageUrl: imageUrl(r.image_path),
     priceCents: Number(r.price_cents),
+    nonCashPriceCents: nonCashPrice(Number(r.price_cents), surcharge),
     capacity: r.capacity,
     status: r.status,
     sessions: sessions.map((s) => ({ id: s.id, startsAt: s.startsAt, date: s.date, start: s.start, end: s.end, roomId: s.roomId, roomName: s.roomName })),
@@ -95,20 +101,25 @@ function toRow(r: RawWorkshop, taken: Map<string, { taken: number; held: number 
 }
 
 export async function loadWorkshops(supabase: Client): Promise<WorkshopRow[]> {
-  const [{ data, error }, taken] = await Promise.all([
+  const [{ data, error }, taken, surcharge] = await Promise.all([
     supabase.from("workshops").select(SELECT).order("created_at", { ascending: false }),
     loadTakenCounts(supabase),
+    loadSurcharge(supabase),
   ]);
   if (error) throw new Error(`No se pudieron cargar los workshops: ${error.message}`);
   const now = Date.now();
   return ((data ?? []) as unknown as RawWorkshop[])
-    .map((r) => toRow(r, taken, now))
+    .map((r) => toRow(r, taken, now, surcharge))
     .sort((a, b) => (a.firstStart ?? "9999").localeCompare(b.firstStart ?? "9999"));
 }
 
 export async function loadWorkshop(supabase: Client, id: string): Promise<WorkshopRow | null> {
-  const [{ data }, taken] = await Promise.all([supabase.from("workshops").select(SELECT).eq("id", id).maybeSingle(), loadTakenCounts(supabase)]);
-  return data ? toRow(data as unknown as RawWorkshop, taken, Date.now()) : null;
+  const [{ data }, taken, surcharge] = await Promise.all([
+    supabase.from("workshops").select(SELECT).eq("id", id).maybeSingle(),
+    loadTakenCounts(supabase),
+    loadSurcharge(supabase),
+  ]);
+  return data ? toRow(data as unknown as RawWorkshop, taken, Date.now(), surcharge) : null;
 }
 
 export interface RegistrationRow {
@@ -122,6 +133,8 @@ export interface RegistrationRow {
   chargeId: string;
   totalCents: number;
   paidCents: number;
+  /** Lo que se cobra en efectivo si todavía no pagó (null = mismo precio). */
+  cashCents: number | null;
   refundCents: number;
   refundedCents: number;
 }
@@ -135,11 +148,11 @@ interface RawReg {
   refund_cents: number;
   refunded_cents: number;
   student: { first_name: string; last_name: string; phone: string | null; profile_id: string | null } | null;
-  charge: { total_cents: number; paid_cents: number } | null;
+  charge: { total_cents: number; paid_cents: number; cash_amount_cents: number | null } | null;
 }
 
 const REG_SELECT = `id, workshop_id, student_id, status, charge_id, refund_cents, refunded_cents,
-  student:students(first_name, last_name, phone, profile_id), charge:charges(total_cents, paid_cents)`;
+  student:students(first_name, last_name, phone, profile_id), charge:charges(total_cents, paid_cents, cash_amount_cents)`;
 
 function toReg(r: RawReg): RegistrationRow {
   return {
@@ -153,6 +166,11 @@ function toReg(r: RawReg): RegistrationRow {
     chargeId: r.charge_id,
     totalCents: Number(r.charge?.total_cents ?? 0),
     paidCents: Number(r.charge?.paid_cents ?? 0),
+    cashCents: cashDue({
+      cashCents: r.charge?.cash_amount_cents == null ? null : Number(r.charge.cash_amount_cents),
+      paidCents: Number(r.charge?.paid_cents ?? 0),
+      pendingCents: Math.max(0, Number(r.charge?.total_cents ?? 0) - Number(r.charge?.paid_cents ?? 0)),
+    }),
     refundCents: Number(r.refund_cents),
     refundedCents: Number(r.refunded_cents),
   };

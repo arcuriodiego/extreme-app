@@ -8,6 +8,8 @@ insert into auth.users (id, email, raw_user_meta_data) values
   ('b0000000-0000-0000-0000-00000000000b', 'vale@example.com', '{"first_name":"Valentina","last_name":"Rodríguez","academy":"extreme-dance"}'),
   ('c0000000-0000-0000-0000-00000000000c', 'sinnombre@example.com', '{"academy":"extreme-dance"}');
 select bootstrap_admin('diego@example.com');
+-- Precio único (sin recargo por otros medios): estas pruebas son anteriores al precio en efectivo (0030).
+update app_settings set value = 0 where key = 'non_cash_surcharge_pct';
 
 -- 1. Quien se registra tiene ficha de alumno; el nombre sale del perfil (o del email si no hay).
 do $$

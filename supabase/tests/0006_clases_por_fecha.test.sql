@@ -8,6 +8,8 @@ insert into auth.users (id, email, raw_user_meta_data) values
   ('f0000000-0000-0000-0000-00000000000f', 'lucia@example.com', '{"first_name":"Lucía","academy":"extreme-dance"}'),
   ('b0000000-0000-0000-0000-00000000000b', 'vale@example.com', '{"first_name":"Valentina","academy":"extreme-dance"}');
 select bootstrap_admin('diego@example.com');
+-- Precio único (sin recargo por otros medios): estas pruebas son anteriores al precio en efectivo (0030).
+update app_settings set value = 0 where key = 'non_cash_surcharge_pct';
 
 -- Fecha de referencia: el martes de la semana que viene (siempre en el futuro).
 create temp table ref as

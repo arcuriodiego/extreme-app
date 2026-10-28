@@ -4,7 +4,8 @@ import { formatARS } from "@/domain/shared/money";
 import { academyToday } from "@/lib/grilla";
 import { methodLabel } from "@/domain/billing/payments";
 import { getActiveStudent } from "@/lib/active-student";
-import { ensureCharges, loadCharges, loadPayments } from "@/lib/billing";
+import { ensureCharges, loadCharges, loadPayments, loadSurcharge } from "@/lib/billing";
+import { nonCashPrice } from "@/domain/billing/cash-price";
 import { loadPlans } from "@/lib/prices";
 import { requireProfile } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
@@ -17,7 +18,12 @@ export default async function PagosPage() {
   const today = academyToday();
   await requireProfile();
   const supabase = await createClient();
-  const [allPlans, { active }] = await Promise.all([loadPlans(supabase, today).catch(() => []), getActiveStudent(), ensureCharges(supabase)]);
+  const [allPlans, { active }, surcharge] = await Promise.all([
+    loadPlans(supabase, today).catch(() => []),
+    getActiveStudent(),
+    loadSurcharge(supabase).catch(() => 0),
+    ensureCharges(supabase),
+  ]);
   const studentId = active?.id ?? null;
   const child = active !== null && !active.isSelf;
   const plans = allPlans.filter((p) => p.active && p.current);
@@ -46,13 +52,17 @@ export default async function PagosPage() {
                     {c.paidCents > 0 ? ` · Ya pagaste ${formatARS(c.paidCents)}` : ""}
                   </span>
                 </span>
-                <strong className="shrink-0 font-display text-2xl">{formatARS(c.pendingCents)}</strong>
+                <span className="flex shrink-0 flex-col items-end">
+                  <strong className="font-display text-2xl">{formatARS(c.pendingCents)}</strong>
+                  {c.cashCents !== null && <span className="text-sm text-muted">{formatARS(c.cashCents)} en efectivo</span>}
+                </span>
               </li>
             ))}
           </ul>
         )}
         <p className="text-sm text-muted">
-          Por ahora se paga en recepción: efectivo, transferencia, QR de cualquier billetera o tarjeta. Muy pronto, también desde la app.
+          Por ahora se paga en recepción: efectivo, transferencia, QR de cualquier billetera o tarjeta. Pagando en efectivo en recepción tenés
+          descuento. Muy pronto, también desde la app.
         </p>
       </section>
 
@@ -88,11 +98,17 @@ export default async function PagosPage() {
                   <span className="text-sm text-muted">{p.description}</span>
                   {p.next && (
                     <span className="text-sm font-semibold text-warn-ink">
-                      Desde el {dateFormat.format(new Date(`${p.next.validFrom}T12:00:00Z`))}: {formatARS(p.next.amountCents)}
+                      Desde el {dateFormat.format(new Date(`${p.next.validFrom}T12:00:00Z`))}: {formatARS(nonCashPrice(p.next.amountCents, surcharge))}
+                      {surcharge > 0 ? ` (${formatARS(p.next.amountCents)} en efectivo)` : ""}
                     </span>
                   )}
                 </span>
-                <strong className="shrink-0 font-display text-2xl">{p.current ? formatARS(p.current.amountCents) : ""}</strong>
+                {p.current && (
+                  <span className="flex shrink-0 flex-col items-end">
+                    <strong className="font-display text-2xl">{formatARS(nonCashPrice(p.current.amountCents, surcharge))}</strong>
+                    {surcharge > 0 && <span className="text-sm text-muted">{formatARS(p.current.amountCents)} en efectivo</span>}
+                  </span>
+                )}
               </li>
             ))}
           </ul>

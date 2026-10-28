@@ -88,3 +88,14 @@ test("los días de gracia son configurables", () => {
   const s = membershipLight({ today: "2026-11-14", charges: unpaid, nextDueDate: null, graceDays: 3 });
   assert.equal(s.light, "suspended");
 });
+
+test("con precio en efectivo, también dice cuánto es en efectivo", () => {
+  const light = membershipLight({
+    today: "2026-11-12",
+    graceDays: 5,
+    nextDueDate: null,
+    charges: [{ dueDate: "2026-11-10", totalCents: 6_776_000, paidCents: 0, cashCents: 5_600_000 }],
+  });
+  assert.equal(light.light, "grace");
+  assert.ok(light.light !== "current" && light.amountDueCents === 6_776_000 && light.cashDueCents === 5_600_000);
+});

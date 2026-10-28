@@ -1,5 +1,6 @@
 import "server-only";
 import { academyConfig } from "@/config/academy";
+import { cashDue } from "@/domain/billing/cash-price";
 import { type MembershipLight, membershipLight } from "@/domain/billing/membership-cycle";
 import { addDays, type CalendarDate, startOfDayInZone, timeInZone, calendarDateInZone } from "@/domain/shared/calendar-date";
 import type { createClient } from "@/lib/supabase/server";
@@ -20,6 +21,8 @@ export interface ChargeRow {
   totalCents: number;
   paidCents: number;
   pendingCents: number;
+  /** Lo que se cobra si paga en efectivo (null = mismo precio o ya tiene pagos). */
+  cashCents: number | null;
   status: ChargeStatus;
 }
 
@@ -58,11 +61,16 @@ function toCharge(r: Record<string, unknown>): ChargeRow {
     totalCents: total,
     paidCents: paid,
     pendingCents: Math.max(0, total - paid),
+    cashCents: cashDue({
+      cashCents: r.cash_amount_cents == null ? null : Number(r.cash_amount_cents),
+      paidCents: paid,
+      pendingCents: Math.max(0, total - paid),
+    }),
     status: r.status as ChargeStatus,
   };
 }
 
-const CHARGE_COLS = "id, student_id, membership_id, description, period_start, period_end, due_date, total_cents, paid_cents, status";
+const CHARGE_COLS = "id, student_id, membership_id, description, period_start, period_end, due_date, total_cents, paid_cents, cash_amount_cents, status";
 
 export async function loadCharges(supabase: Client, studentId: string): Promise<ChargeRow[]> {
   const { data, error } = await supabase
@@ -156,7 +164,7 @@ export function lightFor(charges: readonly ChargeRow[], today: CalendarDate, gra
   return membershipLight({
     today,
     graceDays,
-    charges: live.map((c) => ({ dueDate: c.dueDate, totalCents: c.totalCents, paidCents: c.paidCents })),
+    charges: live.map((c) => ({ dueDate: c.dueDate, totalCents: c.totalCents, paidCents: c.paidCents, cashCents: c.cashCents })),
     nextDueDate: upcoming ?? (lastEnd ? addDays(lastEnd, 1) : null),
   });
 }
@@ -198,3 +206,9 @@ export async function loadDebtors(supabase: Client, today: CalendarDate, graceDa
   });
 }
 
+
+/** Recargo (%) sobre el precio en efectivo para los otros medios de pago. */
+export async function loadSurcharge(supabase: Client): Promise<number> {
+  const { data } = await supabase.from("app_settings").select("value").eq("key", "non_cash_surcharge_pct").maybeSingle();
+  return Number((data as { value: number } | null)?.value ?? 0);
+}

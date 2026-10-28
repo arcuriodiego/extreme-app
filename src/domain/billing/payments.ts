@@ -32,11 +32,14 @@ export function methodLabel(method: string): string {
 export function validatePaymentForm(
   input: { amount: unknown; method: unknown; reference: unknown },
   pendingCents: Cents,
+  /** Precio en efectivo del cargo (si es distinto): en efectivo se cobra ése. */
+  cashCents: Cents | null = null,
 ): { ok: true; value: { amountCents: Cents; method: PaymentMethod; reference: string | null } } | { ok: false; error: "monto" | "monto-distinto" | "medio" } {
   const amount = parsePesos(input.amount);
   if (amount === null) return { ok: false, error: "monto" };
-  if (amount !== pendingCents) return { ok: false, error: "monto-distinto" };
   if (!isCounterMethod(input.method)) return { ok: false, error: "medio" };
+  const expected = input.method === "cash" && cashCents !== null && cashCents > 0 ? cashCents : pendingCents;
+  if (amount !== expected) return { ok: false, error: "monto-distinto" };
   const reference = typeof input.reference === "string" ? input.reference.trim().slice(0, 80) : "";
   return { ok: true, value: { amountCents: amount, method: input.method, reference: reference || null } };
 }

@@ -76,6 +76,12 @@ export function AccessLight({ state, planName, payHref }: { state: MembershipLig
             <span>Importe pendiente</span>
             <strong className="text-lg">{formatARS(state.amountDueCents)}</strong>
           </p>
+          {state.cashDueCents !== undefined && (
+            <p className="-mt-2 flex justify-between text-sm">
+              <span>En efectivo en recepción</span>
+              <strong>{formatARS(state.cashDueCents)}</strong>
+            </p>
+          )}
           {payHref && (
             <a
               href={payHref}

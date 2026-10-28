@@ -57,12 +57,14 @@ export interface UnpaidCharge {
   dueDate: CalendarDate;
   totalCents: number;
   paidCents: number;
+  /** Lo que se cobra en efectivo, si es menos (cargo sin pagos previos). */
+  cashCents?: number | null;
 }
 
 export type MembershipLight =
   | { light: "current"; nextDueDate: CalendarDate | null }
-  | { light: "grace"; dueDate: CalendarDate; graceEndsOn: CalendarDate; daysLeft: number; amountDueCents: number }
-  | { light: "suspended"; dueDate: CalendarDate; suspendedSince: CalendarDate; amountDueCents: number };
+  | { light: "grace"; dueDate: CalendarDate; graceEndsOn: CalendarDate; daysLeft: number; amountDueCents: number; cashDueCents?: number }
+  | { light: "suspended"; dueDate: CalendarDate; suspendedSince: CalendarDate; amountDueCents: number; cashDueCents?: number };
 
 /**
  * Estado del semáforo para una cuota de profe en una fecha.
@@ -85,13 +87,16 @@ export function membershipLight(params: {
   if (!oldest) return { light: "current", nextDueDate: params.nextDueDate };
 
   const amountDueCents = overdue.reduce((sum, c) => sum + (c.totalCents - c.paidCents), 0);
+  // Pagando en efectivo (sólo cargos sin pagos previos con precio en efectivo).
+  const cashTotal = overdue.reduce((sum, c) => sum + (c.cashCents ?? c.totalCents - c.paidCents), 0);
+  const cash = cashTotal < amountDueCents ? { cashDueCents: cashTotal } : {};
   const graceEndsOn = graceEndDate(oldest.dueDate, graceDays);
   const daysLeft = diffDays(params.today, graceEndsOn) + 1;
 
   if (daysLeft >= 1) {
-    return { light: "grace", dueDate: oldest.dueDate, graceEndsOn, daysLeft, amountDueCents };
+    return { light: "grace", dueDate: oldest.dueDate, graceEndsOn, daysLeft, amountDueCents, ...cash };
   }
-  return { light: "suspended", dueDate: oldest.dueDate, suspendedSince: addDays(graceEndsOn, 1), amountDueCents };
+  return { light: "suspended", dueDate: oldest.dueDate, suspendedSince: addDays(graceEndsOn, 1), amountDueCents, ...cash };
 }
 
 /** El acceso a las clases de la cuota está habilitado en verde y en amarillo. */

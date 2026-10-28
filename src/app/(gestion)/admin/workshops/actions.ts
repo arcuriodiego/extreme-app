@@ -195,9 +195,11 @@ export async function payRegistration(formData: FormData): Promise<void> {
   if (!UUID.test(id) || !UUID.test(chargeId)) to("/admin/workshops", { error: "datos" });
   const back = `/admin/workshops/${id}`;
   const pending = Number(formData.get("pending_cents") ?? 0);
+  const cash = Number(formData.get("cash_cents") ?? 0);
   const checked = validatePaymentForm(
     { amount: formData.get("amount"), method: formData.get("method"), reference: formData.get("reference") },
     Number.isSafeInteger(pending) && pending > 0 ? pending : 0,
+    Number.isSafeInteger(cash) && cash > 0 ? cash : null,
   );
   if (!checked.ok) to(back, { error: `pago-${checked.error}` });
   const supabase = await createClient();

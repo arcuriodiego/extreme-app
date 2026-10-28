@@ -8,6 +8,7 @@ import type { PlanWithPrices } from "@/lib/prices";
 import { loadSessions } from "@/lib/sessions";
 import type { createClient } from "@/lib/supabase/server";
 import { bookForStudent, cancelStudentBooking, sellPack } from "../actions";
+import { nonCashPrice } from "@/domain/billing/cash-price";
 
 type Client = Awaited<ReturnType<typeof createClient>>;
 
@@ -42,6 +43,7 @@ export async function PacksSection({
   canManage,
   plans,
   today,
+  surchargePct,
 }: {
   supabase: Client;
   studentId: string;
@@ -49,6 +51,8 @@ export async function PacksSection({
   canManage: boolean;
   plans: PlanWithPrices[];
   today: string;
+  /** Recargo (%) sobre el precio en efectivo para otros medios. */
+  surchargePct: number;
 }) {
   const [balances, bookings, sessions, { data: fixedRows }] = await Promise.all([
     loadBalances(supabase, studentId),
@@ -129,7 +133,8 @@ export async function PacksSection({
             <select id="pack-plan" name="plan_id" required className={input}>
               {packs.map((p) => (
                 <option key={p.id} value={p.id}>
-                  {p.name} — {p.current ? formatARS(p.current.amountCents) : ""}
+                  {p.name}
+                  {p.current ? ` — efectivo ${formatARS(p.current.amountCents)} · otros medios ${formatARS(nonCashPrice(p.current.amountCents, surchargePct))}` : ""}
                 </option>
               ))}
             </select>
@@ -169,7 +174,7 @@ export async function PacksSection({
                   {canPay && single !== null && (
                     <label className="flex items-center gap-2">
                       <input type="radio" name="mode" value="single" defaultChecked={!hasBalance} className="size-4 accent-ink" />
-                      Cobrar clase individual ({formatARS(single)})
+                      Cobrar clase individual (efectivo {formatARS(single)} · otros medios {formatARS(nonCashPrice(single, surchargePct))})
                     </label>
                   )}
                 </fieldset>

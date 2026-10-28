@@ -8,6 +8,7 @@ import { loadActiveMemberships, loadFixedCounts, scheduleOptions } from "@/lib/m
 import type { createClient } from "@/lib/supabase/server";
 import { changeEnrollment, endMembership, enrollStudent, registerChargePayment, registerFirstPayment } from "../actions";
 import { PaymentFields, pesosText } from "../PaymentFields";
+import { pricePair } from "@/domain/billing/cash-price";
 
 type Client = Awaited<ReturnType<typeof createClient>>;
 
@@ -25,6 +26,7 @@ export async function MembershipSection({
   today,
   graceDays,
   monthlyPriceCents,
+  surchargePct,
 }: {
   supabase: Client;
   studentId: string;
@@ -34,9 +36,12 @@ export async function MembershipSection({
   today: string;
   graceDays: number;
   monthlyPriceCents: number | null;
+  /** Recargo (%) sobre el precio en efectivo para otros medios. */
+  surchargePct: number;
   pickedTeacher?: string;
   pickedCategory?: string;
 }) {
+  const firstPrice = monthlyPriceCents !== null ? pricePair(monthlyPriceCents, surchargePct) : null;
   const [memberships, groups, fixed, catalog] = await Promise.all([
     loadActiveMemberships(supabase, studentId),
     loadGroups(supabase, { onlyActive: true }),
@@ -85,11 +90,17 @@ export async function MembershipSection({
               <form action={registerFirstPayment} className="flex flex-col gap-3 rounded-xl bg-surface p-3">
                 <input type="hidden" name="student_id" value={studentId} />
                 <input type="hidden" name="membership_id" value={m.id} />
-                <input type="hidden" name="pending_cents" value={monthlyPriceCents} />
+                <input type="hidden" name="pending_cents" value={firstPrice!.list} />
+                <input type="hidden" name="cash_cents" value={firstPrice!.cash ?? ""} />
                 <p className="text-sm">
-                  <strong>Primer pago</strong> · {formatARS(monthlyPriceCents)}. El día de hoy queda como vencimiento de cada mes.
+                  <strong>Primer pago</strong> · {formatARS(firstPrice!.list)}
+                  {firstPrice!.cash !== null ? ` (en efectivo ${formatARS(firstPrice!.cash)})` : ""}. El día de hoy queda como vencimiento de cada mes.
                 </p>
-                <PaymentFields idPrefix={`primer-${m.id}`} defaultPesos={pesosText(monthlyPriceCents)} />
+                <PaymentFields
+                  idPrefix={`primer-${m.id}`}
+                  defaultPesos={pesosText(firstPrice!.list)}
+                  cashPesos={firstPrice!.cash !== null ? pesosText(firstPrice!.cash) : null}
+                />
                 <div>
                   <SmallSubmit tone="dark">Registrar pago</SmallSubmit>
                 </div>
@@ -110,6 +121,7 @@ export async function MembershipSection({
                           </span>
                           <span className="flex items-center gap-2">
                             <strong>{formatARS(c.totalCents)}</strong>
+                            {c.cashCents !== null && <span className="text-sm text-muted">efectivo {formatARS(c.cashCents)}</span>}
                             <span
                               className={`rounded-full px-2 py-0.5 text-xs font-bold ${
                                 c.status === "paid" ? "bg-ok-soft text-ok-ink" : "bg-warn-soft text-warn-ink"
@@ -126,7 +138,12 @@ export async function MembershipSection({
                               <input type="hidden" name="student_id" value={studentId} />
                               <input type="hidden" name="charge_id" value={c.id} />
                               <input type="hidden" name="pending_cents" value={c.pendingCents} />
-                              <PaymentFields idPrefix={`cargo-${c.id}`} defaultPesos={pesosText(c.pendingCents)} />
+                              <input type="hidden" name="cash_cents" value={c.cashCents ?? ""} />
+                              <PaymentFields
+                                idPrefix={`cargo-${c.id}`}
+                                defaultPesos={pesosText(c.pendingCents)}
+                                cashPesos={c.cashCents !== null ? pesosText(c.cashCents) : null}
+                              />
                               <div>
                                 <SmallSubmit tone="dark">Registrar pago</SmallSubmit>
                               </div>
