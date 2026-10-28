@@ -1,21 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { type Platform, isInAppBrowser } from "@/domain/install/platform";
 import { InstallSteps } from "@/components/install/InstallSteps";
-import { useInstallState } from "@/components/install/useInstallState";
+import { useBrowserValue, useInstallState } from "@/components/install/useInstallState";
 
 /** Guía para instalar, con la pestaña del celular que se detectó ya elegida. */
 export function InstallGuide() {
   const { ready, platform, installed, nativePrompt } = useInstallState();
-  const [tab, setTab] = useState<"ios" | "android">("ios");
-  const [inApp, setInApp] = useState(false);
-
-  useEffect(() => {
-    if (ready) setTab(platform === "android" ? "android" : "ios");
-    setInApp(isInAppBrowser(navigator.userAgent));
-  }, [ready, platform]);
+  const [picked, setPicked] = useState<"ios" | "android" | null>(null);
+  const tab = picked ?? (platform === "android" ? "android" : "ios");
+  const inApp = useBrowserValue(() => isInAppBrowser(navigator.userAgent), false);
 
   if (ready && installed) {
     return (
@@ -49,7 +45,7 @@ export function InstallGuide() {
             type="button"
             role="tab"
             aria-selected={tab === value}
-            onClick={() => setTab(value)}
+            onClick={() => setPicked(value)}
             className={`h-11 rounded-xl border text-[15px] font-semibold ${tab === value ? "border-ink bg-ink text-white" : "border-[#cfcfcf] bg-white"}`}
           >
             {label}

@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { snoozed } from "@/domain/install/platform";
 import { InstallSteps } from "./InstallSteps";
-import { useInstallState } from "./useInstallState";
+import { useBrowserValue, useInstallState } from "./useInstallState";
 
 const KEY = "instalar-ahora-no";
 
@@ -13,19 +13,18 @@ const KEY = "instalar-ahora-no";
  */
 export function InstallBanner() {
   const { ready, platform, installed, nativePrompt } = useInstallState();
-  const [hidden, setHidden] = useState(true);
-  const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    let last: number | null = null;
+  // ¿Tocó "Ahora no" hace menos de 7 días? (se lee en el navegador; en el servidor, oculto)
+  const snoozedNow = useBrowserValue(() => {
     try {
       const v = window.localStorage.getItem(KEY);
-      last = v ? Number(v) : null;
+      return snoozed(v ? Number(v) : null, Date.now());
     } catch {
-      last = null;
+      return false;
     }
-    setHidden(snoozed(last, Date.now()));
-  }, []);
+  }, true);
+  const [dismissedNow, setDismissedNow] = useState(false);
+  const [open, setOpen] = useState(false);
+  const hidden = dismissedNow || snoozedNow;
 
   if (!ready || installed || hidden || platform === "desktop") return null;
 
@@ -35,7 +34,7 @@ export function InstallBanner() {
     } catch {
       // Sin almacenamiento (modo privado): se oculta sólo por ahora.
     }
-    setHidden(true);
+    setDismissedNow(true);
   }
 
   async function installNow() {
@@ -45,7 +44,7 @@ export function InstallBanner() {
     }
     await nativePrompt.prompt();
     const choice = await nativePrompt.userChoice;
-    if (choice.outcome === "accepted") setHidden(true);
+    if (choice.outcome === "accepted") setDismissedNow(true);
   }
 
   return (
