@@ -16,12 +16,24 @@ interface PendingPush {
   auth: string;
 }
 
+/** Qué falta de las claves VAPID (para la página de configuración; nunca muestra los valores). */
+export function vapidStatus(): { publicKey: "ok" | "falta" | "invalida"; privateKey: "ok" | "falta" | "invalida" } {
+  const pub = (process.env.VAPID_PUBLIC_KEY ?? "").trim().replace(/^["']|["']$/g, "");
+  const priv = (process.env.VAPID_PRIVATE_KEY ?? "").trim().replace(/^["']|["']$/g, "");
+  return {
+    publicKey: !pub ? "falta" : isVapidPublicKey(pub) ? "ok" : "invalida",
+    privateKey: !priv ? "falta" : /^[A-Za-z0-9_-]{40,50}$/.test(priv) ? "ok" : "invalida",
+  };
+}
+
 /** Claves VAPID del servidor (Vercel). Sin ellas, no se mandan notificaciones (siguen la campanita y el email). */
 export function vapidKeys(): { publicKey: string; privateKey: string } | null {
-  const publicKey = process.env.VAPID_PUBLIC_KEY;
-  const privateKey = process.env.VAPID_PRIVATE_KEY;
-  if (!isVapidPublicKey(publicKey) || !privateKey || !/^[A-Za-z0-9_-]{40,50}$/.test(privateKey)) return null;
-  return { publicKey, privateKey };
+  const s = vapidStatus();
+  if (s.publicKey !== "ok" || s.privateKey !== "ok") return null;
+  return {
+    publicKey: process.env.VAPID_PUBLIC_KEY!.trim().replace(/^["']|["']$/g, ""),
+    privateKey: process.env.VAPID_PRIVATE_KEY!.trim().replace(/^["']|["']$/g, ""),
+  };
 }
 
 function options(keys: { publicKey: string; privateKey: string }) {

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { NoAccess } from "@/components/status/NoAccess";
 import { PageHeader } from "@/components/ui/basics";
 import { canOpen } from "@/domain/navigation/menus";
-import { vapidKeys } from "@/lib/push-delivery";
+import { vapidKeys, vapidStatus } from "@/lib/push-delivery";
 import { requireProfile } from "@/lib/session";
 import { KeyGenerator } from "./KeyGenerator";
 
@@ -14,6 +14,8 @@ export default async function NotificacionesConfigPage() {
   const profile = await requireProfile();
   if (!canOpen(profile.access, "configuracion")) return <NoAccess />;
   const ready = vapidKeys() !== null;
+  const status = vapidStatus();
+  const label = { ok: "cargada ✓", falta: "no está cargada", invalida: "está cargada pero el valor no es válido (¿quedó con espacios o incompleto?)" } as const;
 
   return (
     <>
@@ -30,6 +32,14 @@ export default async function NotificacionesConfigPage() {
           <p className="rounded-xl bg-warn-soft px-4 py-3 text-[15px] text-warn-ink">
             Todavía no están configuradas. Se hace una sola vez:
           </p>
+          <ul className="flex flex-col gap-1 text-[15px]">
+            <li>
+              <strong>VAPID_PUBLIC_KEY</strong>: {label[status.publicKey]}
+            </li>
+            <li>
+              <strong>VAPID_PRIVATE_KEY</strong>: {label[status.privateKey]}
+            </li>
+          </ul>
           <ol className="flex list-decimal flex-col gap-2 pl-5 text-[15px]">
             <li>Tocá &quot;Generar claves&quot; (se crean en esta computadora).</li>
             <li>
