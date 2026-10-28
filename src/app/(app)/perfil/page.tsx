@@ -27,6 +27,9 @@ export default async function PerfilPage() {
         <Link href="/documentos" className="font-semibold">
           Reglamento y documentos
         </Link>
+        <Link href="/instalar" className="font-semibold">
+          Instalar la app en el celular
+        </Link>
         <Link href="/nueva-clave" className="font-semibold">
           Cambiar mi contraseña
         </Link>

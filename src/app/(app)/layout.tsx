@@ -11,6 +11,7 @@ import { requireProfile } from "@/lib/session";
 import { runBackgroundTasks } from "@/lib/background";
 import { createClient } from "@/lib/supabase/server";
 import { Icon } from "@/components/ui/Icon";
+import { InstallBanner } from "@/components/install/InstallBanner";
 
 // Páginas personales: se arman en cada visita, nunca durante la compilación.
 export const dynamic = "force-dynamic";
@@ -80,6 +81,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <StudentSwitcher options={options.map((o) => ({ id: o.id, label: o.isSelf ? "Yo" : o.firstName }))} activeId={active.id} />
         </div>
       )}
+      <InstallBanner />
       <main className="flex flex-1 flex-col gap-6 px-5 pb-28 pt-6">{children}</main>
       <TabBar items={tabs} />
     </div>
