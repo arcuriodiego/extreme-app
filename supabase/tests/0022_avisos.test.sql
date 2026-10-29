@@ -33,7 +33,9 @@ from class_groups g;
 -- Mateo (sin cuenta, tutora Laura) y Vale (con cuenta), fijos en el grupo.
 insert into students (academy_id, first_name, last_name) select id, 'Mateo', 'F' from academies;
 insert into memberships (academy_id, student_id, plan_id, teacher_id, age_category_id, anchor_day)
-select s.academy_id, s.id, (select id from plans where name = 'Cuota de profe'), g.teacher_id, g.age_category_id, 1
+-- Día de vencimiento lejos de hoy: si no, la cuota del mes siguiente también se avisa y la prueba depende de la fecha.
+select s.academy_id, s.id, (select id from plans where name = 'Cuota de profe'), g.teacher_id, g.age_category_id,
+       least(28, extract(day from current_date + 12)::int)
 from students s, class_groups g where s.first_name in ('Mateo', 'Valentina');
 insert into enrollments (academy_id, membership_id, student_id, schedule_id, starts_on)
 select m.academy_id, m.id, m.student_id, (select id from class_schedules), current_date - 30 from memberships m;
