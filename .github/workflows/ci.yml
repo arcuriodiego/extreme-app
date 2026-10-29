@@ -128,6 +128,13 @@ jobs:
             echo "::error::Faltan los secretos PROD_SUPABASE_* en GitHub; no se publicó la base de producción."
             exit 1
           fi
+          # Acepta el código solo o la dirección completa del panel (toma las 20 letras del proyecto).
+          ref=$(printf '%s' "$SUPABASE_PROJECT_REF" | grep -oE '(^|[^a-z])[a-z]{20}([^a-z]|$)' | grep -oE '[a-z]{20}' | head -n 1)
+          if [ -z "$ref" ]; then
+            echo "::error title=Código del proyecto::PROD_SUPABASE_PROJECT_REF no es un código de proyecto de Supabase (son 20 letras minúsculas, Project Settings → General → Project ID)."
+            exit 1
+          fi
+          echo "SUPABASE_PROJECT_REF=$ref" >> "$GITHUB_ENV"
       - uses: supabase/setup-cli@v1
         with:
           version: latest
