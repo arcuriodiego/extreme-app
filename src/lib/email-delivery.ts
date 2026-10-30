@@ -20,12 +20,12 @@ interface PendingEmail {
  * Se llama después de responder la página, así nunca demora la app.
  * Sin RESEND_API_KEY no hace nada (los avisos siguen en la app).
  */
-export async function deliverNotificationEmails(supabase: Client): Promise<void> {
+export async function deliverNotificationEmails(supabase: Client): Promise<number> {
   const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) return;
+  if (!apiKey) return 0;
 
   const { data, error } = await supabase.rpc("claim_notification_emails", { p_limit: 50 });
-  if (error || !data || (data as PendingEmail[]).length === 0) return;
+  if (error || !data || (data as PendingEmail[]).length === 0) return 0;
   const batch = data as PendingEmail[];
 
   const payload = batch.map((n) => {
@@ -59,4 +59,5 @@ export async function deliverNotificationEmails(supabase: Client): Promise<void>
 
   const ids = batch.map((n) => n.id);
   await supabase.rpc("finish_notification_emails", { p_sent: ok ? ids : [], p_failed: ok ? [] : ids });
+  return batch.length;
 }

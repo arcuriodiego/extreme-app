@@ -45,12 +45,12 @@ function options(keys: { publicKey: string; privateKey: string }) {
 }
 
 /** Manda al celular los avisos pendientes (de a tandas). Se llama después de responder la página. */
-export async function deliverNotificationPushes(supabase: Client): Promise<void> {
+export async function deliverNotificationPushes(supabase: Client): Promise<number> {
   const keys = vapidKeys();
-  if (!keys) return;
+  if (!keys) return 0;
 
   const { data, error } = await supabase.rpc("claim_notification_pushes", { p_limit: 50 });
-  if (error || !data || (data as PendingPush[]).length === 0) return;
+  if (error || !data || (data as PendingPush[]).length === 0) return 0;
   const rows = data as PendingPush[];
 
   const sent = new Set<string>();
@@ -76,6 +76,7 @@ export async function deliverNotificationPushes(supabase: Client): Promise<void>
     p_failed: ids.filter((id) => !sent.has(id) && failed.has(id)),
     p_gone: gone,
   });
+  return rows.length;
 }
 
 /** Notificación de prueba a los celulares propios (desde Perfil). Devuelve a cuántos llegó. */
