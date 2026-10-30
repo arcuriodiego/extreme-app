@@ -27,7 +27,19 @@ export default async function NotificacionesConfigPage() {
         <p className="max-w-2xl rounded-xl bg-ok-soft px-4 py-3 text-[15px] font-semibold text-ok-ink">
           Listas: las notificaciones están configuradas. Cada persona las activa desde Perfil o Avisos en su celular.
         </p>
-      ) : (
+      ) : null}
+      {ready && (
+        <details className="max-w-2xl">
+          <summary className="cursor-pointer text-[15px] font-semibold">Generar claves para otra versión de la app (por ejemplo, producción)</summary>
+          <div className="flex flex-col gap-3 pt-3">
+            <p className="text-[15px] text-muted">
+              No cambia nada de esta app: las claves se crean en esta computadora y no se guardan. Copialas en las variables del otro proyecto de Vercel.
+            </p>
+            <KeyGenerator />
+          </div>
+        </details>
+      )}
+      {ready ? null : (
         <section className="flex max-w-2xl flex-col gap-4">
           <p className="rounded-xl bg-warn-soft px-4 py-3 text-[15px] text-warn-ink">
             Todavía no están configuradas. Se hace una sola vez:
