@@ -1,6 +1,7 @@
 # Plantillas de email de Supabase
 
-Se cargan en Supabase → **Authentication → Emails** (o "Email Templates").
+Producción: las carga sola la publicación (CI, `scripts/configure-auth.sh`) desde `supabase/auth/`. Esos archivos son la fuente: si se cambia un texto, cambiarlo ahí.
+Staging: se cargan a mano en Supabase → **Authentication → Emails** (o "Email Templates").
 Los enlaces llevan a `/auth/confirm`, donde la persona toca un botón para continuar.
 Así los revisores automáticos de enlaces (Outlook, Hotmail, antivirus) no gastan el enlace.
 

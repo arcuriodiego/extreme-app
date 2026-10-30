@@ -152,3 +152,15 @@ jobs:
             echo "::error title=supabase db push (producción)::$(tail -n 15 push.log | tr '\n' ' ' | cut -c1-900)"
             exit 1
           fi
+      # Inicio de sesión: direcciones, emails por Resend y plantillas. Sólo si está la clave de Resend.
+      - name: Configurar Auth de producción
+        env:
+          SMTP_PASS: ${{ secrets.PROD_RESEND_SMTP_KEY }}
+          APP_URL: https://app.extremedance.com.ar
+          EXTRA_REDIRECTS: https://extreme-app-produccion.vercel.app/**
+        run: |
+          if [ -z "$SMTP_PASS" ]; then
+            echo "::warning::Falta el secreto PROD_RESEND_SMTP_KEY; no se configuraron los emails de producción."
+          else
+            bash scripts/configure-auth.sh
+          fi
