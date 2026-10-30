@@ -47,4 +47,6 @@ if [ "$code" -lt 200 ] || [ "$code" -ge 300 ]; then
   exit 1
 fi
 # Confirma lo aplicado (sin claves).
-jq '{site_url, uri_allow_list, smtp_host, smtp_admin_email, smtp_sender_name, rate_limit_email_sent, mailer_subjects_confirmation}' /tmp/auth-response.json
+summary=$(jq -c '{site_url, uri_allow_list, smtp_host, smtp_port, smtp_user, smtp_admin_email, smtp_pass_cargada: ((.smtp_pass // "") | length > 0), mailer_autoconfirm, rate_limit_email_sent, mailer_subjects_confirmation}' /tmp/auth-response.json)
+echo "$summary"
+echo "::notice title=Auth de producción configurado::${summary}"
