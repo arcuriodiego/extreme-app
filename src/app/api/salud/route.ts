@@ -1,5 +1,6 @@
 import { academyConfig } from "@/config/academy";
 import { supabaseEnv } from "@/lib/supabase/env";
+import { vapidStatus } from "@/lib/push-delivery";
 
 export const dynamic = "force-dynamic";
 
@@ -35,7 +36,7 @@ export async function GET() {
     ms = Math.round(performance.now() - start);
   }
   return Response.json(
-    { entorno: academyConfig.env, region: process.env.VERCEL_REGION ?? "local", base, ms, status, detalle, formato, version: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? null },
+    { entorno: academyConfig.env, region: process.env.VERCEL_REGION ?? "local", base, ms, status, detalle, formato, avisos: { email: process.env.RESEND_API_KEY?.trim().startsWith("re_") ? "ok" : "falta", push: vapidStatus() }, version: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? null },
     { headers: { "cache-control": "no-store" } },
   );
 }
