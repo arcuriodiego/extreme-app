@@ -102,7 +102,9 @@ jobs:
         # Si falla, el error queda como anotación del job (se lee sin descargar el registro completo).
         run: |
           set -o pipefail
-          if ! supabase db push 2>&1 | tee push.log; then
+          # Las versiones nuevas del CLI apuntan a la base local salvo que se pida la vinculada.
+          target=$(supabase db push --help 2>&1 | grep -q -- '--remote' && echo --remote || echo --linked)
+          if ! supabase db push $target 2>&1 | tee push.log; then
             echo "::error title=supabase db push::$(tail -n 15 push.log | tr '\n' ' ' | cut -c1-900)"
             exit 1
           fi
@@ -145,10 +147,12 @@ jobs:
             exit 1
           fi
       - name: Migraciones que se van a aplicar
-        run: supabase migration list 2>&1 | tail -n 40
+        run: supabase migration list --linked 2>&1 | tail -n 40 || true
       - run: |
           set -o pipefail
-          if ! supabase db push 2>&1 | tee push.log; then
+          # Las versiones nuevas del CLI apuntan a la base local salvo que se pida la vinculada.
+          target=$(supabase db push --help 2>&1 | grep -q -- '--remote' && echo --remote || echo --linked)
+          if ! supabase db push $target 2>&1 | tee push.log; then
             echo "::error title=supabase db push (producción)::$(tail -n 15 push.log | tr '\n' ' ' | cut -c1-900)"
             exit 1
           fi
