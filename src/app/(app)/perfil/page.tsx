@@ -39,7 +39,7 @@ export default async function PerfilPage() {
         <form action={signOut}>
           <button
             type="submit"
-            className="flex h-12 w-full items-center justify-center rounded-xl border-[1.5px] border-ink bg-white font-bold text-ink hover:bg-surface"
+            className="flex h-12 w-full items-center justify-center rounded-xl border-[1.5px] border-ink bg-paper font-bold text-ink hover:bg-surface"
           >
             Cerrar sesión
           </button>

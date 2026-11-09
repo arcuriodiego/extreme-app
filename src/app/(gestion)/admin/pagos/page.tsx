@@ -73,20 +73,20 @@ export default async function PagosPage({ searchParams }: { searchParams: Promis
             </nav>
           </div>
 
-          <div className="flex flex-col gap-2 rounded-[var(--radius-card)] bg-ink p-5 text-white">
-            <span className="text-sm font-semibold text-[#cfcfcf]">{refundsTotal > 0 ? "Neto del día" : "Total cobrado"}</span>
+          <div className="flex flex-col gap-2 rounded-[var(--radius-card)] bg-ink p-5 text-paper">
+            <span className="text-sm font-semibold text-[#4a4a4a]">{refundsTotal > 0 ? "Neto del día" : "Total cobrado"}</span>
             <strong className="font-display text-4xl">{formatARS(summary.total - refundsTotal)}</strong>
             {refundsTotal > 0 && (
-              <span className="text-sm text-[#cfcfcf]">
+              <span className="text-sm text-[#4a4a4a]">
                 Cobrado {formatARS(summary.total)} · Devuelto {formatARS(refundsTotal)}
               </span>
             )}
             {summary.byMethod.length > 0 && (
-              <ul className="flex flex-col gap-1 border-t border-white/15 pt-2 text-[15px]">
+              <ul className="flex flex-col gap-1 border-t border-black/15 pt-2 text-[15px]">
                 {summary.byMethod.map((m) => (
                   <li key={m.method} className="flex justify-between gap-3">
                     <span>
-                      {m.label} <span className="text-[#cfcfcf]">({m.count})</span>
+                      {m.label} <span className="text-[#4a4a4a]">({m.count})</span>
                     </span>
                     <strong>{formatARS(m.cents)}</strong>
                   </li>
@@ -132,7 +132,7 @@ export default async function PagosPage({ searchParams }: { searchParams: Promis
                           required
                           maxLength={200}
                           placeholder="Motivo (obligatorio)"
-                          className="h-10 min-w-0 flex-1 rounded-xl border border-[#cfcfcf] bg-white px-3 text-base outline-none focus:border-ink"
+                          className="h-10 min-w-0 flex-1 rounded-xl border border-edge bg-paper px-3 text-base outline-none focus:border-ink"
                         />
                         <SmallSubmit tone="danger">Anular</SmallSubmit>
                       </form>

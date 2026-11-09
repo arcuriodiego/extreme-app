@@ -86,9 +86,9 @@ export default async function UsuariosPage({
           type="search"
           defaultValue={q}
           placeholder="Buscar por nombre o email"
-          className="h-12 min-w-0 flex-1 rounded-xl border border-[#cfcfcf] bg-white px-4 text-base outline-none focus:border-ink"
+          className="h-12 min-w-0 flex-1 rounded-xl border border-edge bg-paper px-4 text-base outline-none focus:border-ink"
         />
-        <button type="submit" className="h-12 rounded-xl bg-ink px-5 font-bold text-white">
+        <button type="submit" className="h-12 rounded-xl bg-ink px-5 font-bold text-paper">
           Buscar
         </button>
       </form>
@@ -125,8 +125,8 @@ export default async function UsuariosPage({
                         aria-label={`${has ? "Quitar" : "Asignar"} ${ROLE_LABELS[role]} a ${person.name}`}
                         className={`h-9 rounded-full px-3.5 text-sm font-semibold transition-colors ${
                           has
-                            ? "border border-ink bg-ink text-white hover:bg-[#333]"
-                            : "border border-[#cfcfcf] bg-white text-ink hover:border-ink"
+                            ? "border border-ink bg-ink text-paper hover:bg-ink-soft"
+                            : "border border-edge bg-paper text-ink hover:border-ink"
                         }`}
                       >
                         {has ? "✓ " : "+ "}

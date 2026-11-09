@@ -15,7 +15,7 @@ export function DayStrip({ days, selected, hrefFor }: { days: readonly StripDay[
                 aria-current={on ? "date" : undefined}
                 aria-label={d.isToday ? `Hoy, ${d.dayNumber}` : `${d.short} ${d.dayNumber}`}
                 className={`flex h-[58px] flex-col items-center justify-center rounded-xl border no-underline ${
-                  on ? "border-ink bg-ink text-white hover:text-white" : "border-line bg-white text-ink hover:border-ink hover:text-ink"
+                  on ? "border-ink bg-ink text-paper hover:text-paper" : "border-line bg-paper text-ink hover:border-ink hover:text-ink"
                 }`}
               >
                 <span className="text-xs font-bold tracking-wide">{d.isToday ? "HOY" : d.short}</span>

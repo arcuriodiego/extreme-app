@@ -67,7 +67,7 @@ export default async function ReporteProfesPage({ searchParams }: { searchParams
         <div className="flex flex-wrap items-end justify-between gap-3">
           <h2 className="font-display text-2xl font-bold uppercase tracking-wide">Liquidación</h2>
           {payroll.length > 0 && (
-            <a href={`/admin/reportes/profes/csv?mes=${mes}&tipo=liquidacion`} className="inline-flex h-9 items-center rounded-full border border-[#cfcfcf] px-3.5 text-sm font-semibold no-underline">
+            <a href={`/admin/reportes/profes/csv?mes=${mes}&tipo=liquidacion`} className="inline-flex h-9 items-center rounded-full border border-edge px-3.5 text-sm font-semibold no-underline">
               Descargar liquidación para Excel
             </a>
           )}
@@ -157,7 +157,7 @@ export default async function ReporteProfesPage({ searchParams }: { searchParams
       <div className="flex flex-wrap items-end justify-between gap-3 border-t border-line pt-6">
         <h2 className="font-display text-2xl font-bold uppercase tracking-wide">Clases y asistencia</h2>
         {teachers.length > 0 && (
-          <a href={`/admin/reportes/profes/csv?mes=${mes}`} className="inline-flex h-9 items-center rounded-full border border-[#cfcfcf] px-3.5 text-sm font-semibold no-underline">
+          <a href={`/admin/reportes/profes/csv?mes=${mes}`} className="inline-flex h-9 items-center rounded-full border border-edge px-3.5 text-sm font-semibold no-underline">
             Descargar clases para Excel
           </a>
         )}

@@ -32,7 +32,7 @@ export default async function GestionLayout({ children }: { children: React.Reac
         <div>{menu.length > 0 && <MobileMenu items={menu} />}</div>
         <Link href="/admin" aria-label="Ir al panel de gestión">
           <Image
-            src={academyConfig.logo.light}
+            src={academyConfig.logo.dark}
             alt={academyConfig.name}
             width={academyConfig.logo.width}
             height={academyConfig.logo.height}
@@ -52,7 +52,7 @@ export default async function GestionLayout({ children }: { children: React.Reac
             Mi inicio
           </Link>
           <form action={signOut}>
-            <button type="submit" className="font-semibold text-brand hover:underline">
+            <button type="submit" className="font-semibold text-brand-text hover:underline">
               Salir
             </button>
           </form>

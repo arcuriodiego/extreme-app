@@ -43,13 +43,13 @@ export function LinkCard({
       href={href}
       className={`flex items-center justify-between gap-3 rounded-[var(--radius-card)] p-5 no-underline ${
         dark
-          ? "bg-ink text-white hover:bg-[#262626] hover:text-white"
+          ? "bg-ink text-paper hover:bg-ink-soft hover:text-paper"
           : "border border-line text-ink hover:border-ink hover:text-ink"
       }`}
     >
       <span className="flex flex-col gap-1">
         <span className="font-display text-xl font-bold uppercase tracking-wide">{title}</span>
-        {description && <span className={`text-[15px] ${dark ? "text-[#cfcfcf]" : "text-muted"}`}>{description}</span>}
+        {description && <span className={`text-[15px] ${dark ? "text-[#4a4a4a]" : "text-muted"}`}>{description}</span>}
       </span>
       <span aria-hidden="true" className="text-2xl">
         ›
@@ -60,8 +60,8 @@ export function LinkCard({
 
 const buttonStyles = {
   primary: "bg-brand text-white hover:bg-brand-hover hover:text-white",
-  secondary: "border-[1.5px] border-ink bg-white text-ink hover:bg-surface hover:text-ink",
-  dark: "bg-ink text-white hover:bg-[#262626] hover:text-white",
+  secondary: "border-[1.5px] border-ink bg-paper text-ink hover:bg-surface hover:text-ink",
+  dark: "bg-ink text-paper hover:bg-ink-soft hover:text-paper",
 } as const;
 
 /** Enlace con forma de botón. Rojo sólo para la acción principal de la pantalla. */
@@ -93,7 +93,7 @@ export function ComingSoon({ title, intro, items }: { title: string; intro: stri
     <>
       <PageHeader title={title} />
       <section className="flex flex-col gap-3 rounded-[var(--radius-card)] bg-surface p-5">
-        <span className="self-start rounded-full bg-ink px-2.5 py-0.5 text-xs font-bold tracking-wide text-white">
+        <span className="self-start rounded-full bg-ink px-2.5 py-0.5 text-xs font-bold tracking-wide text-paper">
           PRÓXIMAMENTE
         </span>
         <p className="text-[15px] leading-snug">{intro}</p>

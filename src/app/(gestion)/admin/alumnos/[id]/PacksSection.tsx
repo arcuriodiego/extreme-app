@@ -12,7 +12,7 @@ import { nonCashPrice } from "@/domain/billing/cash-price";
 
 type Client = Awaited<ReturnType<typeof createClient>>;
 
-const input = "h-10 min-w-0 rounded-xl border border-[#cfcfcf] bg-white px-3 text-base outline-none focus:border-ink";
+const input = "h-10 min-w-0 rounded-xl border border-edge bg-paper px-3 text-base outline-none focus:border-ink";
 
 function MethodInputs({ idPrefix }: { idPrefix: string }) {
   return (

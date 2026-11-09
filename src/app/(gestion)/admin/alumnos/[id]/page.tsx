@@ -212,7 +212,7 @@ export default async function AlumnoPage({
                           required
                           maxLength={200}
                           placeholder="Motivo (obligatorio)"
-                          className="h-10 min-w-0 flex-1 rounded-xl border border-[#cfcfcf] bg-white px-3 text-base outline-none focus:border-ink"
+                          className="h-10 min-w-0 flex-1 rounded-xl border border-edge bg-paper px-3 text-base outline-none focus:border-ink"
                         />
                         <SmallSubmit tone="danger">Anular</SmallSubmit>
                       </form>
@@ -241,7 +241,7 @@ export default async function AlumnoPage({
                 defaultValue={notes}
                 maxLength={2000}
                 rows={4}
-                className="rounded-xl border border-[#cfcfcf] bg-white px-4 py-3 text-base outline-none focus:border-ink"
+                className="rounded-xl border border-edge bg-paper px-4 py-3 text-base outline-none focus:border-ink"
               />
               <div>
                 <SmallSubmit tone="dark">Guardar notas</SmallSubmit>

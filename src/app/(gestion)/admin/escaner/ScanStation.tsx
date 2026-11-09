@@ -7,7 +7,7 @@ import { Scanner } from "@/components/access/Scanner";
 import { ARRIVAL_STATES, type ArrivalClass, type Entry } from "@/domain/access/messages";
 import { checkInStudentById, type FoundStudent, findStudents, scanAccessCode } from "./actions";
 
-const input = "h-11 min-w-0 flex-1 rounded-xl border border-[#cfcfcf] bg-white px-3 text-base outline-none focus:border-ink";
+const input = "h-11 min-w-0 flex-1 rounded-xl border border-edge bg-paper px-3 text-base outline-none focus:border-ink";
 
 const TONES = {
   ok: "bg-ok-soft text-ok-ink",
@@ -129,7 +129,7 @@ export function ScanStation({
                               onClick={() => checkIn(s.student_id)}
                               disabled={pending}
                               className={`h-9 shrink-0 rounded-full px-4 text-sm font-bold disabled:opacity-50 ${
-                                st.canEnter ? "bg-ink text-white" : "border border-alert text-alert-ink"
+                                st.canEnter ? "bg-ink text-paper" : "border border-alert text-alert-ink"
                               }`}
                             >
                               {st.canEnter ? "Registrar ingreso" : "Ver detalle"}
@@ -152,7 +152,7 @@ export function ScanStation({
               Nombre o DNI
             </label>
             <input id="buscar-alumno" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Nombre o DNI" className={input} />
-            <button type="submit" disabled={pending || q.trim().length < 2} className="h-11 rounded-full bg-ink px-5 font-bold text-white disabled:opacity-50">
+            <button type="submit" disabled={pending || q.trim().length < 2} className="h-11 rounded-full bg-ink px-5 font-bold text-paper disabled:opacity-50">
               Buscar
             </button>
           </form>

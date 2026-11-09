@@ -33,7 +33,7 @@ const ERRORS: Record<string, string> = {
 };
 
 const when = new Intl.DateTimeFormat("es-AR", { day: "numeric", month: "short", year: "numeric", timeZone: academyConfig.timeZone });
-const input = "w-full rounded-xl border border-[#cfcfcf] bg-white px-3 text-base outline-none focus:border-ink";
+const input = "w-full rounded-xl border border-edge bg-paper px-3 text-base outline-none focus:border-ink";
 
 export default async function DocumentosAdminPage({ searchParams }: { searchParams: Promise<{ aviso?: string; error?: string }> }) {
   const [profile, params] = await Promise.all([requireProfile(), searchParams]);
@@ -65,11 +65,11 @@ export default async function DocumentosAdminPage({ searchParams }: { searchPara
         {canRegulate ? (
           <form action={publishRegulation} className="flex flex-col gap-3">
             <label className="flex flex-col gap-1.5">
-              <span className="text-sm font-semibold text-[#3d3d3d]">Título</span>
+              <span className="text-sm font-semibold text-ink-soft">Título</span>
               <input name="title" required maxLength={120} defaultValue={current?.title ?? "Reglamento de Extreme Dance Academy"} className={`h-12 ${input}`} />
             </label>
             <label className="flex flex-col gap-1.5">
-              <span className="text-sm font-semibold text-[#3d3d3d]">Texto</span>
+              <span className="text-sm font-semibold text-ink-soft">Texto</span>
               <textarea name="body" required maxLength={30000} rows={16} defaultValue={current?.body ?? ""} className={`py-3 leading-relaxed ${input}`} />
               <span className="text-sm text-muted">Separá los puntos con una línea en blanco. Se muestra tal cual en el celular.</span>
             </label>
@@ -139,30 +139,30 @@ export default async function DocumentosAdminPage({ searchParams }: { searchPara
           <form action={uploadDocument} className="flex flex-col gap-3 rounded-[var(--radius-card)] bg-surface p-4">
             <span className="font-semibold">Subir un documento</span>
             <label className="flex flex-col gap-1.5">
-              <span className="text-sm font-semibold text-[#3d3d3d]">Nombre</span>
+              <span className="text-sm font-semibold text-ink-soft">Nombre</span>
               <input name="title" required maxLength={120} placeholder="Ej.: Horarios 2027" className={`h-12 ${input}`} />
             </label>
             <label className="flex flex-col gap-1.5">
-              <span className="text-sm font-semibold text-[#3d3d3d]">
+              <span className="text-sm font-semibold text-ink-soft">
                 Descripción <span className="font-normal text-muted">(opcional)</span>
               </span>
               <input name="description" maxLength={300} className={`h-12 ${input}`} />
             </label>
             <label className="flex flex-col gap-1.5">
-              <span className="text-sm font-semibold text-[#3d3d3d]">¿Quién lo ve?</span>
+              <span className="text-sm font-semibold text-ink-soft">¿Quién lo ve?</span>
               <select name="audience" defaultValue="all" className={`h-12 ${input}`}>
                 <option value="all">Todos (alumnos, tutores y personal)</option>
                 <option value="staff">Sólo el personal</option>
               </select>
             </label>
             <label className="flex flex-col gap-1.5">
-              <span className="text-sm font-semibold text-[#3d3d3d]">Archivo</span>
+              <span className="text-sm font-semibold text-ink-soft">Archivo</span>
               <input
                 type="file"
                 name="file"
                 required
                 accept="application/pdf,image/jpeg,image/png,image/webp"
-                className="text-sm file:mr-3 file:h-9 file:cursor-pointer file:rounded-full file:border file:border-[#cfcfcf] file:bg-white file:px-3.5 file:text-sm file:font-semibold"
+                className="text-sm file:mr-3 file:h-9 file:cursor-pointer file:rounded-full file:border file:border-edge file:bg-paper file:px-3.5 file:text-sm file:font-semibold"
               />
               <span className="text-sm text-muted">PDF, JPG, PNG o WEBP, hasta 4 MB.</span>
             </label>

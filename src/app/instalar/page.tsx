@@ -13,7 +13,7 @@ export default function InstalarPage() {
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-6 px-5 pb-12 pt-6">
       <Image
-        src={academyConfig.logo.light}
+        src={academyConfig.logo.dark}
         alt={academyConfig.name}
         width={academyConfig.logo.width}
         height={academyConfig.logo.height}

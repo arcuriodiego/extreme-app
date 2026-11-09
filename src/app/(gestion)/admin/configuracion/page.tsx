@@ -199,7 +199,7 @@ export default async function ConfiguracionPage({ searchParams }: { searchParams
                       step={1}
                       required
                       defaultValue={valueOf(r.key)}
-                      className="h-10 w-20 rounded-xl border border-[#cfcfcf] bg-white px-3 text-right text-base outline-none focus:border-ink"
+                      className="h-10 w-20 rounded-xl border border-edge bg-paper px-3 text-right text-base outline-none focus:border-ink"
                     />
                     <span className="w-28 text-sm text-muted">{r.unit}</span>
                   </span>

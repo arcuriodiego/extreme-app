@@ -3,7 +3,7 @@ import { SmallSubmit } from "@/components/forms/fields";
 import { type GuardianLink, RELATIONSHIP_LABELS, type Ward } from "@/lib/guardians";
 import { linkGuardian, unlinkGuardian } from "../actions";
 
-const input = "h-10 min-w-0 rounded-xl border border-[#cfcfcf] bg-white px-3 text-base outline-none focus:border-ink";
+const input = "h-10 min-w-0 rounded-xl border border-edge bg-paper px-3 text-base outline-none focus:border-ink";
 
 /** Tutores del alumno (y, si la persona es tutora, sus alumnos a cargo). */
 export function GuardiansSection({

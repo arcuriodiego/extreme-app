@@ -88,7 +88,7 @@ export default async function InicioPage({ searchParams }: { searchParams: Promi
           <ul className="flex flex-col gap-1.5">
             {m.enrollments.map((e) => (
               <li key={e.id} className="flex items-center gap-2 text-[15px]">
-                <span className="rounded-full bg-ink px-2 py-0.5 text-xs font-bold text-white">FIJA</span>
+                <span className="rounded-full bg-ink px-2 py-0.5 text-xs font-bold text-paper">FIJA</span>
                 {e.label}
               </li>
             ))}

@@ -24,7 +24,7 @@ import { ERRORS, NOTICES, STATUS_LABELS } from "../../messages";
 export const metadata: Metadata = { title: "Profe" };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const input = "h-10 min-w-0 rounded-xl border border-[#cfcfcf] bg-white px-3 text-base outline-none focus:border-ink";
+const input = "h-10 min-w-0 rounded-xl border border-edge bg-paper px-3 text-base outline-none focus:border-ink";
 
 /** Perfil de un profe: sus datos y sus clases (agregar clase, agregar o quitar horarios). */
 export default async function ProfePage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ aviso?: string; error?: string }> }) {
@@ -80,7 +80,7 @@ export default async function ProfePage({ params, searchParams }: { params: Prom
                 {g.schedules.map((s) => (
                   <li key={s.id} className="flex items-center justify-between gap-2 border-t border-line py-2 text-[15px]">
                     <span>
-                      <strong className="text-brand">{weekdayLabel(s.weekday)}</strong> {s.start} a {s.end} · {s.roomName}
+                      <strong className="text-brand-text">{weekdayLabel(s.weekday)}</strong> {s.start} a {s.end} · {s.roomName}
                     </span>
                     <form action={removeSchedule}>
                       <input type="hidden" name="group_id" value={g.id} />

@@ -29,7 +29,7 @@ export function TextField({
 
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="text-sm font-semibold text-[#3d3d3d]">
+      <label htmlFor={id} className="text-sm font-semibold text-ink-soft">
         {label}
         {!required && <span className="font-normal text-muted"> (opcional)</span>}
       </label>
@@ -43,8 +43,8 @@ export function TextField({
         inputMode={inputMode}
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy}
-        className={`h-12 w-full rounded-xl border bg-white px-4 text-base text-ink outline-none transition-colors focus:border-ink ${
-          error ? "border-alert" : "border-[#cfcfcf]"
+        className={`h-12 w-full rounded-xl border bg-paper px-4 text-base text-ink outline-none transition-colors focus:border-ink ${
+          error ? "border-alert" : "border-edge"
         }`}
       />
       {hint && !error && (
@@ -89,7 +89,7 @@ export function FormAlert({ kind, children }: { kind: "error" | "ok"; children: 
 }
 
 const controlBase =
-  "w-full rounded-xl border border-[#cfcfcf] bg-white px-4 text-base text-ink outline-none transition-colors focus:border-ink";
+  "w-full rounded-xl border border-edge bg-paper px-4 text-base text-ink outline-none transition-colors focus:border-ink";
 
 /** Lista desplegable con etiqueta. */
 export function SelectField({
@@ -110,7 +110,7 @@ export function SelectField({
   const id = `campo-${name}`;
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="text-sm font-semibold text-[#3d3d3d]">
+      <label htmlFor={id} className="text-sm font-semibold text-ink-soft">
         {label}
         {!required && <span className="font-normal text-muted"> (opcional)</span>}
       </label>
@@ -131,7 +131,7 @@ export function TextAreaField({ name, label, defaultValue, maxLength }: { name: 
   const id = `campo-${name}`;
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="text-sm font-semibold text-[#3d3d3d]">
+      <label htmlFor={id} className="text-sm font-semibold text-ink-soft">
         {label} <span className="font-normal text-muted">(opcional)</span>
       </label>
       <textarea id={id} name={name} defaultValue={defaultValue} maxLength={maxLength} rows={3} className={`py-3 ${controlBase}`} />
@@ -157,9 +157,9 @@ export function CheckboxField({ name, label, hint, defaultChecked }: { name: str
 export function SmallSubmit({ children, tone = "default" }: { children: React.ReactNode; tone?: "default" | "danger" | "dark" }) {
   const { pending } = useFormStatus();
   const styles = {
-    default: "border border-[#cfcfcf] bg-white text-ink hover:border-ink",
-    danger: "border border-alert bg-white text-alert-ink hover:bg-alert-soft",
-    dark: "border border-ink bg-ink text-white hover:bg-[#333]",
+    default: "border border-edge bg-paper text-ink hover:border-ink",
+    danger: "border border-alert bg-paper text-alert-ink hover:bg-alert-soft",
+    dark: "border border-ink bg-ink text-paper hover:bg-ink-soft",
   }[tone];
   return (
     <button type="submit" disabled={pending} aria-busy={pending} className={`h-9 shrink-0 rounded-full px-3.5 text-sm font-semibold transition-colors disabled:opacity-60 ${styles}`}>

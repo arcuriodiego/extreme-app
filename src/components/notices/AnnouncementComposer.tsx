@@ -1,7 +1,7 @@
 import { SmallSubmit } from "@/components/forms/fields";
 import { sendAnnouncement } from "@/lib/announcement-actions";
 
-const control = "min-w-0 rounded-xl border border-[#cfcfcf] bg-white px-3 text-base outline-none focus:border-ink";
+const control = "min-w-0 rounded-xl border border-edge bg-paper px-3 text-base outline-none focus:border-ink";
 
 /** Formulario para enviar un aviso a un grupo (o a todos, si se ofrece). */
 export function AnnouncementComposer({

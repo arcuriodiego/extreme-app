@@ -51,7 +51,7 @@ export function SignupForm({
               <label
                 key={value}
                 className={`flex h-12 cursor-pointer items-center justify-center rounded-xl border text-[15px] font-semibold ${
-                  who === value ? "border-ink bg-ink text-white" : "border-[#cfcfcf] bg-white"
+                  who === value ? "border-ink bg-ink text-paper" : "border-edge bg-paper"
                 }`}
               >
                 <input type="radio" name="for" value={value} checked={who === value} onChange={() => setWho(value)} className="sr-only" />

@@ -19,7 +19,7 @@ export function StudentSwitcher({ options, activeId, family = false }: { options
             href={`/alumno?id=${o.id}&a=${page}`}
             aria-current={on ? "true" : undefined}
             className={`flex h-10 shrink-0 items-center rounded-full border px-4 text-[15px] font-semibold no-underline ${
-              on ? "border-ink bg-ink text-white hover:text-white" : "border-[#cfcfcf] bg-white text-ink hover:border-ink hover:text-ink"
+              on ? "border-ink bg-ink text-paper hover:text-paper" : "border-edge bg-paper text-ink hover:border-ink hover:text-ink"
             }`}
           >
             {o.label}

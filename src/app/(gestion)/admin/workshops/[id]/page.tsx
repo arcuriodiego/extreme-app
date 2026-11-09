@@ -65,7 +65,7 @@ function PayInputs({ idPrefix }: { idPrefix: string }) {
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const input = "h-10 min-w-0 rounded-xl border border-[#cfcfcf] bg-white px-3 text-base outline-none focus:border-ink";
+const input = "h-10 min-w-0 rounded-xl border border-edge bg-paper px-3 text-base outline-none focus:border-ink";
 const dateTime = new Intl.DateTimeFormat("es-AR", {
   weekday: "long",
   day: "numeric",

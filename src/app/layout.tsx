@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   title: { default: academyConfig.name, template: `%s · ${academyConfig.shortName}` },
   description: `Clases, pases y pagos de ${academyConfig.name}.`,
   applicationName: academyConfig.shortName,
-  appleWebApp: { capable: true, title: installName(academyConfig.shortName, academyConfig.env), statusBarStyle: "default" },
+  appleWebApp: { capable: true, title: installName(academyConfig.shortName, academyConfig.env), statusBarStyle: "black" },
 };
 
 export const viewport: Viewport = {

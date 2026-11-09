@@ -31,7 +31,7 @@ export function KeyGenerator() {
   if (!keys) {
     return (
       <div>
-        <button type="button" onClick={generate} className="h-10 rounded-full border border-ink bg-ink px-4 text-sm font-semibold text-white">
+        <button type="button" onClick={generate} className="h-10 rounded-full border border-ink bg-ink px-4 text-sm font-semibold text-paper">
           Generar claves
         </button>
       </div>
@@ -41,9 +41,9 @@ export function KeyGenerator() {
   const row = (name: string, value: string) => (
     <div className="flex flex-col gap-1.5 rounded-xl bg-surface p-3">
       <span className="text-sm font-semibold">Nombre (Key): {name}</span>
-      <code className="break-all rounded-lg bg-white px-2 py-1.5 text-xs">{value}</code>
+      <code className="break-all rounded-lg bg-paper px-2 py-1.5 text-xs">{value}</code>
       <div>
-        <button type="button" onClick={() => copy(name, value)} className="h-8 rounded-full border border-[#cfcfcf] bg-white px-3 text-xs font-semibold">
+        <button type="button" onClick={() => copy(name, value)} className="h-8 rounded-full border border-edge bg-paper px-3 text-xs font-semibold">
           {copied === name ? "Copiada ✓" : "Copiar valor"}
         </button>
       </div>

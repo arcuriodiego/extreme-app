@@ -71,7 +71,7 @@ export function ImagePicker({
           accept="image/jpeg,image/png,image/webp"
           required
           onChange={onChange}
-          className="text-sm file:mr-3 file:h-9 file:cursor-pointer file:rounded-full file:border file:border-[#cfcfcf] file:bg-white file:px-3.5 file:text-sm file:font-semibold"
+          className="text-sm file:mr-3 file:h-9 file:cursor-pointer file:rounded-full file:border file:border-edge file:bg-paper file:px-3.5 file:text-sm file:font-semibold"
         />
         <span className="text-sm text-muted">JPG, PNG o WEBP. Si es muy grande, la achicamos antes de subirla.</span>
       </label>
@@ -87,7 +87,7 @@ function Submit({ busy, children }: { busy: boolean; children: React.ReactNode }
       type="submit"
       disabled={busy || pending}
       aria-busy={busy || pending}
-      className="h-9 self-start rounded-full border border-ink bg-ink px-3.5 text-sm font-semibold text-white transition-colors hover:bg-[#333] disabled:opacity-60"
+      className="h-9 self-start rounded-full border border-ink bg-ink px-3.5 text-sm font-semibold text-paper transition-colors hover:bg-ink-soft disabled:opacity-60"
     >
       {pending ? "Subiendo…" : children}
     </button>

@@ -18,7 +18,7 @@ function MenuLinks({ items }: { items: NavItem[] }) {
               href={item.href}
               aria-current={active ? "page" : undefined}
               className={`flex h-11 items-center gap-3 rounded-xl px-3 text-[15px] font-semibold no-underline ${
-                active ? "bg-ink text-white hover:text-white" : "text-ink hover:bg-surface hover:text-ink"
+                active ? "bg-ink text-paper hover:text-paper" : "text-ink hover:bg-surface hover:text-ink"
               }`}
             >
               <Icon name={item.icon} size={20} />
@@ -57,7 +57,7 @@ export function MobileMenu({ items }: { items: NavItem[] }) {
         </svg>
         Menú
       </summary>
-      <nav aria-label="Gestión" className="absolute left-0 top-12 z-30 w-64 rounded-[var(--radius-card)] border border-line bg-white p-2 shadow-lg">
+      <nav aria-label="Gestión" className="absolute left-0 top-12 z-30 w-64 rounded-[var(--radius-card)] border border-line bg-paper p-2 shadow-lg">
         <MenuLinks items={items} />
       </nav>
     </details>

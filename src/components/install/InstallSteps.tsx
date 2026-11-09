@@ -25,7 +25,7 @@ function PlusIcon() {
 function Step({ n, children }: { n: number; children: React.ReactNode }) {
   return (
     <li className="flex items-start gap-3">
-      <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-ink text-sm font-bold text-white">{n}</span>
+      <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-ink text-sm font-bold text-paper">{n}</span>
       <span className="pt-0.5 text-[15px] leading-snug">{children}</span>
     </li>
   );

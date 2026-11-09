@@ -8,7 +8,7 @@ export default function CuentaLayout({ children }: { children: React.ReactNode }
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-8 px-5 pb-12 pt-8">
       <Link href="/" aria-label={`${academyConfig.name}, ir al inicio`} className="self-center">
         <Image
-          src={academyConfig.logo.light}
+          src={academyConfig.logo.dark}
           alt={academyConfig.name}
           width={academyConfig.logo.width}
           height={academyConfig.logo.height}

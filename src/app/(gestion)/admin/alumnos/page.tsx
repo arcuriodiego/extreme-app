@@ -45,9 +45,9 @@ export default async function AlumnosPage({ searchParams }: { searchParams: Prom
           type="search"
           defaultValue={q}
           placeholder="Buscar por nombre, apellido o DNI"
-          className="h-12 min-w-0 flex-1 rounded-xl border border-[#cfcfcf] bg-white px-4 text-base outline-none focus:border-ink"
+          className="h-12 min-w-0 flex-1 rounded-xl border border-edge bg-paper px-4 text-base outline-none focus:border-ink"
         />
-        <button type="submit" className="h-12 rounded-xl bg-ink px-5 font-bold text-white">
+        <button type="submit" className="h-12 rounded-xl bg-ink px-5 font-bold text-paper">
           Buscar
         </button>
       </form>

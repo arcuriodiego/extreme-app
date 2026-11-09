@@ -38,7 +38,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <Bell initial={unread} className="justify-self-start" />
         <Link href="/inicio" aria-label="Ir a mi inicio">
           <Image
-            src={academyConfig.logo.light}
+            src={academyConfig.logo.dark}
             alt={academyConfig.name}
             width={academyConfig.logo.width}
             height={academyConfig.logo.height}
@@ -49,7 +49,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         {hasGestion(profile.access) && (
           <Link
             href="/admin"
-            className="flex h-9 items-center justify-self-end rounded-full bg-ink px-3.5 text-sm font-bold text-white no-underline hover:bg-[#262626] hover:text-white"
+            className="flex h-9 items-center justify-self-end rounded-full bg-ink px-3.5 text-sm font-bold text-paper no-underline hover:bg-ink-soft hover:text-paper"
           >
             Gestión
           </Link>

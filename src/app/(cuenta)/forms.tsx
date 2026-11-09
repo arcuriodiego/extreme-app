@@ -115,7 +115,7 @@ function AccountTypeField({ defaultValue }: { defaultValue?: string }) {
   const [value, setValue] = useState(defaultValue === "guardian" ? "guardian" : "student");
   return (
     <fieldset className="flex flex-col gap-2">
-      <legend className="pb-1 text-sm font-semibold text-[#3d3d3d]">¿Quién va a tomar clases?</legend>
+      <legend className="pb-1 text-sm font-semibold text-ink-soft">¿Quién va a tomar clases?</legend>
       <div className="grid grid-cols-1 gap-2 min-[420px]:grid-cols-2">
         {(
           [
@@ -125,11 +125,11 @@ function AccountTypeField({ defaultValue }: { defaultValue?: string }) {
         ).map(([v, title, sub]) => (
           <label
             key={v}
-            className={`flex cursor-pointer flex-col rounded-xl border px-4 py-3 ${value === v ? "border-ink bg-ink text-white" : "border-[#cfcfcf] bg-white"}`}
+            className={`flex cursor-pointer flex-col rounded-xl border px-4 py-3 ${value === v ? "border-ink bg-ink text-paper" : "border-edge bg-paper"}`}
           >
             <input type="radio" name="accountType" value={v} checked={value === v} onChange={() => setValue(v)} className="sr-only" />
             <span className="font-semibold">{title}</span>
-            <span className={`text-[13px] ${value === v ? "text-white/80" : "text-muted"}`}>{sub}</span>
+            <span className={`text-[13px] ${value === v ? "text-paper/70" : "text-muted"}`}>{sub}</span>
           </label>
         ))}
       </div>

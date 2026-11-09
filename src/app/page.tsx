@@ -6,7 +6,7 @@ export default function Home() {
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center gap-8 px-5 py-10">
       <Image
-        src={academyConfig.logo.light}
+        src={academyConfig.logo.dark}
         alt={academyConfig.name}
         width={academyConfig.logo.width}
         height={academyConfig.logo.height}

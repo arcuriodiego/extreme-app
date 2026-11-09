@@ -11,7 +11,7 @@ export function TabBar({ items }: { items: NavItem[] }) {
   return (
     <nav
       aria-label="Principal"
-      className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur"
+      className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-paper/95 pb-[env(safe-area-inset-bottom)] backdrop-blur"
     >
       <ul className="mx-auto flex max-w-md">
         {items.map((item) => {
@@ -22,7 +22,7 @@ export function TabBar({ items }: { items: NavItem[] }) {
                 href={item.href}
                 aria-current={active ? "page" : undefined}
                 className={`flex h-16 flex-col items-center justify-center gap-1 text-[11px] font-semibold no-underline ${
-                  active ? "text-brand hover:text-brand" : "text-muted hover:text-ink"
+                  active ? "text-brand-text hover:text-brand-text" : "text-muted hover:text-ink"
                 }`}
               >
                 <Icon name={item.icon} size={24} />

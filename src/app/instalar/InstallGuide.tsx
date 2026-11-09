@@ -17,7 +17,7 @@ export function InstallGuide() {
     return (
       <div className="flex flex-col gap-4">
         <p className="rounded-xl bg-ok-soft px-4 py-3 text-[15px] font-semibold text-ok-ink">Ya tenés la app instalada.</p>
-        <Link href="/inicio" className="flex h-12 items-center justify-center rounded-xl bg-ink font-bold text-white no-underline">
+        <Link href="/inicio" className="flex h-12 items-center justify-center rounded-xl bg-ink font-bold text-paper no-underline">
           Abrir la app
         </Link>
       </div>
@@ -46,7 +46,7 @@ export function InstallGuide() {
             role="tab"
             aria-selected={tab === value}
             onClick={() => setPicked(value)}
-            className={`h-11 rounded-xl border text-[15px] font-semibold ${tab === value ? "border-ink bg-ink text-white" : "border-[#cfcfcf] bg-white"}`}
+            className={`h-11 rounded-xl border text-[15px] font-semibold ${tab === value ? "border-ink bg-ink text-paper" : "border-edge bg-paper"}`}
           >
             {label}
           </button>
@@ -56,7 +56,7 @@ export function InstallGuide() {
         <button
           type="button"
           onClick={() => nativePrompt.prompt()}
-          className="flex h-12 items-center justify-center rounded-xl bg-ink font-bold text-white"
+          className="flex h-12 items-center justify-center rounded-xl bg-ink font-bold text-paper"
         >
           Instalar ahora
         </button>

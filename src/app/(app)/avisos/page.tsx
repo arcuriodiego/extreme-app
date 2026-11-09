@@ -17,7 +17,7 @@ const KIND: Record<NotificationKind, { label: string; tone: string }> = {
   pack_expiring: { label: "Pack", tone: "bg-surface text-ink" },
   class_cancelled: { label: "Clase suspendida", tone: "bg-alert-soft text-alert-ink" },
   class_restored: { label: "Clase reprogramada", tone: "bg-ok-soft text-ok-ink" },
-  announcement: { label: "Aviso de la academia", tone: "bg-ink text-white" },
+  announcement: { label: "Aviso de la academia", tone: "bg-ink text-paper" },
   waitlist_offer: { label: "Lugar liberado", tone: "bg-ok-soft text-ok-ink" },
   signup_new: { label: "Inscripción nueva", tone: "bg-warn-soft text-warn-ink" },
   signup_confirmed: { label: "Inscripción confirmada", tone: "bg-ok-soft text-ok-ink" },

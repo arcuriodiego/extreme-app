@@ -12,7 +12,7 @@ import { pricePair } from "@/domain/billing/cash-price";
 
 type Client = Awaited<ReturnType<typeof createClient>>;
 
-const select = "h-10 min-w-0 rounded-xl border border-[#cfcfcf] bg-white px-3 text-base outline-none focus:border-ink";
+const select = "h-10 min-w-0 rounded-xl border border-edge bg-paper px-3 text-base outline-none focus:border-ink";
 
 /** Cuotas de profe del alumno: horarios fijos, cambios, baja e inscripción nueva. */
 export async function MembershipSection({
@@ -262,7 +262,7 @@ export async function MembershipSection({
                     {picked.map((o) => (
                       <label
                         key={o.scheduleId}
-                        className={`flex items-center gap-3 rounded-xl border border-line bg-white p-3 ${o.left === 0 ? "opacity-60" : ""}`}
+                        className={`flex items-center gap-3 rounded-xl border border-line bg-paper p-3 ${o.left === 0 ? "opacity-60" : ""}`}
                       >
                         <input type="checkbox" name="schedule_id" value={o.scheduleId} disabled={o.left === 0} className="size-5 accent-ink" />
                         <span className="flex flex-col">

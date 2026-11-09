@@ -119,7 +119,7 @@ export function PushToggle({ publicKey }: { publicKey: string | null }) {
         <>
           <span className="text-sm text-muted">Te avisamos al instante: vencimiento de la cuota, clases suspendidas, lugares liberados y avisos de la academia.</span>
           <div>
-            <button type="button" disabled={shown === "working"} onClick={enable} className={`${button} border border-ink bg-ink text-white disabled:opacity-60`}>
+            <button type="button" disabled={shown === "working"} onClick={enable} className={`${button} border border-ink bg-ink text-paper disabled:opacity-60`}>
               {shown === "working" ? "Activando…" : "Activar notificaciones"}
             </button>
           </div>
@@ -129,10 +129,10 @@ export function PushToggle({ publicKey }: { publicKey: string | null }) {
         <>
           <span className="text-sm font-semibold text-ok-ink">Activadas ✓</span>
           <div className="flex flex-wrap gap-2">
-            <button type="button" onClick={test} className={`${button} border border-[#cfcfcf] bg-white`}>
+            <button type="button" onClick={test} className={`${button} border border-edge bg-paper`}>
               Mandarme una de prueba
             </button>
-            <button type="button" onClick={disable} className={`${button} border border-[#cfcfcf] bg-white`}>
+            <button type="button" onClick={disable} className={`${button} border border-edge bg-paper`}>
               Desactivar
             </button>
           </div>

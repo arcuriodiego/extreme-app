@@ -9,7 +9,7 @@ export function RoleBadges({ roles }: { roles: readonly RoleCode[] }) {
         <span
           key={role}
           className={`rounded-full px-2.5 py-0.5 text-xs font-bold tracking-wide ${
-            role === "admin" ? "bg-ink text-white" : "bg-surface text-ink"
+            role === "admin" ? "bg-ink text-paper" : "bg-surface text-ink"
           }`}
         >
           {ROLE_LABELS[role].toUpperCase()}

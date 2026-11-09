@@ -37,7 +37,7 @@ export function SessionCard({
           </span>
           {(badges.length > 0 || tag) && (
             <span className="flex flex-wrap gap-1.5 pt-1">
-              {tag && <span className="rounded-full bg-ink px-2 py-0.5 text-xs font-bold tracking-wide text-white">{tag}</span>}
+              {tag && <span className="rounded-full bg-ink px-2 py-0.5 text-xs font-bold tracking-wide text-paper">{tag}</span>}
               {badges.map((b) => (
                 <span key={b.text} className={`rounded-full px-2 py-0.5 text-xs font-bold ${tones[b.tone]}`}>
                   {b.text}

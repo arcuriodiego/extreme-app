@@ -72,7 +72,7 @@ export function AccessLight({ state, planName, payHref }: { state: MembershipLig
 
       {state.light !== "current" && (
         <>
-          <p className="flex justify-between border-t border-black/10 pt-3 text-[15px]">
+          <p className="flex justify-between border-t border-white/10 pt-3 text-[15px]">
             <span>Importe pendiente</span>
             <strong className="text-lg">{formatARS(state.amountDueCents)}</strong>
           </p>

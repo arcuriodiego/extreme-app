@@ -46,7 +46,7 @@ export default async function ReglamentoPage({ searchParams }: { searchParams: P
           Lo aceptaste el {when.format(new Date(acceptedAt))}.
         </p>
       ) : (
-        <form action={acceptRegulation} className="sticky bottom-20 flex flex-col gap-2 rounded-[var(--radius-card)] border-[1.5px] border-ink bg-white p-4">
+        <form action={acceptRegulation} className="sticky bottom-20 flex flex-col gap-2 rounded-[var(--radius-card)] border-[1.5px] border-ink bg-paper p-4">
           <input type="hidden" name="id" value={regulation.id} />
           <input type="hidden" name="next" value={next} />
           <span className="text-[15px]">Al aceptar, confirmás que leíste el reglamento y estás de acuerdo (también en nombre de tus hijos a cargo).</span>

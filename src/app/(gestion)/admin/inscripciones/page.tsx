@@ -70,7 +70,7 @@ export default async function InscripcionesPage({ searchParams }: { searchParams
         {r.note && <p className="rounded-xl bg-surface px-3 py-2 text-[15px]">“{r.note}”</p>}
         {r.status === "pending" ? (
           <div className="flex flex-wrap items-center gap-2 border-t border-line pt-3">
-            <Link href={`/admin/alumnos/${r.student.id}`} className="inline-flex h-9 items-center rounded-full border border-ink bg-ink px-3.5 text-sm font-semibold text-white no-underline">
+            <Link href={`/admin/alumnos/${r.student.id}`} className="inline-flex h-9 items-center rounded-full border border-ink bg-ink px-3.5 text-sm font-semibold text-paper no-underline">
               Abrir ficha y dar la cuota
             </Link>
             {canManage && (

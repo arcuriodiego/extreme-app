@@ -143,14 +143,14 @@ export function Scanner({ onCode, onResult }: { onCode: (code: string) => Promis
               type="button"
               onClick={start}
               disabled={status === "starting"}
-              className="h-11 rounded-full bg-white px-5 font-bold text-ink disabled:opacity-60"
+              className="h-11 rounded-full bg-paper px-5 font-bold text-ink disabled:opacity-60"
             >
               {status === "starting" ? "Abriendo la cámara…" : "Activar cámara"}
             </button>
           </div>
         )}
         {checking && (
-          <div className="absolute inset-x-0 bottom-0 bg-ink/80 py-2 text-center text-sm font-semibold text-white">Validando…</div>
+          <div className="absolute inset-x-0 bottom-0 bg-black/70 py-2 text-center text-sm font-semibold text-white">Validando…</div>
         )}
       </div>
       {entry && <EntryCard entry={entry} />}

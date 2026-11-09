@@ -68,7 +68,7 @@ export function WorkshopList({
               {w.description && <p className="text-sm text-muted">{w.description}</p>}
               <span className="flex flex-wrap gap-1.5">
                 {mine.has(w.id) ? (
-                  <span className="rounded-full bg-ink px-2 py-0.5 text-xs font-bold text-white">ESTÁS INSCRIPTO</span>
+                  <span className="rounded-full bg-ink px-2 py-0.5 text-xs font-bold text-paper">ESTÁS INSCRIPTO</span>
                 ) : (
                   <span className="rounded-full bg-surface px-2 py-0.5 text-xs font-bold">{seatsLabel(w.capacity, w.taken + w.held).toUpperCase()}</span>
                 )}

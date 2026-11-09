@@ -17,7 +17,7 @@ export default async function CartelPage({ searchParams }: { searchParams: Promi
   const svg = await QRCode.toString(TARGET, { type: "svg", margin: 0, errorCorrectionLevel: "M", color: { dark: "#0a0a0a", light: "#ffffff" } });
 
   return (
-    <div className={`cartel mx-auto flex flex-col items-center bg-white text-ink ${story ? "cartel-historia" : "cartel-a4"}`}>
+    <div className={`theme-light cartel mx-auto flex flex-col items-center bg-white text-ink ${story ? "cartel-historia" : "cartel-a4"}`}>
       <style>{`
         @page { size: A4; margin: 0; }
         html, body { background: #fff; }

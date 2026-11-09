@@ -83,7 +83,7 @@ export async function FamilyOverview({ supabase, people, today, graceDays }: { s
                 {d.memberships.flatMap((m) =>
                   m.enrollments.map((e) => (
                     <li key={e.id} className="flex items-center gap-2">
-                      <span className="rounded-full bg-ink px-2 py-0.5 text-xs font-bold text-white">FIJA</span>
+                      <span className="rounded-full bg-ink px-2 py-0.5 text-xs font-bold text-paper">FIJA</span>
                       {e.label}
                     </li>
                   )),

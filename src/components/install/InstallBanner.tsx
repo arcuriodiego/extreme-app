@@ -48,7 +48,7 @@ export function InstallBanner() {
   }
 
   return (
-    <section aria-label="Instalar la app" className="mx-5 mt-3 flex flex-col gap-3 rounded-[var(--radius-card)] border-[1.5px] border-ink bg-white p-4">
+    <section aria-label="Instalar la app" className="mx-5 mt-3 flex flex-col gap-3 rounded-[var(--radius-card)] border-[1.5px] border-ink bg-paper p-4">
       <div className="flex flex-col gap-0.5">
         <span className="font-semibold">Instalá la app en tu celular</span>
         <span className="text-sm text-muted">Queda con su ícono en la pantalla de inicio y se abre directo, sin buscarla en el navegador.</span>
@@ -56,17 +56,17 @@ export function InstallBanner() {
       {open && <InstallSteps platform={platform} />}
       <div className="flex flex-wrap gap-2">
         {platform === "android" && nativePrompt ? (
-          <button type="button" onClick={installNow} className="h-9 rounded-full border border-ink bg-ink px-3.5 text-sm font-semibold text-white">
+          <button type="button" onClick={installNow} className="h-9 rounded-full border border-ink bg-ink px-3.5 text-sm font-semibold text-paper">
             Instalar
           </button>
         ) : (
           !open && (
-            <button type="button" onClick={() => setOpen(true)} className="h-9 rounded-full border border-ink bg-ink px-3.5 text-sm font-semibold text-white">
+            <button type="button" onClick={() => setOpen(true)} className="h-9 rounded-full border border-ink bg-ink px-3.5 text-sm font-semibold text-paper">
               Ver cómo
             </button>
           )
         )}
-        <button type="button" onClick={later} className="h-9 rounded-full border border-[#cfcfcf] bg-white px-3.5 text-sm font-semibold">
+        <button type="button" onClick={later} className="h-9 rounded-full border border-edge bg-paper px-3.5 text-sm font-semibold">
           Ahora no
         </button>
       </div>

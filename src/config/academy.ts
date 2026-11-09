@@ -21,11 +21,15 @@ export const academyConfig = {
   currency: "ARS",
   colors: {
     brand: "#D90000",
-    ink: "#111111",
-    paper: "#FFFFFF",
+    ink: "#F5F5F5",
+    /** Fondo de la app (tema oscuro). */
+    paper: "#0A0A0A",
   },
   logo: {
+    /** Letras negras: para fondo blanco (cartel impreso). */
     light: "/brand/logo.png",
+    /** Letras blancas: para el fondo negro de la app. */
+    dark: "/brand/logo-dark.png",
     width: 2172,
     height: 724,
   },
