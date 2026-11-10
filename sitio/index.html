@@ -39,6 +39,7 @@
     html { scroll-behavior: smooth; scroll-padding-top: 80px; }
     body { margin: 0; background: var(--fondo); color: var(--texto); font: 17px/1.6 Barlow, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
     img, video { display: block; max-width: 100%; }
+    video::-webkit-media-controls, video::-webkit-media-controls-start-playback-button, video::-webkit-media-controls-overlay-play-button { display: none !important; -webkit-appearance: none; }
     a { color: inherit; }
     .envolver { max-width: var(--ancho); margin: 0 auto; padding: 0 16px; }
     h1, h2, h3 { font-family: var(--titulo); font-weight: 800; line-height: .95; margin: 0; text-transform: uppercase; letter-spacing: .5px; }
@@ -540,6 +541,14 @@
   document.getElementById("anio").textContent = new Date().getFullYear();
   const reducir = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+  // ---- Videos: iPhone sólo los arranca solos si están en silencio. Con "Ahorro de batería" no arranca
+  // ninguno hasta que la persona toca la pantalla, así que en el primer toque o scroll los arrancamos.
+  const reproducir = (v) => { v.muted = true; v.defaultMuted = true; v.playsInline = true; v.setAttribute("muted", ""); const p = v.play(); if (p) p.catch(() => {}); };
+  const alPrimerToque = () => {
+    document.querySelectorAll("video").forEach((v) => { if (v.getAttribute("src") && v.paused && (v.id === "video-portada" || v._visible)) reproducir(v); });
+  };
+  ["touchstart", "click", "scroll"].forEach((ev) => addEventListener(ev, alPrimerToque, { passive: true }));
+
   // ---- Video de portada según la forma de la pantalla
   const vp = document.getElementById("video-portada");
   const elegirPortada = () => {
@@ -548,7 +557,7 @@
     vp.dataset.forma = forma;
     vp.poster = vp.dataset["poster" + forma[0].toUpperCase() + forma.slice(1)];
     vp.src = vp.dataset[forma];
-    vp.play().catch(() => {});
+    reproducir(vp);
   };
   elegirPortada();
   matchMedia("(min-aspect-ratio: 1/1)").addEventListener?.("change", elegirPortada);
@@ -585,7 +594,8 @@
     // Videos de clases: se cargan y reproducen sólo cuando se ven
     const vobs = new IntersectionObserver((entradas) => entradas.forEach((e) => {
       const v = e.target;
-      if (e.isIntersecting) { if (!v.getAttribute("src")) v.src = v.dataset.src; v.play().catch(() => {}); } else v.pause();
+      v._visible = e.isIntersecting;
+      if (e.isIntersecting) { if (!v.getAttribute("src")) v.src = v.dataset.src; reproducir(v); } else v.pause();
     }), { threshold: .35 });
     document.querySelectorAll(".clase video").forEach((v) => vobs.observe(v));
 
