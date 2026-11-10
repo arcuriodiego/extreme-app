@@ -292,7 +292,10 @@
 <main>
   <!-- PORTADA -->
   <section class="portada">
-    <video src="video/portada.mp4" poster="img/portada-video.jpg" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>
+    <!-- Video de portada: horizontal en la compu, vertical en el celular (lo elige el script, así se descarga uno solo) -->
+    <video id="video-portada" autoplay muted loop playsinline preload="auto" aria-hidden="true"
+      data-vertical="video/portada.mp4" data-poster-vertical="img/portada-video.jpg"
+      data-horizontal="video/portada-horizontal.mp4" data-poster-horizontal="img/portada-horizontal.jpg"></video>
     <div class="envolver">
       <span class="etiqueta entra"><i></i> Mar del Plata · Catamarca 2477</span>
       <h1><span class="linea"><span>¿Te gusta la danza urbana?</span></span><span class="linea"><span class="rojo">Llegaste al lugar indicado</span></span></h1>
@@ -536,6 +539,19 @@
   });
   document.getElementById("anio").textContent = new Date().getFullYear();
   const reducir = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // ---- Video de portada según la forma de la pantalla
+  const vp = document.getElementById("video-portada");
+  const elegirPortada = () => {
+    const forma = matchMedia("(min-aspect-ratio: 1/1)").matches ? "horizontal" : "vertical";
+    if (vp.dataset.forma === forma) return;
+    vp.dataset.forma = forma;
+    vp.poster = vp.dataset["poster" + forma[0].toUpperCase() + forma.slice(1)];
+    vp.src = vp.dataset[forma];
+    vp.play().catch(() => {});
+  };
+  elegirPortada();
+  matchMedia("(min-aspect-ratio: 1/1)").addEventListener?.("change", elegirPortada);
 
   // ---- Galería: dos filas que se deslizan (cada fila va duplicada para que el giro no tenga corte)
   const fotos = ["salto","xtrm-azul","humo","infantil-sonrisa","pelo-al-aire","escenario-verde","senalando","libros-rosa","solista-luces","infantil-fila",
