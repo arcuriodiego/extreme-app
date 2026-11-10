@@ -4,10 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Extreme Dance Academy · Danzas urbanas en Mar del Plata</title>
-  <meta name="description" content="Extreme Dance Academy, Catamarca 2477, Mar del Plata. Academia de danzas urbanas: Hip Hop, Reggaetón, Fusión, Femme, Heels y Coreografía para chicos, teens y adultos, desde nivel básico hasta avanzado.">
+  <meta name="description" content="Extreme Dance Academy, Catamarca 2477, Mar del Plata. Academia de danzas urbanas con 12 años en Mar del Plata: Reggaetón, Hip Hop, Femme, Fusión, Heels y Coreografía Infantil para peques, teens y adultos, desde nivel básico hasta avanzado.">
   <meta name="theme-color" content="#0a0a0a">
   <meta property="og:title" content="Extreme Dance Academy · Mar del Plata">
-  <meta property="og:description" content="Danzas urbanas de alto rendimiento. Formamos personas, acompañamos familias y crecemos juntos en la danza.">
+  <meta property="og:description" content="¿Te gusta la danza urbana? Llegaste al lugar indicado. 12 años en la danza de Mar del Plata.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://extremedance.com.ar/">
   <meta property="og:image" content="https://extremedance.com.ar/img/compartir.jpg">
@@ -68,38 +68,38 @@
     .boton.chico { padding: 10px 18px; font-size: 14px; }
     .boton svg { width: 20px; height: 20px; flex: none; }
 
-    /* portada */
-    .portada { position: relative; overflow: hidden; padding: 56px 0 72px; }
-    .portada::before { content: ""; position: absolute; width: 820px; height: 820px; right: -260px; top: -300px; background: radial-gradient(circle, rgba(217,0,0,.32), transparent 62%); pointer-events: none; }
-    .portada .envolver { position: relative; z-index: 1; display: grid; grid-template-columns: 1.15fr .85fr; gap: 48px; align-items: center; }
-    .portada .envolver > * { min-width: 0; }
-    @media (max-width: 900px) { .portada { padding-top: 32px; } .portada .envolver { grid-template-columns: 1fr; gap: 36px; } }
-    .etiqueta { display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px; border: 1px solid rgba(255,255,255,.12); border-radius: 999px; color: var(--suave); font-size: 14px; font-weight: 600; margin-bottom: 22px; }
-    .etiqueta i { width: 8px; height: 8px; border-radius: 50%; background: var(--rojo-vivo); box-shadow: 0 0 0 4px rgba(255,42,42,.18); }
-    .portada h1 { font-size: clamp(48px, 7.4vw, 96px); }
-    .portada p.bajada { font-size: clamp(18px, 2vw, 21px); color: var(--suave); max-width: 46ch; margin: 22px 0 30px; }
+    /* portada: el video ocupa toda la pantalla y el texto va encima */
+    .portada { position: relative; min-height: min(92svh, 920px); display: flex; align-items: flex-end; overflow: hidden; padding: 120px 0 64px; isolation: isolate; }
+    .portada video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; }
+    .portada::after { content: ""; position: absolute; inset: 0; z-index: -1; background:
+      linear-gradient(to top, rgba(10,10,10,1) 0%, rgba(10,10,10,.75) 35%, rgba(10,10,10,.25) 70%, rgba(10,10,10,.55) 100%),
+      linear-gradient(to right, rgba(10,10,10,.75), rgba(10,10,10,0) 65%); }
+    .portada .envolver { width: 100%; }
+    .etiqueta { display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px; border: 1px solid rgba(255,255,255,.18); border-radius: 999px; background: rgba(10,10,10,.45); backdrop-filter: blur(6px); color: var(--texto); font-size: 14px; font-weight: 600; margin-bottom: 22px; }
+    .etiqueta i { width: 8px; height: 8px; border-radius: 50%; background: var(--rojo-vivo); box-shadow: 0 0 0 4px rgba(255,42,42,.25); }
+    .portada h1 { font-size: clamp(44px, 6.4vw, 92px); max-width: 13ch; }
+    .portada h1 .rojo { display: block; }
+    .portada p.bajada { font-size: clamp(18px, 2vw, 21px); color: #d6d6d6; max-width: 48ch; margin: 20px 0 28px; }
     .acciones { display: flex; flex-wrap: wrap; gap: 12px; }
-    .datos { display: flex; flex-wrap: wrap; gap: 10px 26px; margin-top: 34px; color: var(--suave); font-size: 15px; }
-    .datos b { color: var(--texto); font-weight: 600; }
-
-    .marco { position: relative; justify-self: center; width: min(340px, 78vw); aspect-ratio: 9 / 16; border-radius: 30px; padding: 6px; background: linear-gradient(160deg, var(--rojo-vivo), #5a0000 55%, #1a1a1a); box-shadow: 0 30px 90px rgba(217,0,0,.28); }
-    .marco .pantalla { width: 100%; height: 100%; border-radius: 25px; overflow: hidden; background: #000; }
-    .marco video, .marco img { width: 100%; height: 100%; object-fit: cover; }
-    .marco .sello { position: absolute; left: -26px; bottom: 40px; background: var(--fondo-2); border: 1px solid var(--borde); border-radius: 16px; padding: 10px 14px; font-size: 14px; font-weight: 700; box-shadow: 0 12px 30px rgba(0,0,0,.5); }
-    .marco .sello span { display: block; color: var(--suave); font-weight: 500; font-size: 12px; }
-    @media (max-width: 480px) { .marco .sello { left: -8px; } }
+    .datos { display: flex; flex-wrap: wrap; gap: 10px 26px; margin-top: 30px; color: #cfcfcf; font-size: 15px; }
+    .datos b { color: var(--texto); font-weight: 700; }
+    .bajar { position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); width: 26px; height: 42px; border: 2px solid rgba(255,255,255,.4); border-radius: 14px; }
+    .bajar::after { content: ""; position: absolute; left: 50%; top: 8px; width: 4px; height: 8px; margin-left: -2px; border-radius: 2px; background: #fff; animation: bajar 1.6s ease-in-out infinite; }
+    @keyframes bajar { 0% { opacity: 0; transform: translateY(0); } 40% { opacity: 1; } 100% { opacity: 0; transform: translateY(12px); } }
+    @media (max-width: 640px) { .portada { padding-bottom: 40px; } }
+    @media (max-width: 640px), (min-width: 900px) { .bajar { display: none; } }
+    /* En la compu: el video vertical va entero a la derecha, con un brillo rojo detrás */
+    @media (min-width: 900px) {
+      .portada { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 56px; min-height: 0; padding: 64px max(16px, calc((100vw - var(--ancho)) / 2 + 16px)) 88px; }
+      .portada .envolver { padding: 0; order: 1; }
+      .portada video { position: relative; inset: auto; order: 2; z-index: 0; height: min(76svh, 720px); width: auto; aspect-ratio: 9 / 16; border-radius: 24px; border: 1px solid rgba(255,255,255,.08); box-shadow: 0 40px 120px rgba(217,0,0,.35), 0 0 0 6px rgba(217,0,0,.12); transform: rotate(2deg); }
+      .portada::after { background: radial-gradient(circle at 78% 45%, rgba(217,0,0,.28), transparent 45%); }
+    }
 
     /* lugar reservado para fotos y video que todavía no tenemos */
     .falta { position: relative; width: 100%; height: 100%; min-height: 220px; display: grid; place-items: center; text-align: center; padding: 20px; color: rgba(255,255,255,.55); font-weight: 600; font-size: 14px; letter-spacing: 1px; text-transform: uppercase;
       background: repeating-linear-gradient(135deg, #141414 0 18px, #181818 18px 36px); }
     .falta::before { content: ""; position: absolute; inset: 10px; border: 1.5px dashed rgba(255,42,42,.35); border-radius: inherit; }
-
-    /* logros: cinta que se desplaza */
-    .logros { border-top: 1px solid rgba(255,255,255,.06); border-bottom: 1px solid rgba(255,255,255,.06); background: var(--rojo); overflow: hidden; }
-    .cinta { display: flex; width: max-content; animation: cinta 28s linear infinite; }
-    .cinta span { font-family: "Barlow Condensed", sans-serif; font-weight: 800; font-size: clamp(22px, 3vw, 30px); text-transform: uppercase; letter-spacing: 1px; padding: 14px 0; white-space: nowrap; color: #fff; }
-    .cinta span::after { content: "✦"; margin: 0 28px; opacity: .6; }
-    @keyframes cinta { to { transform: translateX(-50%); } }
 
     section { padding: 88px 0; }
     .antetitulo { color: var(--rojo-vivo); font-weight: 700; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; margin: 0 0 12px; }
@@ -108,13 +108,18 @@
     .alterna { background: var(--fondo-2); border-top: 1px solid rgba(255,255,255,.05); border-bottom: 1px solid rgba(255,255,255,.05); }
 
     /* nosotros */
-    .nosotros { display: grid; grid-template-columns: 1.1fr .9fr; gap: 48px; align-items: center; }
+    .nosotros { display: grid; grid-template-columns: 1.1fr .9fr; gap: 48px; align-items: stretch; }
     .nosotros > * { min-width: 0; }
     @media (max-width: 900px) { .nosotros { grid-template-columns: 1fr; gap: 32px; } }
-    .pilares { display: grid; gap: 14px; margin: 28px 0 0; padding: 0; list-style: none; }
-    .pilares li { display: grid; grid-template-columns: 44px 1fr; gap: 14px; align-items: center; font-size: 18px; }
-    .pilares li b { font-family: "Barlow Condensed", sans-serif; font-size: 24px; text-transform: uppercase; }
-    .pilares .num { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; background: var(--superficie); border: 1px solid var(--borde); font-family: "Barlow Condensed", sans-serif; font-weight: 800; font-size: 20px; color: var(--rojo-vivo); }
+    .cifras { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 30px 0 0; }
+    .cifra { background: var(--superficie); border: 1px solid var(--borde); border-radius: 16px; padding: 18px 20px; }
+    .cifra b { display: block; font-family: "Barlow Condensed", sans-serif; font-weight: 800; font-size: 56px; line-height: 1; color: var(--rojo-vivo); }
+    .cifra span { color: var(--suave); font-size: 15px; }
+    .torneos { margin-top: 14px; background: var(--superficie); border: 1px solid var(--borde); border-radius: 16px; padding: 18px 20px; }
+    .torneos p { margin: 0 0 12px; font-weight: 700; font-size: 14px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--suave); }
+    .torneos ul { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+    .torneos li { padding: 8px 14px; border-radius: 999px; border: 1px solid rgba(255,42,42,.45); background: rgba(217,0,0,.12); font-weight: 700; font-size: 15px; }
+    .torneos li::before { content: "🏆"; margin-right: 6px; }
     .foto-alta { border-radius: var(--radio); overflow: hidden; position: relative; min-height: 380px; margin: 0; background: var(--superficie); }
     .foto-alta img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
     .foto-alta .falta { position: absolute; inset: 0; border-radius: var(--radio); }
@@ -219,7 +224,7 @@
     @media (prefers-reduced-motion: reduce) {
       html { scroll-behavior: auto; }
       .aparece { opacity: 1; transform: none; transition: none; }
-      .cinta { animation: none; }
+      .bajar::after { animation: none; }
       * { transition: none !important; }
     }
   </style>
@@ -243,40 +248,26 @@
 <main>
   <!-- PORTADA -->
   <section class="portada">
+    <video src="video/portada.mp4" poster="img/portada-video.jpg" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>
     <div class="envolver">
-      <div>
-        <span class="etiqueta"><i></i> Mar del Plata · Catamarca 2477</span>
-        <h1>Danzas urbanas de <span class="rojo">alto rendimiento</span></h1>
-        <p class="bajada">Formamos bailarines desde el nivel básico hasta el avanzado. Formamos personas, acompañamos familias y crecemos juntos en la danza.</p>
-        <div class="acciones">
-          <a class="boton rojo-lleno" data-ig href="#">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>
-            Consultá por Instagram
-          </a>
-          <a class="boton borde" href="#estilos">Ver estilos</a>
-        </div>
-        <div class="datos">
-          <span><b>Chicos, teens y adultos</b></span>
-          <span><b>6 estilos</b> urbanos</span>
-          <span><b>Campeones</b> internacionales</span>
-        </div>
+      <span class="etiqueta"><i></i> Mar del Plata · Catamarca 2477</span>
+      <h1>¿Te gusta la danza urbana? <span class="rojo">Llegaste al lugar indicado</span></h1>
+      <p class="bajada">Clases de danzas urbanas para peques, teens y adultos, desde el nivel básico hasta el avanzado. Acompañamos a cada familia y crecemos juntos en la danza.</p>
+      <div class="acciones">
+        <a class="boton rojo-lleno" data-ig href="#">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>
+          Consultá por Instagram
+        </a>
+        <a class="boton borde" href="#estilos">Ver estilos</a>
       </div>
-      <div class="marco">
-        <div class="pantalla">
-          <video src="video/portada.mp4" poster="img/portada-video.jpg" autoplay muted loop playsinline preload="auto" aria-label="Resumen en video de los shows de Extreme Dance"></video>
-        </div>
-        <div class="sello">World of Dance · Dance World Cup<span>Competimos en los torneos más importantes</span></div>
+      <div class="datos">
+        <span><b>12 años</b> en la danza de Mar del Plata</span>
+        <span><b>Peques, teens y adultos</b></span>
+        <span><b>6 estilos</b> urbanos</span>
       </div>
     </div>
+    <a class="bajar" href="#nosotros" aria-label="Bajar"></a>
   </section>
-
-  <!-- LOGROS -->
-  <div class="logros" aria-label="Torneos en los que ganamos">
-    <div class="cinta" aria-hidden="true">
-      <span>World of Dance</span><span>Dance World Cup</span><span>FED</span><span>Flavio Mendoza</span><span>Alto rendimiento</span>
-      <span>World of Dance</span><span>Dance World Cup</span><span>FED</span><span>Flavio Mendoza</span><span>Alto rendimiento</span>
-    </div>
-  </div>
 
   <!-- NOSOTROS -->
   <section id="nosotros">
@@ -284,12 +275,15 @@
       <div class="aparece">
         <p class="antetitulo">Quiénes somos</p>
         <h2 class="titulo">Más que una academia</h2>
-        <p class="intro" style="margin-bottom:0">Somos una academia de danzas urbanas dedicada a crear bailarines de alto rendimiento, desde niveles básicos hasta avanzados. Somos reconocidos por ganar varios de los torneos más importantes a nivel internacional, como <b>World of Dance</b>, <b>Dance World Cup</b>, <b>FED</b> y <b>Flavio Mendoza</b>, entre otros.</p>
-        <ul class="pilares">
-          <li><span class="num">01</span><span><b>Formamos personas</b></span></li>
-          <li><span class="num">02</span><span><b>Acompañamos familias</b></span></li>
-          <li><span class="num">03</span><span><b>Crecemos juntos en la danza</b></span></li>
-        </ul>
+        <p class="intro" style="margin-bottom:0">Somos una academia de danzas urbanas dedicada a crear bailarines de alto rendimiento, desde niveles básicos hasta avanzados. Hace 12 años que trabajamos en la danza de Mar del Plata, acompañando a cada alumno y a su familia.</p>
+        <div class="cifras">
+          <div class="cifra"><b>12</b><span>años en la danza de Mar del Plata</span></div>
+          <div class="cifra"><b>6</b><span>estilos, de básico a avanzado</span></div>
+        </div>
+        <div class="torneos">
+          <p>Ganamos en torneos internacionales</p>
+          <ul><li>World of Dance</li><li>Dance World Cup</li><li>FED</li><li>Flavio Mendoza</li></ul>
+        </div>
       </div>
       <figure class="foto-alta aparece">
         <img src="img/galeria/grupo-pantalla.webp" alt="El grupo de Extreme Dance frente a la pantalla con el logo de la academia" loading="lazy">
@@ -304,12 +298,12 @@
       <h2 class="titulo">Estilos</h2>
       <p class="intro">Elegí tu estilo, o probá varios. Cada clase tiene su nivel, para que avances a tu ritmo.</p>
       <div class="estilos">
-        <article class="estilo aparece" data-n="01"><h3>Hip Hop</h3><p>La base de las danzas urbanas: groove, actitud y técnica.</p></article>
-        <article class="estilo aparece" data-n="02"><h3>Reggaetón</h3><p>Ritmo, flow y energía para disfrutar cada clase.</p></article>
-        <article class="estilo aparece" data-n="03"><h3>Fusión</h3><p>Mezcla de estilos urbanos en coreografías con identidad propia.</p></article>
-        <article class="estilo aparece" data-n="04"><h3>Femme</h3><p>Estilo, presencia y seguridad en el escenario.</p></article>
+<article class="estilo aparece" data-n="01"><h3>Reggaetón</h3><p>Ritmo, flow y energía para disfrutar cada clase.</p></article>
+        <article class="estilo aparece" data-n="02"><h3>Hip Hop</h3><p>La base de las danzas urbanas: groove, actitud y técnica.</p></article>
+        <article class="estilo aparece" data-n="03"><h3>Femme</h3><p>Estilo, presencia y seguridad en el escenario.</p></article>
+        <article class="estilo aparece" data-n="04"><h3>Fusión</h3><p>Mezcla de estilos urbanos en coreografías con identidad propia.</p></article>
         <article class="estilo aparece" data-n="05"><h3>Heels</h3><p>Baile sobre tacos: técnica, fuerza y mucha actitud.</p></article>
-        <article class="estilo aparece" data-n="06"><h3>Coreografía</h3><p>Montaje de coreografías para shows y competencias.</p></article>
+        <article class="estilo aparece" data-n="06"><h3>Coreografía Infantil</h3><p>Para los peques: aprenden a bailar en grupo, jugando y divirtiéndose.</p></article>
       </div>
     </div>
   </section>
@@ -319,9 +313,9 @@
     <div class="envolver">
       <p class="antetitulo">Para todas las edades</p>
       <h2 class="titulo">Un lugar para cada uno</h2>
-      <p class="intro">Grupos por edad y por nivel, para que cada alumno aprenda con chicos de su edad y de su nivel.</p>
+      <p class="intro">Grupos por edad y por nivel, para que cada alumno aprenda con compañeros de su edad y de su nivel.</p>
       <div class="edades">
-        <article class="edad aparece"><figure class="edad-foto"><img src="img/galeria/infantil-sonrisa.webp" alt="Alumna de Infantil sonriendo en el escenario" loading="lazy"></figure><h3>Infantil<small>Desde los 6 años</small></h3><p>Los primeros pasos en la danza, jugando y aprendiendo en grupo.</p></article>
+        <article class="edad aparece"><figure class="edad-foto"><img src="img/galeria/infantil-sonrisa.webp" alt="Alumna de Infantil sonriendo en el escenario" loading="lazy"></figure><h3>Peques<small>Infantil · desde los 6 años</small></h3><p>Los primeros pasos en la danza, jugando y aprendiendo en grupo.</p></article>
         <article class="edad aparece"><figure class="edad-foto"><img src="img/galeria/teens-brazos.webp" alt="Grupo de Teens con los brazos en alto" loading="lazy"></figure><h3>Teens<small>Adolescentes</small></h3><p>Técnica, coreografía y la oportunidad de subirse al escenario.</p></article>
         <article class="edad aparece"><figure class="edad-foto"><img src="img/galeria/leopardo.webp" alt="Grupo de adultos en coreografía" loading="lazy"></figure><h3>Adultos<small>Jóvenes y adultos</small></h3><p>Para empezar de cero o volver a bailar. Nunca es tarde.</p></article>
       </div>
