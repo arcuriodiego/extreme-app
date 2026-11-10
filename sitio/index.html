@@ -116,13 +116,13 @@
     .pilares li b { font-family: "Barlow Condensed", sans-serif; font-size: 24px; text-transform: uppercase; }
     .pilares .num { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; background: var(--superficie); border: 1px solid var(--borde); font-family: "Barlow Condensed", sans-serif; font-weight: 800; font-size: 20px; color: var(--rojo-vivo); }
     .foto-alta { border-radius: var(--radio); overflow: hidden; position: relative; min-height: 380px; margin: 0; background: var(--superficie); }
-    .foto-alta img { width: 100%; height: 100%; object-fit: cover; }
+    .foto-alta img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
     .foto-alta .falta { position: absolute; inset: 0; border-radius: var(--radio); }
 
     /* estilos */
     .estilos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
     @media (max-width: 960px) { .estilos { grid-template-columns: 1fr 1fr; } }
-    @media (max-width: 600px) { .estilos { grid-template-columns: 1fr; } }
+    @media (max-width: 600px) { .estilos { grid-template-columns: 1fr; } .estilo { min-height: 130px; } }
     .estilo { position: relative; overflow: hidden; background: var(--superficie); border: 1px solid var(--borde); border-radius: var(--radio); padding: 26px; min-height: 190px; display: flex; flex-direction: column; justify-content: flex-end; gap: 8px; transition: border-color .2s, transform .2s; }
     .estilo:hover { border-color: rgba(255,42,42,.55); transform: translateY(-3px); }
     .estilo::before { content: attr(data-n); position: absolute; right: 18px; top: 10px; font-family: "Barlow Condensed", sans-serif; font-weight: 800; font-size: 64px; line-height: 1; color: rgba(255,255,255,.05); }
@@ -132,7 +132,11 @@
     /* edades y niveles */
     .edades { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
     @media (max-width: 860px) { .edades { grid-template-columns: 1fr; } }
-    .edad { background: var(--superficie); border: 1px solid var(--borde); border-radius: var(--radio); padding: 28px; }
+    .edad { background: var(--superficie); border: 1px solid var(--borde); border-radius: var(--radio); padding: 0 0 28px; overflow: hidden; }
+    .edad h3, .edad p { padding: 0 28px; }
+    .edad-foto { margin: 0 0 22px; aspect-ratio: 16 / 10; overflow: hidden; }
+    .edad-foto img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s ease; }
+    .edad:hover .edad-foto img { transform: scale(1.04); }
     .edad h3 { font-size: 40px; }
     .edad h3 small { display: block; font-family: Barlow, sans-serif; font-size: 15px; font-weight: 600; color: var(--rojo-vivo); letter-spacing: 1px; margin-top: 6px; }
     .edad p { color: var(--suave); margin: 12px 0 0; }
@@ -259,9 +263,8 @@
       </div>
       <div class="marco">
         <div class="pantalla">
-          <!-- VIDEO DE PORTADA: reemplazar este div por
-               <video src="video/portada.mp4" poster="img/portada-poster.jpg" autoplay muted loop playsinline></video> -->
-          <div class="falta">Video de portada<br>(próximamente)</div>
+          <!-- Cuando llegue el video: <video src="video/portada.mp4" poster="img/portada.jpg" autoplay muted loop playsinline></video> -->
+          <img src="img/portada.webp" alt="Bailarín de Extreme Dance en pleno salto sobre el grupo, en el escenario" width="720" height="1280" fetchpriority="high">
         </div>
         <div class="sello">World of Dance · Dance World Cup<span>Competimos en los torneos más importantes</span></div>
       </div>
@@ -290,8 +293,7 @@
         </ul>
       </div>
       <figure class="foto-alta aparece">
-        <!-- FOTO: grupo en competencia o en clase -->
-        <div class="falta">Foto del grupo<br>(próximamente)</div>
+        <img src="img/galeria/grupo-pantalla.webp" alt="El grupo de Extreme Dance frente a la pantalla con el logo de la academia" loading="lazy">
       </figure>
     </div>
   </section>
@@ -320,9 +322,9 @@
       <h2 class="titulo">Un lugar para cada uno</h2>
       <p class="intro">Grupos por edad y por nivel, para que cada alumno aprenda con chicos de su edad y de su nivel.</p>
       <div class="edades">
-        <article class="edad aparece"><h3>Infantil<small>Desde los 6 años</small></h3><p>Los primeros pasos en la danza, jugando y aprendiendo en grupo.</p></article>
-        <article class="edad aparece"><h3>Teens<small>Adolescentes</small></h3><p>Técnica, coreografía y la oportunidad de subirse al escenario.</p></article>
-        <article class="edad aparece"><h3>Adultos<small>Jóvenes y adultos</small></h3><p>Para empezar de cero o volver a bailar. Nunca es tarde.</p></article>
+        <article class="edad aparece"><figure class="edad-foto"><img src="img/galeria/infantil-sonrisa.webp" alt="Alumna de Infantil sonriendo en el escenario" loading="lazy"></figure><h3>Infantil<small>Desde los 6 años</small></h3><p>Los primeros pasos en la danza, jugando y aprendiendo en grupo.</p></article>
+        <article class="edad aparece"><figure class="edad-foto"><img src="img/galeria/teens-brazos.webp" alt="Grupo de Teens con los brazos en alto" loading="lazy"></figure><h3>Teens<small>Adolescentes</small></h3><p>Técnica, coreografía y la oportunidad de subirse al escenario.</p></article>
+        <article class="edad aparece"><figure class="edad-foto"><img src="img/galeria/leopardo.webp" alt="Grupo de adultos en coreografía" loading="lazy"></figure><h3>Adultos<small>Jóvenes y adultos</small></h3><p>Para empezar de cero o volver a bailar. Nunca es tarde.</p></article>
       </div>
       <div class="niveles aparece" aria-label="Niveles"><span>Básico</span><span>Intermedio</span><span>Avanzado</span></div>
     </div>
@@ -351,13 +353,22 @@
       <h2 class="titulo">Clases, shows y competencias</h2>
       <p class="intro">Seguinos en Instagram para ver todo lo que pasa en la academia.</p>
       <div class="galeria">
-        <!-- GALERÍA: cada figure lleva <img src="img/galeria/..." alt="..." loading="lazy"> -->
-        <figure class="aparece"><div class="falta">Foto</div></figure>
-        <figure class="aparece"><div class="falta">Foto</div></figure>
-        <figure class="aparece"><div class="falta">Foto</div></figure>
-        <figure class="aparece"><div class="falta">Foto</div></figure>
-        <figure class="aparece"><div class="falta">Foto</div></figure>
-        <figure class="aparece"><div class="falta">Foto</div></figure>
+        <!-- GALERÍA: fotos en img/galeria -->
+        <figure class="aparece"><img src="img/galeria/salto.webp" alt="Salto sobre el grupo" loading="lazy" width="1400" height="788"></figure>
+        <figure class="aparece"><img src="img/galeria/xtrm-azul.webp" alt="Coreografía XTRM" loading="lazy" width="1400" height="788"></figure>
+        <figure class="aparece"><img src="img/galeria/humo.webp" alt="Hip Hop con humo y luces" loading="lazy" width="1400" height="788"></figure>
+        <figure class="aparece"><img src="img/galeria/infantil-pose.webp" alt="Infantil en escena" loading="lazy" width="1400" height="788"></figure>
+        <figure class="aparece"><img src="img/galeria/pelo-al-aire.webp" alt="Pelo al aire" loading="lazy" width="1400" height="788"></figure>
+        <figure class="aparece"><img src="img/galeria/escenario-verde.webp" alt="Puesta en escena" loading="lazy" width="1400" height="788"></figure>
+        <figure class="aparece"><img src="img/galeria/senalando.webp" alt="Coreografía grupal" loading="lazy" width="1400" height="788"></figure>
+        <figure class="aparece"><img src="img/galeria/libros-rosa.webp" alt="Teens en escena" loading="lazy" width="1400" height="788"></figure>
+        <figure class="aparece"><img src="img/galeria/solista-luces.webp" alt="Solista bajo las luces" loading="lazy" width="1400" height="788"></figure>
+        <figure class="aparece"><img src="img/galeria/infantil-cruce.webp" alt="Infantil" loading="lazy" width="1400" height="788"></figure>
+        <figure class="aparece"><img src="img/galeria/est-2011.webp" alt="Desde 2011" loading="lazy" width="1400" height="788"></figure>
+        <figure class="aparece"><img src="img/galeria/xtrm-verde.webp" alt="XTRM" loading="lazy" width="1400" height="788"></figure>
+        <figure class="aparece"><img src="img/galeria/grito.webp" alt="Energía en el escenario" loading="lazy" width="1400" height="788"></figure>
+        <figure class="aparece"><img src="img/galeria/jeans.webp" alt="Coreografía en jeans" loading="lazy" width="1400" height="788"></figure>
+        <figure class="aparece"><img src="img/galeria/arrodillados.webp" alt="Final del show" loading="lazy" width="1400" height="788"></figure>
       </div>
     </div>
   </section>
