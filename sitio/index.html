@@ -1,0 +1,481 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Extreme Dance Academy · Danzas urbanas en Mar del Plata</title>
+  <meta name="description" content="Extreme Dance Academy, Catamarca 2477, Mar del Plata. Academia de danzas urbanas: Hip Hop, Reggaetón, Fusión, Femme, Heels y Coreografía para chicos, teens y adultos, desde nivel básico hasta avanzado.">
+  <meta name="theme-color" content="#0a0a0a">
+  <meta property="og:title" content="Extreme Dance Academy · Mar del Plata">
+  <meta property="og:description" content="Danzas urbanas de alto rendimiento. Formamos personas, acompañamos familias y crecemos juntos en la danza.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://extremedance.com.ar/">
+  <meta property="og:image" content="https://extremedance.com.ar/img/compartir.jpg">
+  <link rel="icon" href="img/icono-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "DanceSchool",
+    "name": "Extreme Dance Academy",
+    "url": "https://extremedance.com.ar/",
+    "image": "https://extremedance.com.ar/img/compartir.jpg",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Catamarca 2477",
+      "addressLocality": "Mar del Plata",
+      "addressRegion": "Buenos Aires",
+      "addressCountry": "AR"
+    },
+    "sameAs": ["https://www.instagram.com/extremedance_academy/"]
+  }
+  </script>
+  <style>
+    :root {
+      --fondo: #0a0a0a; --fondo-2: #111111; --superficie: #161616; --borde: #262626;
+      --texto: #f5f5f5; --suave: #a3a3a3;
+      --rojo: #d90000; --rojo-vivo: #ff2a2a;
+      --radio: 18px; --ancho: 1160px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--fondo); color: var(--texto); font: 17px/1.6 Barlow, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+    img, video { display: block; max-width: 100%; }
+    a { color: inherit; }
+    .envolver { max-width: var(--ancho); margin: 0 auto; padding: 0 16px; }
+    h1, h2, h3 { font-family: "Barlow Condensed", "Arial Narrow", sans-serif; font-weight: 800; line-height: .95; margin: 0; text-transform: uppercase; letter-spacing: .5px; }
+    .rojo { color: var(--rojo-vivo); }
+
+    /* barra */
+    header.barra { position: sticky; top: 0; z-index: 30; background: rgba(10,10,10,.82); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,.06); }
+    header.barra .envolver { display: flex; align-items: center; justify-content: space-between; height: 68px; gap: 12px; }
+    .marca img { height: 40px; width: auto; }
+    nav.menu { display: flex; gap: 28px; }
+    nav.menu a { text-decoration: none; color: var(--suave); font-weight: 600; font-size: 15px; text-transform: uppercase; letter-spacing: 1px; transition: color .15s; }
+    nav.menu a:hover { color: var(--texto); }
+    @media (max-width: 900px) { nav.menu { display: none; } }
+
+    .boton { display: inline-flex; align-items: center; justify-content: center; gap: 9px; padding: 14px 24px; border-radius: 999px; font-weight: 700; text-decoration: none; border: 0; cursor: pointer; font-size: 16px; font-family: inherit; transition: transform .15s, filter .15s, background .15s, border-color .15s; }
+    .boton:hover { transform: translateY(-1px); }
+    .boton:active { transform: scale(.97); }
+    .boton.rojo-lleno { background: var(--rojo); color: #fff; }
+    .boton.rojo-lleno:hover { background: #f01414; }
+    .boton.borde { border: 1.5px solid rgba(255,255,255,.2); color: var(--texto); background: transparent; }
+    .boton.borde:hover { border-color: var(--texto); }
+    .boton.chico { padding: 10px 18px; font-size: 14px; }
+    .boton svg { width: 20px; height: 20px; flex: none; }
+
+    /* portada */
+    .portada { position: relative; overflow: hidden; padding: 56px 0 72px; }
+    .portada::before { content: ""; position: absolute; width: 820px; height: 820px; right: -260px; top: -300px; background: radial-gradient(circle, rgba(217,0,0,.32), transparent 62%); pointer-events: none; }
+    .portada .envolver { position: relative; z-index: 1; display: grid; grid-template-columns: 1.15fr .85fr; gap: 48px; align-items: center; }
+    .portada .envolver > * { min-width: 0; }
+    @media (max-width: 900px) { .portada { padding-top: 32px; } .portada .envolver { grid-template-columns: 1fr; gap: 36px; } }
+    .etiqueta { display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px; border: 1px solid rgba(255,255,255,.12); border-radius: 999px; color: var(--suave); font-size: 14px; font-weight: 600; margin-bottom: 22px; }
+    .etiqueta i { width: 8px; height: 8px; border-radius: 50%; background: var(--rojo-vivo); box-shadow: 0 0 0 4px rgba(255,42,42,.18); }
+    .portada h1 { font-size: clamp(48px, 7.4vw, 96px); }
+    .portada p.bajada { font-size: clamp(18px, 2vw, 21px); color: var(--suave); max-width: 46ch; margin: 22px 0 30px; }
+    .acciones { display: flex; flex-wrap: wrap; gap: 12px; }
+    .datos { display: flex; flex-wrap: wrap; gap: 10px 26px; margin-top: 34px; color: var(--suave); font-size: 15px; }
+    .datos b { color: var(--texto); font-weight: 600; }
+
+    .marco { position: relative; justify-self: center; width: min(340px, 78vw); aspect-ratio: 9 / 16; border-radius: 30px; padding: 6px; background: linear-gradient(160deg, var(--rojo-vivo), #5a0000 55%, #1a1a1a); box-shadow: 0 30px 90px rgba(217,0,0,.28); }
+    .marco .pantalla { width: 100%; height: 100%; border-radius: 25px; overflow: hidden; background: #000; }
+    .marco video, .marco img { width: 100%; height: 100%; object-fit: cover; }
+    .marco .sello { position: absolute; left: -26px; bottom: 40px; background: var(--fondo-2); border: 1px solid var(--borde); border-radius: 16px; padding: 10px 14px; font-size: 14px; font-weight: 700; box-shadow: 0 12px 30px rgba(0,0,0,.5); }
+    .marco .sello span { display: block; color: var(--suave); font-weight: 500; font-size: 12px; }
+    @media (max-width: 480px) { .marco .sello { left: -8px; } }
+
+    /* lugar reservado para fotos y video que todavía no tenemos */
+    .falta { position: relative; width: 100%; height: 100%; min-height: 220px; display: grid; place-items: center; text-align: center; padding: 20px; color: rgba(255,255,255,.55); font-weight: 600; font-size: 14px; letter-spacing: 1px; text-transform: uppercase;
+      background: repeating-linear-gradient(135deg, #141414 0 18px, #181818 18px 36px); }
+    .falta::before { content: ""; position: absolute; inset: 10px; border: 1.5px dashed rgba(255,42,42,.35); border-radius: inherit; }
+
+    /* logros: cinta que se desplaza */
+    .logros { border-top: 1px solid rgba(255,255,255,.06); border-bottom: 1px solid rgba(255,255,255,.06); background: var(--rojo); overflow: hidden; }
+    .cinta { display: flex; width: max-content; animation: cinta 28s linear infinite; }
+    .cinta span { font-family: "Barlow Condensed", sans-serif; font-weight: 800; font-size: clamp(22px, 3vw, 30px); text-transform: uppercase; letter-spacing: 1px; padding: 14px 0; white-space: nowrap; color: #fff; }
+    .cinta span::after { content: "✦"; margin: 0 28px; opacity: .6; }
+    @keyframes cinta { to { transform: translateX(-50%); } }
+
+    section { padding: 88px 0; }
+    .antetitulo { color: var(--rojo-vivo); font-weight: 700; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; margin: 0 0 12px; }
+    .titulo { font-size: clamp(40px, 6vw, 68px); margin-bottom: 16px; }
+    .intro { color: var(--suave); max-width: 60ch; margin: 0 0 40px; font-size: 18px; }
+    .alterna { background: var(--fondo-2); border-top: 1px solid rgba(255,255,255,.05); border-bottom: 1px solid rgba(255,255,255,.05); }
+
+    /* nosotros */
+    .nosotros { display: grid; grid-template-columns: 1.1fr .9fr; gap: 48px; align-items: center; }
+    .nosotros > * { min-width: 0; }
+    @media (max-width: 900px) { .nosotros { grid-template-columns: 1fr; gap: 32px; } }
+    .pilares { display: grid; gap: 14px; margin: 28px 0 0; padding: 0; list-style: none; }
+    .pilares li { display: grid; grid-template-columns: 44px 1fr; gap: 14px; align-items: center; font-size: 18px; }
+    .pilares li b { font-family: "Barlow Condensed", sans-serif; font-size: 24px; text-transform: uppercase; }
+    .pilares .num { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; background: var(--superficie); border: 1px solid var(--borde); font-family: "Barlow Condensed", sans-serif; font-weight: 800; font-size: 20px; color: var(--rojo-vivo); }
+    .foto-alta { border-radius: var(--radio); overflow: hidden; position: relative; min-height: 380px; margin: 0; background: var(--superficie); }
+    .foto-alta img { width: 100%; height: 100%; object-fit: cover; }
+    .foto-alta .falta { position: absolute; inset: 0; border-radius: var(--radio); }
+
+    /* estilos */
+    .estilos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    @media (max-width: 960px) { .estilos { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 600px) { .estilos { grid-template-columns: 1fr; } }
+    .estilo { position: relative; overflow: hidden; background: var(--superficie); border: 1px solid var(--borde); border-radius: var(--radio); padding: 26px; min-height: 190px; display: flex; flex-direction: column; justify-content: flex-end; gap: 8px; transition: border-color .2s, transform .2s; }
+    .estilo:hover { border-color: rgba(255,42,42,.55); transform: translateY(-3px); }
+    .estilo::before { content: attr(data-n); position: absolute; right: 18px; top: 10px; font-family: "Barlow Condensed", sans-serif; font-weight: 800; font-size: 64px; line-height: 1; color: rgba(255,255,255,.05); }
+    .estilo h3 { font-size: 34px; }
+    .estilo p { margin: 0; color: var(--suave); font-size: 16px; }
+
+    /* edades y niveles */
+    .edades { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    @media (max-width: 860px) { .edades { grid-template-columns: 1fr; } }
+    .edad { background: var(--superficie); border: 1px solid var(--borde); border-radius: var(--radio); padding: 28px; }
+    .edad h3 { font-size: 40px; }
+    .edad h3 small { display: block; font-family: Barlow, sans-serif; font-size: 15px; font-weight: 600; color: var(--rojo-vivo); letter-spacing: 1px; margin-top: 6px; }
+    .edad p { color: var(--suave); margin: 12px 0 0; }
+    .niveles { display: flex; align-items: center; gap: 0; margin-top: 30px; border-radius: 999px; overflow: hidden; border: 1px solid var(--borde); }
+    .niveles span { flex: 1; text-align: center; padding: 12px 8px; font-weight: 700; font-size: 15px; text-transform: uppercase; letter-spacing: 1px; }
+    .niveles span:nth-child(1) { background: #1c1c1c; }
+    .niveles span:nth-child(2) { background: #5a0000; }
+    .niveles span:nth-child(3) { background: var(--rojo); }
+
+    /* profes */
+    .profes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+    @media (max-width: 960px) { .profes { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 640px) { .profes { grid-template-columns: 1fr 1fr; gap: 12px; } }
+    .profe { margin: 0; }
+    .profe .foto { aspect-ratio: 4 / 5; border-radius: var(--radio); overflow: hidden; background: var(--superficie); position: relative; }
+    .profe .foto img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s ease; }
+    .profe:hover .foto img { transform: scale(1.04); }
+    .profe .foto .falta { position: absolute; inset: 0; min-height: 0; border-radius: var(--radio); }
+    .profe figcaption { padding: 12px 2px 0; }
+    .profe figcaption b { display: block; font-family: "Barlow Condensed", sans-serif; font-size: 24px; text-transform: uppercase; line-height: 1.1; }
+    .profe figcaption span { color: var(--suave); font-size: 15px; }
+
+    /* galería */
+    .galeria { columns: 3 260px; column-gap: 16px; }
+    .galeria figure { break-inside: avoid; margin: 0 0 16px; border-radius: 16px; overflow: hidden; background: var(--superficie); }
+    .galeria img { width: 100%; height: auto; transition: transform .5s ease; }
+    .galeria figure:hover img { transform: scale(1.04); }
+    .galeria .falta { border-radius: 16px; }
+    .galeria figure:nth-child(3n+1) .falta { min-height: 320px; }
+    .galeria figure:nth-child(3n+2) .falta { min-height: 240px; }
+
+    /* app */
+    .app { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    @media (max-width: 860px) { .app { grid-template-columns: 1fr; } }
+    .app-lista { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    @media (max-width: 480px) { .app-lista { grid-template-columns: 1fr; } }
+    .app-item { background: var(--superficie); border: 1px solid var(--borde); border-radius: 16px; padding: 18px; }
+    .app-item b { display: block; font-size: 17px; margin-bottom: 4px; }
+    .app-item span { color: var(--suave); font-size: 15px; }
+    .app-item .ico { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; background: rgba(217,0,0,.16); color: var(--rojo-vivo); margin-bottom: 12px; }
+    .app-item .ico svg { width: 19px; height: 19px; }
+
+    /* llamado */
+    .llamado { position: relative; overflow: hidden; border-radius: 28px; padding: 56px 40px; background: linear-gradient(120deg, #d90000, #8c0000 60%, #2a0000); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 24px; }
+    .llamado::after { content: "ED"; position: absolute; right: -10px; bottom: -60px; font-family: "Barlow Condensed", sans-serif; font-weight: 800; font-size: 260px; line-height: 1; color: rgba(0,0,0,.18); pointer-events: none; }
+    .llamado > * { position: relative; z-index: 1; }
+    .llamado h2 { font-size: clamp(40px, 5.6vw, 64px); max-width: 14ch; }
+    .llamado p { margin: 12px 0 0; font-weight: 500; opacity: .92; max-width: 46ch; }
+    .llamado .boton { background: #fff; color: #0a0a0a; }
+    @media (max-width: 640px) { .llamado { padding: 40px 24px; } }
+
+    /* ubicación */
+    .ubicacion { display: grid; grid-template-columns: 1fr 1.2fr; gap: 28px; align-items: stretch; }
+    .ubicacion > * { min-width: 0; }
+    @media (max-width: 860px) { .ubicacion { grid-template-columns: 1fr; } }
+    .mapa { min-height: 320px; border-radius: var(--radio); overflow: hidden; border: 1px solid var(--borde); background: var(--superficie); }
+    .mapa iframe { width: 100%; height: 100%; min-height: 320px; border: 0; display: block; filter: grayscale(1) invert(.92) contrast(.9); }
+    .info-lugar { display: grid; gap: 14px; margin: 0 0 26px; }
+    .info-lugar div { display: flex; gap: 12px; align-items: baseline; color: var(--suave); }
+    .info-lugar b { color: var(--texto); min-width: 96px; }
+
+    footer { padding: 40px 0 56px; color: var(--suave); font-size: 14px; border-top: 1px solid rgba(255,255,255,.06); }
+    footer .envolver { display: flex; flex-wrap: wrap; gap: 16px 28px; justify-content: space-between; align-items: center; }
+    footer img { height: 34px; width: auto; }
+    footer a { color: var(--suave); }
+    footer nav { display: flex; flex-wrap: wrap; gap: 18px; }
+
+    .flotante { position: fixed; right: 16px; bottom: 16px; z-index: 40; width: 60px; height: 60px; border-radius: 50%; background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fd5949 45%, #d6249f 60%, #285aeb 90%); display: grid; place-items: center; box-shadow: 0 10px 28px rgba(0,0,0,.5); transition: transform .15s; }
+    .flotante:hover { transform: scale(1.06); }
+    .flotante svg { width: 28px; height: 28px; fill: none; stroke: #fff; stroke-width: 2; }
+
+    .cookies { position: fixed; left: 16px; right: 92px; bottom: 16px; z-index: 50; max-width: 560px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; padding: 14px 16px; border-radius: 16px; background: rgba(22,22,22,.97); border: 1px solid var(--borde); box-shadow: 0 16px 40px rgba(0,0,0,.5); font-size: 14px; color: var(--suave); }
+    .cookies[hidden] { display: none; }
+    .cookies p { margin: 0; flex: 1 1 260px; }
+    .cookies-botones { display: flex; gap: 8px; }
+
+    /* aparición al hacer scroll */
+    .aparece { opacity: 0; transform: translateY(18px); transition: opacity .6s ease, transform .6s ease; }
+    .aparece.visible { opacity: 1; transform: none; }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .aparece { opacity: 1; transform: none; transition: none; }
+      .cinta { animation: none; }
+      * { transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="barra">
+  <div class="envolver">
+    <a class="marca" href="#" aria-label="Extreme Dance Academy, inicio"><img src="img/logo.webp" alt="Extreme Dance Academy" width="720" height="240"></a>
+    <nav class="menu" aria-label="Secciones">
+      <a href="#nosotros">Nosotros</a>
+      <a href="#estilos">Estilos</a>
+      <a href="#profes">Profes</a>
+      <a href="#app">La app</a>
+      <a href="#donde">Dónde</a>
+    </nav>
+    <a class="boton rojo-lleno chico" data-ig href="#">Escribinos</a>
+  </div>
+</header>
+
+<main>
+  <!-- PORTADA -->
+  <section class="portada">
+    <div class="envolver">
+      <div>
+        <span class="etiqueta"><i></i> Mar del Plata · Catamarca 2477</span>
+        <h1>Danzas urbanas de <span class="rojo">alto rendimiento</span></h1>
+        <p class="bajada">Formamos bailarines desde el nivel básico hasta el avanzado. Formamos personas, acompañamos familias y crecemos juntos en la danza.</p>
+        <div class="acciones">
+          <a class="boton rojo-lleno" data-ig href="#">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>
+            Consultá por Instagram
+          </a>
+          <a class="boton borde" href="#estilos">Ver estilos</a>
+        </div>
+        <div class="datos">
+          <span><b>Chicos, teens y adultos</b></span>
+          <span><b>6 estilos</b> urbanos</span>
+          <span><b>Campeones</b> internacionales</span>
+        </div>
+      </div>
+      <div class="marco">
+        <div class="pantalla">
+          <!-- VIDEO DE PORTADA: reemplazar este div por
+               <video src="video/portada.mp4" poster="img/portada-poster.jpg" autoplay muted loop playsinline></video> -->
+          <div class="falta">Video de portada<br>(próximamente)</div>
+        </div>
+        <div class="sello">World of Dance · Dance World Cup<span>Competimos en los torneos más importantes</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LOGROS -->
+  <div class="logros" aria-label="Torneos en los que ganamos">
+    <div class="cinta" aria-hidden="true">
+      <span>World of Dance</span><span>Dance World Cup</span><span>FED</span><span>Flavio Mendoza</span><span>Alto rendimiento</span>
+      <span>World of Dance</span><span>Dance World Cup</span><span>FED</span><span>Flavio Mendoza</span><span>Alto rendimiento</span>
+    </div>
+  </div>
+
+  <!-- NOSOTROS -->
+  <section id="nosotros">
+    <div class="envolver nosotros">
+      <div class="aparece">
+        <p class="antetitulo">Quiénes somos</p>
+        <h2 class="titulo">Más que una academia</h2>
+        <p class="intro" style="margin-bottom:0">Somos una academia de danzas urbanas dedicada a crear bailarines de alto rendimiento, desde niveles básicos hasta avanzados. Somos reconocidos por ganar varios de los torneos más importantes a nivel internacional, como <b>World of Dance</b>, <b>Dance World Cup</b>, <b>FED</b> y <b>Flavio Mendoza</b>, entre otros.</p>
+        <ul class="pilares">
+          <li><span class="num">01</span><span><b>Formamos personas</b></span></li>
+          <li><span class="num">02</span><span><b>Acompañamos familias</b></span></li>
+          <li><span class="num">03</span><span><b>Crecemos juntos en la danza</b></span></li>
+        </ul>
+      </div>
+      <figure class="foto-alta aparece">
+        <!-- FOTO: grupo en competencia o en clase -->
+        <div class="falta">Foto del grupo<br>(próximamente)</div>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ESTILOS -->
+  <section id="estilos" class="alterna">
+    <div class="envolver">
+      <p class="antetitulo">Nuestras clases</p>
+      <h2 class="titulo">Estilos</h2>
+      <p class="intro">Elegí tu estilo, o probá varios. Cada clase tiene su nivel, para que avances a tu ritmo.</p>
+      <div class="estilos">
+        <article class="estilo aparece" data-n="01"><h3>Hip Hop</h3><p>La base de las danzas urbanas: groove, actitud y técnica.</p></article>
+        <article class="estilo aparece" data-n="02"><h3>Reggaetón</h3><p>Ritmo, flow y energía para disfrutar cada clase.</p></article>
+        <article class="estilo aparece" data-n="03"><h3>Fusión</h3><p>Mezcla de estilos urbanos en coreografías con identidad propia.</p></article>
+        <article class="estilo aparece" data-n="04"><h3>Femme</h3><p>Estilo, presencia y seguridad en el escenario.</p></article>
+        <article class="estilo aparece" data-n="05"><h3>Heels</h3><p>Baile sobre tacos: técnica, fuerza y mucha actitud.</p></article>
+        <article class="estilo aparece" data-n="06"><h3>Coreografía</h3><p>Montaje de coreografías para shows y competencias.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <!-- EDADES Y NIVELES -->
+  <section>
+    <div class="envolver">
+      <p class="antetitulo">Para todas las edades</p>
+      <h2 class="titulo">Un lugar para cada uno</h2>
+      <p class="intro">Grupos por edad y por nivel, para que cada alumno aprenda con chicos de su edad y de su nivel.</p>
+      <div class="edades">
+        <article class="edad aparece"><h3>Infantil<small>Desde los 6 años</small></h3><p>Los primeros pasos en la danza, jugando y aprendiendo en grupo.</p></article>
+        <article class="edad aparece"><h3>Teens<small>Adolescentes</small></h3><p>Técnica, coreografía y la oportunidad de subirse al escenario.</p></article>
+        <article class="edad aparece"><h3>Adultos<small>Jóvenes y adultos</small></h3><p>Para empezar de cero o volver a bailar. Nunca es tarde.</p></article>
+      </div>
+      <div class="niveles aparece" aria-label="Niveles"><span>Básico</span><span>Intermedio</span><span>Avanzado</span></div>
+    </div>
+  </section>
+
+  <!-- PROFES -->
+  <section id="profes" class="alterna">
+    <div class="envolver">
+      <p class="antetitulo">El equipo</p>
+      <h2 class="titulo">Nuestros profes</h2>
+      <p class="intro">Bailarines con experiencia en escenarios y competencias, que acompañan a cada alumno en su camino.</p>
+      <div class="profes">
+        <!-- PROFE: reemplazar .falta por <img src="img/profes/nombre.webp" alt="Nombre"> y completar nombre y estilos -->
+        <figure class="profe aparece"><div class="foto"><div class="falta">Foto</div></div><figcaption><b>Agustina</b><span>Coreografía Infantil</span></figcaption></figure>
+        <figure class="profe aparece"><div class="foto"><div class="falta">Foto</div></div><figcaption><b>Nombre</b><span>Estilos</span></figcaption></figure>
+        <figure class="profe aparece"><div class="foto"><div class="falta">Foto</div></div><figcaption><b>Nombre</b><span>Estilos</span></figcaption></figure>
+        <figure class="profe aparece"><div class="foto"><div class="falta">Foto</div></div><figcaption><b>Nombre</b><span>Estilos</span></figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- GALERÍA -->
+  <section>
+    <div class="envolver">
+      <p class="antetitulo">En escena</p>
+      <h2 class="titulo">Clases, shows y competencias</h2>
+      <p class="intro">Seguinos en Instagram para ver todo lo que pasa en la academia.</p>
+      <div class="galeria">
+        <!-- GALERÍA: cada figure lleva <img src="img/galeria/..." alt="..." loading="lazy"> -->
+        <figure class="aparece"><div class="falta">Foto</div></figure>
+        <figure class="aparece"><div class="falta">Foto</div></figure>
+        <figure class="aparece"><div class="falta">Foto</div></figure>
+        <figure class="aparece"><div class="falta">Foto</div></figure>
+        <figure class="aparece"><div class="falta">Foto</div></figure>
+        <figure class="aparece"><div class="falta">Foto</div></figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- APP -->
+  <section id="app" class="alterna">
+    <div class="envolver">
+      <p class="antetitulo">Tecnología propia</p>
+      <h2 class="titulo">Tu academia en el celular</h2>
+      <p class="intro">Alumnos y familias tienen nuestra app: todo lo de la academia en un solo lugar.</p>
+      <div class="app-lista">
+        <div class="app-item aparece"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4"/></svg></span><b>Tus clases y horarios</b><span>Mirá tu grilla y reservá clases sueltas o con tu pack.</span></div>
+        <div class="app-item aparece"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3"/></svg></span><b>Ingreso con QR</b><span>Entrás a la academia mostrando tu pase en el celular.</span></div>
+        <div class="app-item aparece"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></span><b>Avisos al instante</b><span>Vencimientos, cambios de horario y novedades.</span></div>
+        <div class="app-item aparece"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><b>Toda la familia</b><span>Madres, padres y tutores siguen las clases y cuotas de sus hijos.</span></div>
+      </div>
+      <p style="margin:28px 0 0"><a class="boton borde" href="https://app.extremedance.com.ar/instalar">Instalar la app</a></p>
+    </div>
+  </section>
+
+  <!-- LLAMADO -->
+  <section>
+    <div class="envolver">
+      <div class="llamado aparece">
+        <div>
+          <h2>¿Querés empezar a bailar?</h2>
+          <p>Escribinos por Instagram y te contamos horarios, estilos y cómo inscribirte.</p>
+        </div>
+        <a class="boton" data-ig href="#">Escribinos</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- DÓNDE -->
+  <section id="donde" style="padding-top:20px">
+    <div class="envolver ubicacion">
+      <div>
+        <p class="antetitulo">Visitanos</p>
+        <h2 class="titulo">Dónde estamos</h2>
+        <div class="info-lugar">
+          <div><b>Dirección</b><span>Catamarca 2477, Mar del Plata, Buenos Aires</span></div>
+          <div><b>Instagram</b><a data-ig href="#">@extremedance_academy</a></div>
+          <div><b>Horarios</b><span>Consultá los horarios de cada clase por Instagram</span></div>
+        </div>
+        <a class="boton rojo-lleno" href="https://www.google.com/maps/search/?api=1&query=Catamarca+2477+Mar+del+Plata" target="_blank" rel="noopener">Cómo llegar</a>
+      </div>
+      <div class="mapa">
+        <iframe title="Mapa: Catamarca 2477, Mar del Plata" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+          src="https://maps.google.com/maps?q=Catamarca%202477%2C%20Mar%20del%20Plata&z=16&output=embed"></iframe>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="envolver">
+    <img src="img/logo.webp" alt="Extreme Dance Academy" width="720" height="240" loading="lazy">
+    <nav>
+      <a data-ig href="#">Instagram</a>
+      <a href="https://app.extremedance.com.ar">Ingresar a la app</a>
+      <a href="/privacidad">Privacidad</a>
+    </nav>
+    <span>© <span id="anio">2026</span> Extreme Dance Academy · Mar del Plata</span>
+  </div>
+</footer>
+
+<a class="flotante" data-ig href="#" aria-label="Escribinos por Instagram">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="#fff"/></svg>
+</a>
+
+<div class="cookies" id="cookies" hidden role="dialog" aria-label="Aviso de cookies">
+  <p>Usamos cookies de Meta para medir nuestras publicidades en Instagram y Facebook. <a href="/privacidad#cookies">Más info</a></p>
+  <div class="cookies-botones">
+    <button class="boton borde chico" id="cookies-no">Rechazar</button>
+    <button class="boton rojo-lleno chico" id="cookies-si">Aceptar</button>
+  </div>
+</div>
+
+<script>
+  // ---- Contacto: un solo lugar para cambiarlo.
+  const INSTAGRAM = "extremedance_academy";
+  const WHATSAPP = "";   // cuando haya chip: código de país + área + número, sin espacios (ej. 5492235551234)
+  const META_PIXEL = ""; // ID del píxel de Meta, para las publicidades
+
+  document.querySelectorAll("[data-ig]").forEach((a) => {
+    a.href = `https://www.instagram.com/${INSTAGRAM}/`;
+    a.target = "_blank";
+    a.rel = "noopener";
+  });
+  document.getElementById("anio").textContent = new Date().getFullYear();
+
+  // ---- Aparición suave al hacer scroll
+  const obs = "IntersectionObserver" in window
+    ? new IntersectionObserver((entradas) => entradas.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("visible"); obs.unobserve(e.target); } }), { rootMargin: "0px 0px -8% 0px" })
+    : null;
+  document.querySelectorAll(".aparece").forEach((el) => obs ? obs.observe(el) : el.classList.add("visible"));
+
+  // ---- Píxel de Meta: sólo si está configurado y el visitante acepta las cookies
+  function leer(k) { try { return localStorage.getItem(k); } catch { return null; } }
+  function guardar(k, v) { try { localStorage.setItem(k, v); } catch {} }
+  function cargarPixel() {
+    if (!META_PIXEL || window.fbq) return;
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+    n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+    document,'script','https://connect.facebook.net/en_US/fbevents.js');
+    fbq("init", META_PIXEL);
+    fbq("track", "PageView");
+  }
+  if (META_PIXEL) {
+    const eleccion = leer("ed-cookies");
+    if (eleccion === "si") cargarPixel();
+    else if (eleccion !== "no") document.getElementById("cookies").hidden = false;
+    document.getElementById("cookies-si").addEventListener("click", () => { guardar("ed-cookies", "si"); document.getElementById("cookies").hidden = true; cargarPixel(); });
+    document.getElementById("cookies-no").addEventListener("click", () => { guardar("ed-cookies", "no"); document.getElementById("cookies").hidden = true; });
+    document.querySelectorAll("[data-ig]").forEach((a) => a.addEventListener("click", () => { if (window.fbq) fbq("track", "Contact", { content_name: "Instagram" }); }));
+  }
+</script>
+</body>
+</html>
