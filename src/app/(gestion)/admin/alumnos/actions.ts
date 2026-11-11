@@ -186,14 +186,14 @@ export async function registerFirstPayment(formData: FormData): Promise<void> {
   if (!checked.ok) to(back, { error: `pago-${checked.error}` });
 
   const supabase = await createClient();
-  const { error } = await supabase.rpc("first_membership_payment", {
+  const { data, error } = await supabase.rpc("first_membership_payment", {
     p_membership_id: membershipId,
     p_amount_cents: checked.value.amountCents,
     p_method: checked.value.method,
     p_reference: checked.value.reference,
   });
   if (error) to(back, { error: payErrorCode(error) });
-  to(back, { aviso: "pago-registrado" });
+  await goToReceipt(supabase, data as string | null, studentId);
 }
 
 export async function registerChargePayment(formData: FormData): Promise<void> {
@@ -208,14 +208,51 @@ export async function registerChargePayment(formData: FormData): Promise<void> {
   if (!checked.ok) to(back, { error: `pago-${checked.error}` });
 
   const supabase = await createClient();
-  const { error } = await supabase.rpc("pay_charge", {
+  const { data, error } = await supabase.rpc("pay_charge", {
     p_charge_id: chargeId,
     p_amount_cents: checked.value.amountCents,
     p_method: checked.value.method,
     p_reference: checked.value.reference,
   });
   if (error) to(back, { error: payErrorCode(error) });
-  to(back, { aviso: "pago-registrado" });
+  await goToReceipt(supabase, data as string | null, studentId);
+}
+
+/** Después de cobrar, abre el recibo listo para mandar por WhatsApp (si falla, vuelve a la ficha). */
+async function goToReceipt(supabase: Awaited<ReturnType<typeof createClient>>, paymentId: string | null, studentId: string): Promise<never> {
+  const back = `/admin/alumnos/${studentId}`;
+  if (!paymentId || !UUID.test(paymentId)) to(back, { aviso: "pago-registrado" });
+  const { data, error } = await supabase.rpc("receipt_for_payment", { p_payment_id: paymentId });
+  if (error || typeof data !== "string") to(back, { aviso: "pago-registrado" });
+  to(`/admin/recibos/${data}`, { alumno: studentId, aviso: "pago-registrado" });
+}
+
+/** Ver (o emitir) el recibo de un pago ya registrado. */
+export async function openReceipt(formData: FormData): Promise<void> {
+  const studentId = String(formData.get("student_id") ?? "");
+  const paymentId = String(formData.get("payment_id") ?? "");
+  if (!UUID.test(studentId) || !UUID.test(paymentId)) to("/admin/alumnos", { error: "datos" });
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("receipt_for_payment", { p_payment_id: paymentId });
+  if (error || typeof data !== "string") to(`/admin/alumnos/${studentId}`, { error: payErrorCode(error ?? {}) });
+  to(`/admin/recibos/${data}`, { alumno: studentId });
+}
+
+/** Cobrar varias cuotas juntas (de hermanos, por ejemplo) con un solo recibo. */
+export async function payTogether(formData: FormData): Promise<void> {
+  const studentId = String(formData.get("student_id") ?? "");
+  if (!UUID.test(studentId)) to("/admin/alumnos", { error: "datos" });
+  const back = `/admin/alumnos/${studentId}`;
+  const chargeIds = [...new Set(formData.getAll("charge_id").map(String))].filter((id) => UUID.test(id));
+  const method = String(formData.get("method") ?? "");
+  const reference = String(formData.get("reference") ?? "").trim().slice(0, 80) || null;
+  if (chargeIds.length < 2) to(back, { error: "juntas-elegir" });
+  if (!isCounterMethod(method)) to(back, { error: "pago-medio" });
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("pay_charges", { p_charge_ids: chargeIds, p_method: method, p_reference: reference });
+  if (error || typeof data !== "string") to(back, { error: payErrorCode(error ?? {}) });
+  to(`/admin/recibos/${data}`, { alumno: studentId, aviso: "pago-registrado" });
 }
 
 export async function voidPayment(formData: FormData): Promise<void> {

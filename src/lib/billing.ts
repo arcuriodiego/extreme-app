@@ -40,6 +40,8 @@ export interface PaymentRow {
   voidReason: string | null;
   registeredBy: string | null;
   concepts: string[];
+  /** Recibo emitido (null si todavía no se emitió). */
+  receiptId: string | null;
 }
 
 /** Genera las cuotas del mes que corresponda (una vez por día, en la base). */
@@ -84,7 +86,7 @@ export async function loadCharges(supabase: Client, studentId: string): Promise<
   return (data ?? []).map((r) => toCharge(r as Record<string, unknown>));
 }
 
-const PAYMENT_COLS = `id, student_id, method, amount_cents, paid_at, reference, status, void_reason, registered_by,
+const PAYMENT_COLS = `id, student_id, method, amount_cents, paid_at, reference, status, void_reason, registered_by, receipt_id,
   student:students(first_name, last_name),
   allocations:payment_allocations(charge:charges(description))`;
 
@@ -98,6 +100,7 @@ interface RawPayment {
   status: "approved" | "void";
   void_reason: string | null;
   registered_by: string | null;
+  receipt_id: string | null;
   student: { first_name: string; last_name: string } | null;
   allocations: { charge: { description: string } | null }[] | null;
 }
@@ -126,6 +129,7 @@ async function toPayments(supabase: Client, rows: RawPayment[]): Promise<Payment
       voidReason: r.void_reason,
       registeredBy: r.registered_by ? (names.get(r.registered_by) ?? null) : null,
       concepts: (r.allocations ?? []).map((a) => a.charge?.description ?? "").filter(Boolean),
+      receiptId: r.receipt_id ?? null,
     };
   });
 }

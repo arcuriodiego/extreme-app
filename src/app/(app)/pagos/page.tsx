@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { PageHeader } from "@/components/ui/basics";
 import { formatARS } from "@/domain/shared/money";
 import { academyToday } from "@/lib/grilla";
@@ -7,6 +8,8 @@ import { getActiveStudent } from "@/lib/active-student";
 import { ensureCharges, loadCharges, loadPayments, loadSurcharge } from "@/lib/billing";
 import { nonCashPrice } from "@/domain/billing/cash-price";
 import { loadPlans } from "@/lib/prices";
+import { loadTransferInfo } from "@/lib/receipts";
+import { transferLines } from "@/domain/billing/whatsapp";
 import { requireProfile } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 
@@ -29,6 +32,13 @@ export default async function PagosPage() {
   const plans = allPlans.filter((p) => p.active && p.current);
   const charges = studentId ? await loadCharges(supabase, studentId).catch(() => []) : [];
   const payments = studentId ? await loadPayments(supabase, studentId).catch(() => []) : [];
+  const receiptIds = payments.map((p) => p.receiptId).filter((x): x is string => Boolean(x));
+  const [transfer, receiptRows] = await Promise.all([
+    loadTransferInfo(supabase).catch(() => null),
+    receiptIds.length > 0 ? supabase.from("receipts").select("id, token, number").in("id", receiptIds).then((r) => r.data ?? []) : Promise.resolve([]),
+  ]);
+  const receipts = new Map((receiptRows as { id: string; token: string; number: number }[]).map((r) => [r.id, r]));
+  const transferInfo = transferLines(transfer);
   const owed = charges.filter((c) => c.pendingCents > 0).sort((a, b) => a.dueDate.localeCompare(b.dueDate));
   const fmt = (d: string) => d.split("-").reverse().join("/");
 
@@ -64,6 +74,17 @@ export default async function PagosPage() {
           Por ahora se paga en recepción: efectivo, transferencia, QR de cualquier billetera o tarjeta. Pagando en efectivo en recepción tenés
           descuento. Muy pronto, también desde la app.
         </p>
+        {transferInfo.length > 0 && (
+          <div className="flex flex-col gap-1 rounded-xl border border-line p-4">
+            <span className="font-semibold">Para pagar por transferencia</span>
+            {transferInfo.map((line) => (
+              <span key={line} className="select-all text-[15px]">
+                {line}
+              </span>
+            ))}
+            <span className="pt-1 text-sm text-muted">Después mandá el comprobante por WhatsApp o mostralo en recepción.</span>
+          </div>
+        )}
       </section>
 
       {payments.length > 0 && (
@@ -80,7 +101,14 @@ export default async function PagosPage() {
                       {fmt(p.date)} · {methodLabel(p.method)}
                     </span>
                   </span>
-                  <strong>{formatARS(p.amountCents)}</strong>
+                  <span className="flex shrink-0 flex-col items-end">
+                    <strong>{formatARS(p.amountCents)}</strong>
+                    {p.receiptId && receipts.get(p.receiptId) && (
+                      <Link href={`/recibo/${receipts.get(p.receiptId)!.token}`} className="text-sm font-semibold underline">
+                        Recibo N° {receipts.get(p.receiptId)!.number}
+                      </Link>
+                    )}
+                  </span>
                 </li>
               ))}
           </ul>

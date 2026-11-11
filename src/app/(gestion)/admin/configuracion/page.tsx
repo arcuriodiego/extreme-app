@@ -11,7 +11,8 @@ import { academyToday } from "@/lib/grilla";
 import { loadPlans } from "@/lib/prices";
 import { requireProfile } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
-import { removePrice, saveRules, setPrice } from "./actions";
+import { removePrice, saveRules, saveTransferInfo, setPrice } from "./actions";
+import { loadTransferInfo } from "@/lib/receipts";
 import { EDITABLE_RULES, RULE_GROUPS } from "@/domain/settings/rules";
 
 export const metadata: Metadata = { title: "Configuración" };
@@ -20,6 +21,7 @@ const NOTICES: Record<string, string> = {
   "precio-guardado": "Listo, guardamos el precio. Rige desde la fecha que elegiste.",
   "precio-quitado": "Listo, quitamos el precio programado.",
   "reglas-sin-cambios": "No cambiaste ninguna regla.",
+  "transferencia-guardada": "Listo, guardamos los datos para transferir.",
 };
 const ERRORS: Record<string, string> = {
   monto: "Escribí el importe en pesos, por ejemplo 55.500.",
@@ -30,6 +32,7 @@ const ERRORS: Record<string, string> = {
   datos: "Revisá los datos.",
   generico: "No pudimos guardar el cambio. Probá de nuevo.",
   reglas: "No pudimos guardar las reglas. Revisá los valores y probá de nuevo.",
+  transferencia: "Revisá los datos: el alias va de 6 a 20 letras, números, puntos o guiones, y el CBU/CVU tiene 22 números.",
 };
 
 function ruleError(key: string | undefined, kind: string | undefined): string {
@@ -50,9 +53,10 @@ export default async function ConfiguracionPage({ searchParams }: { searchParams
 
   const today = academyToday();
   const supabase = await createClient();
-  const [plans, { data: settings }] = await Promise.all([
+  const [plans, { data: settings }, transfer] = await Promise.all([
     loadPlans(supabase, today),
     supabase.from("app_settings").select("key, value, updated_at, updated_by"),
+    loadTransferInfo(supabase),
   ]);
   const notice =
     params.aviso === "reglas-guardadas"
@@ -93,6 +97,22 @@ export default async function ConfiguracionPage({ searchParams }: { searchParams
       </div>
       {notice && <FormAlert kind="ok">{notice}</FormAlert>}
       {failure && <FormAlert kind="error">{failure}</FormAlert>}
+
+      <section id="transferencias" className="flex scroll-mt-6 flex-col gap-4">
+        <h2 className="font-display text-2xl font-bold uppercase tracking-wide">Datos para transferir</h2>
+        <p className="text-[15px] text-muted">
+          Se muestran a los alumnos en Pagos y van en los recordatorios de cuota por WhatsApp. Dejá vacío lo que no quieras mostrar.
+        </p>
+        <form action={saveTransferInfo} className="grid max-w-2xl gap-3 sm:grid-cols-2">
+          <TextField name="alias" label="Alias" defaultValue={transfer.alias ?? ""} autoComplete="off" />
+          <TextField name="cbu" label="CBU o CVU (22 números)" defaultValue={transfer.cbu ?? ""} inputMode="numeric" autoComplete="off" />
+          <TextField name="holder" label="Titular de la cuenta" defaultValue={transfer.holder ?? ""} autoComplete="off" />
+          <TextField name="bank" label="Banco o billetera" defaultValue={transfer.bank ?? ""} autoComplete="off" />
+          <div>
+            <SmallSubmit tone="dark">Guardar datos para transferir</SmallSubmit>
+          </div>
+        </form>
+      </section>
 
       <section className="flex flex-col gap-4">
         <h2 className="font-display text-2xl font-bold uppercase tracking-wide">Precios</h2>

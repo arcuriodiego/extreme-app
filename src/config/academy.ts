@@ -10,6 +10,8 @@ export const academyConfig = {
   shortName: "Extreme Dance",
   timeZone: "America/Argentina/Buenos_Aires",
   locale: "es-AR",
+  /** Dirección de la sede (va en los recibos). */
+  address: "Catamarca 2744, Mar del Plata",
   /** Dirección pública de la app (enlaces de los emails). En pruebas, la de pruebas. */
   appUrl: appUrl(process.env.NEXT_PUBLIC_APP_URL),
   /** Producción o pruebas (staging). */

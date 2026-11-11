@@ -38,7 +38,7 @@ values ((select id from class_groups limit 1), 2, '19:00', '20:30', (select id f
 do $$
 declare v_martes date := (select martes from ref);
 begin
-  assert (select count(*) from class_sessions) between 8 and 9, 'unas 8 clases (depende del día de hoy)';
+  assert (select count(*) from class_sessions) between 7 and 9, 'unas 8 clases (depende del día y la hora de hoy)';
   assert exists (select 1 from class_sessions
                  where starts_at = (v_martes + time '19:00') at time zone 'America/Argentina/Buenos_Aires'
                    and ends_at = (v_martes + time '20:30') at time zone 'America/Argentina/Buenos_Aires'

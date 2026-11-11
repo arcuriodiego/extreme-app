@@ -40,6 +40,7 @@ export const ERRORS: Record<string, string> = {
   "pago-total": "Se cobra el total, sin pagos parciales. Recargá la página por si cambió el importe.",
   "ya-pagado": "Eso ya estaba pagado. Recargá la página.",
   "pago-medio": "Elegí el medio de pago.",
+  "juntas-elegir": "Para cobrar juntas, tildá al menos 2 cuotas.",
   "pago-datos": "Revisá el importe y el medio de pago.",
   "ya-pago": "Esa cuota ya tiene su primer pago. Recargá la página.",
   "sin-precio": "El plan no tiene precio vigente. Cargalo en Configuración.",

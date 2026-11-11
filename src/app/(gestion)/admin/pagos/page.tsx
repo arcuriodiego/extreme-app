@@ -58,6 +58,14 @@ export default async function PagosPage({ searchParams }: { searchParams: Promis
   return (
     <>
       <PageHeader title="Pagos" subtitle="Para cobrar, abrí la ficha del alumno en Alumnos." />
+      {can(profile.access, "payments.register") && (
+        <Link
+          href="/admin/pagos/recordatorios"
+          className="inline-flex h-11 items-center self-start rounded-full bg-ink px-5 text-[15px] font-bold text-paper"
+        >
+          Recordatorios de cuota por WhatsApp
+        </Link>
+      )}
       {notice && <FormAlert kind="ok">{notice}</FormAlert>}
       {failure && <FormAlert kind="error">{failure}</FormAlert>}
 

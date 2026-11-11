@@ -13,7 +13,9 @@ import { acceptancesOf, loadCurrentRegulation } from "@/lib/regulations";
 import { requireProfile } from "@/lib/session";
 import { loadStudent, loadStudentNotes } from "@/lib/students";
 import { createClient } from "@/lib/supabase/server";
-import { saveNotes, updateStudent, voidPayment } from "../actions";
+import { openReceipt, saveNotes, updateStudent, voidPayment } from "../actions";
+import { loadFamilyOpenCharges } from "@/lib/receipts";
+import { PayTogetherSection } from "./PayTogetherSection";
 import { methodLabel } from "@/domain/billing/payments";
 import { formatARS } from "@/domain/shared/money";
 import { ensureCharges, loadCharges, loadGraceDays, loadPayments, loadSurcharge } from "@/lib/billing";
@@ -68,9 +70,10 @@ export default async function AlumnoPage({
     loadPlans(supabase, today),
     loadSurcharge(supabase),
   ]);
-  const [charges, payments] = await Promise.all([
+  const [charges, payments, familyCharges] = await Promise.all([
     seesMoney ? loadCharges(supabase, id) : Promise.resolve([]),
     seesMoney ? loadPayments(supabase, id) : Promise.resolve([]),
+    canPay ? loadFamilyOpenCharges(supabase, id).catch(() => []) : Promise.resolve([]),
   ]);
   if (!student) notFound();
   const [guardians, wards, signup] = await Promise.all([
@@ -174,6 +177,8 @@ export default async function AlumnoPage({
 
       <PacksSection supabase={supabase} studentId={student.id} canPay={canPay} canManage={canManage} plans={plans} today={today} surchargePct={surcharge} />
 
+      {canPay && <PayTogetherSection studentId={student.id} charges={familyCharges} />}
+
       {seesMoney && (
         <section className="flex flex-col gap-3 border-t border-line pt-6">
           <h2 className="font-display text-2xl font-bold uppercase tracking-wide">Pagos</h2>
@@ -196,6 +201,13 @@ export default async function AlumnoPage({
                   </span>
                   {p.status === "void" && (
                     <span className="text-sm font-semibold text-alert-ink">ANULADO · {p.voidReason}</span>
+                  )}
+                  {p.status === "approved" && canPay && (
+                    <form action={openReceipt}>
+                      <input type="hidden" name="student_id" value={student.id} />
+                      <input type="hidden" name="payment_id" value={p.id} />
+                      <SmallSubmit>{p.receiptId ? "Ver recibo / mandar por WhatsApp" : "Hacer recibo / mandar por WhatsApp"}</SmallSubmit>
+                    </form>
                   )}
                   {p.status === "approved" && canVoid && (
                     <details>

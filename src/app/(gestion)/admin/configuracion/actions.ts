@@ -57,3 +57,16 @@ export async function saveRules(formData: FormData): Promise<void> {
   if (error) to({ error: error.code === "42501" ? "sin-permiso" : "reglas" });
   to({ aviso: "reglas-guardadas", n: String(count) });
 }
+
+/** Datos para transferir (alias, CBU/CVU, titular, banco). La base valida el formato. */
+export async function saveTransferInfo(formData: FormData): Promise<void> {
+  const text = (k: string, max: number) => String(formData.get(k) ?? "").trim().slice(0, max);
+  const alias = text("alias", 40);
+  const cbu = text("cbu", 40).replace(/\D/g, "");
+  if (alias && !/^[A-Za-z0-9.-]{6,20}$/.test(alias)) to({ error: "transferencia" });
+  if (cbu && cbu.length !== 22) to({ error: "transferencia" });
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("update_transfer_info", { p_alias: alias, p_cbu: cbu, p_holder: text("holder", 80), p_bank: text("bank", 60) });
+  if (error) to({ error: error.code === "42501" ? "sin-permiso" : error.code === "23514" ? "transferencia" : "generico" });
+  redirect(`${BACK}?aviso=transferencia-guardada#transferencias`);
+}
