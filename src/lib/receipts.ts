@@ -170,7 +170,8 @@ export async function loadReminderFamilies(supabase: Client, today: CalendarDate
       ? { name: personName(link.guardian?.profile) || "Tutor", label: `${RELATION[link.relationship ?? ""] ?? "Tutor/a"} de ${name.split(" ")[0]}`, phone: link.guardian?.profile?.phone ?? null }
       : { name, label: "Alumno/a", phone: c.student?.phone ?? null };
     const family = families.get(key) ?? { key, contact, charges: [], lastSentAt: null };
-    if (link && !family.contact.label.includes(name.split(" ")[0])) family.contact.label += ` y ${name.split(" ")[0]}`;
+    const first = name.split(" ")[0] ?? "";
+    if (link && first && !family.contact.label.includes(first)) family.contact.label += ` y ${first}`;
     const total = Number(c.total_cents);
     const paid = Number(c.paid_cents);
     family.charges.push({
@@ -199,7 +200,7 @@ export async function loadReminderFamilies(supabase: Client, today: CalendarDate
     }
   }
   // Primero las vencidas (por la cuota más vieja).
-  return list.sort((a, b) => a.charges[0].dueDate.localeCompare(b.charges[0].dueDate));
+  return list.sort((a, b) => (a.charges[0]?.dueDate ?? "").localeCompare(b.charges[0]?.dueDate ?? ""));
 }
 
 /** Cuotas impagas del alumno y sus hermanos (otros alumnos de sus mismos tutores), para cobrar juntas. */
