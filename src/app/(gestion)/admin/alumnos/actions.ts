@@ -5,6 +5,7 @@ import { isCounterMethod, validatePaymentForm } from "@/domain/billing/payments"
 import { bookingErrorCode } from "@/domain/bookings/messages";
 import { validateStudent } from "@/domain/people/student";
 import { academyToday } from "@/lib/grilla";
+import { removeImage, replaceImage } from "@/lib/images";
 import { createClient } from "@/lib/supabase/server";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -88,6 +89,23 @@ export async function deleteStudent(formData: FormData): Promise<void> {
   }
   const accountDeleted = Boolean((data as { account_deleted?: boolean } | null)?.account_deleted);
   to("/admin/alumnos", { aviso: accountDeleted ? "eliminado-con-cuenta" : "eliminado" });
+}
+
+/** Recepción o administración suben la foto del alumno (por ejemplo, con la cámara del celular). */
+export async function setFichaPhoto(formData: FormData): Promise<void> {
+  const id = String(formData.get("id") ?? "");
+  if (!UUID.test(id)) to("/admin/alumnos", { error: "datos" });
+  const result = await replaceImage(await createClient(), "alumnos", id, formData.get("image"));
+  if (!result.ok) to(`/admin/alumnos/${id}`, { error: result.error });
+  to(`/admin/alumnos/${id}`, { aviso: "foto-guardada" });
+}
+
+export async function removeFichaPhoto(formData: FormData): Promise<void> {
+  const id = String(formData.get("id") ?? "");
+  if (!UUID.test(id)) to("/admin/alumnos", { error: "datos" });
+  const result = await removeImage(await createClient(), "alumnos", id);
+  if (!result.ok) to(`/admin/alumnos/${id}`, { error: result.error });
+  to(`/admin/alumnos/${id}`, { aviso: "foto-quitada" });
 }
 
 export async function saveNotes(formData: FormData): Promise<void> {

@@ -13,7 +13,10 @@ import { acceptancesOf, loadCurrentRegulation } from "@/lib/regulations";
 import { requireProfile } from "@/lib/session";
 import { loadStudent, loadStudentNotes } from "@/lib/students";
 import { createClient } from "@/lib/supabase/server";
-import { deleteStudent, openReceipt, saveNotes, updateStudent, voidPayment } from "../actions";
+import { deleteStudent, openReceipt, removeFichaPhoto, saveNotes, setFichaPhoto, updateStudent, voidPayment } from "../actions";
+import { ImagePicker } from "@/components/images/ImagePicker";
+import { TeacherAvatar } from "@/components/images/TeacherAvatar";
+import { studentPhotoUrl } from "@/lib/images";
 import { loadFamilyOpenCharges } from "@/lib/receipts";
 import { PayTogetherSection } from "./PayTogetherSection";
 import { methodLabel } from "@/domain/billing/payments";
@@ -93,6 +96,7 @@ export default async function AlumnoPage({
   const monthlyEntry = plans.find((p) => p.kind === "teacher_monthly" && p.active)?.current ?? null;
   const monthlyPrice = monthlyEntry?.amountCents ?? null;
 
+  const photoUrl = await studentPhotoUrl(supabase, student.photoPath).catch(() => null);
   const notice = query.aviso ? NOTICES[query.aviso] : undefined;
   const failure = query.error ? ERRORS[query.error] : undefined;
   const facts = [
@@ -107,7 +111,12 @@ export default async function AlumnoPage({
         ‹ Alumnos
       </Link>
       <div className="flex flex-col gap-2">
-        <PageHeader title={student.name} subtitle={facts.join(" · ")} />
+        <div className="flex items-center gap-4">
+          <TeacherAvatar name={student.name} url={photoUrl} size={72} />
+          <div className="min-w-0 flex-1">
+            <PageHeader title={student.name} subtitle={facts.join(" · ")} />
+          </div>
+        </div>
         <span className="flex flex-wrap gap-1.5">
           <span className="rounded-full bg-surface px-2.5 py-0.5 text-xs font-bold">{STUDENT_STATUS_LABELS[student.status].toUpperCase()}</span>
           <span className="rounded-full bg-surface px-2.5 py-0.5 text-xs font-bold">{student.hasAccount ? "CON CUENTA EN LA APP" : "SIN CUENTA"}</span>
@@ -261,6 +270,24 @@ export default async function AlumnoPage({
                 <SmallSubmit tone="dark">Guardar notas</SmallSubmit>
               </div>
             </form>
+          </section>
+
+          <section className="flex flex-col gap-3 border-t border-line pt-6">
+            <h2 className="font-display text-2xl font-bold uppercase tracking-wide">Foto para recepción</h2>
+            <p className="text-sm text-muted">
+              Para reconocer al alumno al entrar (aparece en el escáner). Es privada: sólo la ve el personal, el alumno y sus tutores. También la
+              puede subir el alumno adulto o su tutor/a desde su perfil.
+            </p>
+            <form action={setFichaPhoto} className="flex max-w-xl flex-col gap-3">
+              <input type="hidden" name="id" value={student.id} />
+              <ImagePicker kind="alumnos" current={null} label={photoUrl ? "Cambiar la foto" : "Elegir o sacar una foto"} submitLabel="Subir foto" />
+            </form>
+            {photoUrl && (
+              <form action={removeFichaPhoto}>
+                <input type="hidden" name="id" value={student.id} />
+                <SmallSubmit tone="danger">Quitar la foto</SmallSubmit>
+              </form>
+            )}
           </section>
 
           <section className="flex flex-col gap-3 border-t border-line pt-6">

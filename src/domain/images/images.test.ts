@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { checkImage, fitWithin, imagePath, initials, isImagePath, publicImageUrl } from "./images.ts";
+import { bucketFor, checkImage, fitWithin, imagePath, initials, isImagePath, publicImageUrl } from "./images.ts";
 
 const A = "11111111-1111-1111-1111-111111111111";
 const W = "22222222-2222-2222-2222-222222222222";
@@ -52,4 +52,15 @@ test("documentos: PDF o imágenes de hasta 4 MB", async () => {
   assert.deepEqual(checkDocument({ size: 5 * 1024 * 1024, type: "application/pdf" }), { ok: false, error: "archivo-pesado" });
   assert.deepEqual(checkDocument({ size: 10, type: "application/msword" }), { ok: false, error: "archivo-tipo" });
   assert.deepEqual(checkDocument(null), { ok: false, error: "archivo-vacio" });
+});
+
+test("fotos de alumnos: ruta propia, bucket privado y nunca enlace público", () => {
+  const A = "11111111-1111-4111-8111-111111111111";
+  const S = "22222222-2222-4222-8222-222222222222";
+  const p = imagePath(A, "alumnos", S, "abcdefgh12", "image/jpeg");
+  assert.equal(p, `${A}/alumnos/${S}/abcdefgh12.jpg`);
+  assert.ok(isImagePath(p, "alumnos"));
+  assert.equal(bucketFor("alumnos"), "fotos");
+  assert.equal(bucketFor("profes"), "imagenes");
+  assert.equal(publicImageUrl("https://x.supabase.co", p), null);
 });

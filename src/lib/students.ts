@@ -18,9 +18,11 @@ export interface StudentRow {
   /** Cuenta de la persona, si tiene. */
   profileId: string | null;
   email: string | null;
+  /** Foto para recepción (bucket privado: se muestra con enlace firmado). */
+  photoPath: string | null;
 }
 
-const SELECT = "id, first_name, last_name, dni, birth_date, phone, status, joined_at, profile_id, profile:profiles(email, phone)";
+const SELECT = "id, first_name, last_name, dni, birth_date, phone, status, joined_at, profile_id, photo_path, profile:profiles(email, phone)";
 
 interface Raw {
   id: string;
@@ -32,6 +34,7 @@ interface Raw {
   status: StudentStatus;
   joined_at: string;
   profile_id: string | null;
+  photo_path: string | null;
   profile: { email: string | null; phone: string | null } | null;
 }
 
@@ -50,6 +53,7 @@ function toRow(r: Raw): StudentRow {
     hasAccount: r.profile_id !== null,
     profileId: r.profile_id,
     email: r.profile?.email ?? null,
+    photoPath: r.photo_path ?? null,
   };
 }
 

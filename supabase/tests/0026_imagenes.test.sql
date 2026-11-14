@@ -104,21 +104,22 @@ set local request.jwt.claims = '{"sub":"e0000000-0000-0000-0000-00000000000e"}';
 do $$
 declare a text; t text;
 begin
-  select academy::text, teacher::text into a, t from ids;
+  -- (Desde el 14 nov la profe puede cambiar su propia foto: ver 0040. Acá, el flyer no.)
+  select academy::text, workshop::text into a, t from ids;
   begin
-    insert into storage.objects (bucket_id, name) values ('imagenes', a || '/profes/' || t || '/selfie001.jpg');
+    insert into storage.objects (bucket_id, name) values ('imagenes', a || '/workshops/' || t || '/flyer0009.jpg');
     raise exception 'la profe no sube';
   exception when insufficient_privilege then null;
   end;
   update teachers set photo_path = null;
-  delete from storage.objects;
-  raise notice 'OK  la profe no sube';
+  delete from storage.objects where name like '%/workshops/%';
+  raise notice 'OK  la profe no sube flyers';
 end $$;
 reset role;
 do $$
 begin
   assert (select image_path from workshops) is not null, 'recepción no borró el flyer';
-  assert (select photo_path from teachers) is not null, 'la profe no borró su foto';
+  assert (select photo_path from teachers) is not null, 'la profe no cambia la foto con un update directo';
   assert (select count(*) from storage.objects) = 2, 'nadie más borró archivos';
   raise notice 'OK  nada cambió';
 end $$;

@@ -7,7 +7,14 @@
 
 export const IMAGE_BUCKET = "imagenes";
 
-export type ImageKind = "workshops" | "profes";
+export type ImageKind = "workshops" | "profes" | "alumnos";
+
+/** Fotos de alumnos: bucket privado (sólo uso interno; se ven con enlaces firmados). */
+export const STUDENT_PHOTO_BUCKET = "fotos";
+
+export function bucketFor(kind: ImageKind): string {
+  return kind === "alumnos" ? STUDENT_PHOTO_BUCKET : IMAGE_BUCKET;
+}
 
 /** Tipos aceptados (el celular convierte las fotos HEIC del iPhone a JPEG al elegirlas). */
 export const IMAGE_TYPES = {
@@ -21,7 +28,7 @@ export type ImageType = keyof typeof IMAGE_TYPES;
 export const MAX_IMAGE_BYTES = 3 * 1024 * 1024;
 
 /** Lado más largo al achicar en el celular o la PC, en píxeles. */
-export const MAX_SIDE: Record<ImageKind, number> = { workshops: 1600, profes: 600 };
+export const MAX_SIDE: Record<ImageKind, number> = { workshops: 1600, profes: 600, alumnos: 600 };
 
 export type ImageCheck = { ok: true; type: ImageType } | { ok: false; error: "imagen-vacia" | "imagen-tipo" | "imagen-pesada" };
 
@@ -33,7 +40,7 @@ export function checkImage(file: { size: number; type: string } | null | undefin
 }
 
 const UUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
-const PATH = new RegExp(`^(${UUID})/(workshops|profes)/(${UUID})/[A-Za-z0-9_-]{8,40}\\.(jpg|png|webp)$`);
+const PATH = new RegExp(`^(${UUID})/(workshops|profes|alumnos)/(${UUID})/[A-Za-z0-9_-]{8,40}\\.(jpg|png|webp)$`);
 
 export function imagePath(academyId: string, kind: ImageKind, ownerId: string, token: string, type: ImageType): string {
   return `${academyId}/${kind}/${ownerId}/${token}.${IMAGE_TYPES[type]}`;
@@ -46,7 +53,7 @@ export function isImagePath(path: string, kind?: ImageKind): boolean {
 
 /** Dirección pública de la imagen (el bucket es público: la ven todos los que tienen el enlace). */
 export function publicImageUrl(supabaseUrl: string, path: string | null | undefined): string | null {
-  if (!path || !isImagePath(path)) return null;
+  if (!path || !isImagePath(path) || isImagePath(path, "alumnos")) return null;
   return `${supabaseUrl.replace(/\/+$/, "")}/storage/v1/object/public/${IMAGE_BUCKET}/${path}`;
 }
 

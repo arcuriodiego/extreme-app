@@ -1,10 +1,13 @@
 import { BOOKING_ERRORS, BOOKING_NOTICES } from "@/domain/bookings/messages";
+import { IMAGE_ERRORS } from "@/domain/images/images";
 
 export const NOTICES: Record<string, string> = {
   ...BOOKING_NOTICES,
   creado: "Listo, creamos la ficha.",
   guardado: "Listo, guardamos los cambios.",
   eliminado: "Listo, eliminamos la ficha.",
+  "foto-guardada": "Listo, guardamos la foto. Recepción la ve al registrar el ingreso.",
+  "foto-quitada": "Listo, quitamos la foto.",
   "eliminado-con-cuenta": "Listo, eliminamos la ficha y su cuenta en la app. Si hace falta, puede volver a registrarse con el mismo email.",
   "notas-guardadas": "Listo, guardamos las notas.",
   inscripto: "Listo, quedó inscripto en la cuota de profe con sus horarios fijos.",
@@ -18,6 +21,7 @@ export const NOTICES: Record<string, string> = {
 
 export const ERRORS: Record<string, string> = {
   ...BOOKING_ERRORS,
+  ...IMAGE_ERRORS,
   "eliminar-confirmar": "Para eliminar, tildá la casilla de confirmación.",
   "eliminar-historial": "Esta ficha ya tiene historial (cuotas, pagos, reservas o ingresos), así que no se puede eliminar. Pasala a Inactivo en \"Datos de la ficha\".",
   "eliminar-propia": "No podés eliminar tu propia ficha.",

@@ -10,6 +10,8 @@ export interface Entry {
   label: string | null;
   startsAt: string | null;
   already: boolean;
+  /** Foto del alumno (enlace firmado), para que recepción lo reconozca. */
+  photoUrl?: string | null;
 }
 
 /** Lee la respuesta de la base sin confiar en su forma. */

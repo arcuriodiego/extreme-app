@@ -23,7 +23,15 @@ export function EntryCard({ entry }: { entry: Entry }) {
         </span>
         <span className={`font-display text-2xl font-bold uppercase leading-none tracking-wide ${s.text}`}>{title}</span>
       </div>
-      {entry.studentName && <span className="text-xl font-bold">{entry.studentName}</span>}
+      {entry.studentName && (
+        <span className="flex items-center gap-3">
+          {entry.photoUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={entry.photoUrl} alt={`Foto de ${entry.studentName}`} width={72} height={72} className="size-[72px] shrink-0 rounded-full bg-surface object-cover" />
+          )}
+          <span className="text-xl font-bold">{entry.studentName}</span>
+        </span>
+      )}
       {entry.label && (
         <span className="text-[15px] font-semibold">
           {entry.label}
