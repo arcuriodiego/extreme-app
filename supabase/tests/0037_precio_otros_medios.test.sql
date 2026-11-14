@@ -18,7 +18,7 @@ begin
   perform set_plan_price((select id from plans where name = 'Pack 10 clases'), 6950000, current_date, 7400000);
   perform set_plan_price((select id from plans where name = 'Cuota de profe'), 5900000, current_date, 6400000);
   perform set_plan_price((select id from plans where name = 'Clase individual'), 1260000, current_date, 1350000);
-  -- Sin el de otros medios: se calcula con el recargo (21 %).
+  -- Sin el de otros medios: se calcula con el recargo (8,5 %).
   perform set_plan_price((select id from plans where name = 'Pack 16 clases'), 10000000, current_date);
   raise notice 'OK  precios cargados';
 end $$;
@@ -30,7 +30,7 @@ begin
   select * into r from plan_price_pair_on((select id from plans where name = 'Pack 10 clases'), current_date);
   assert r.cash_cents = 6950000 and r.other_cents = 7400000, format('pack 10: %s', r);
   select * into r from plan_price_pair_on((select id from plans where name = 'Pack 16 clases'), current_date);
-  assert r.cash_cents = 10000000 and r.other_cents = 12100000, format('pack 16 con recargo: %s', r);
+  assert r.cash_cents = 10000000 and r.other_cents = 10850000, format('pack 16 con recargo 8,5 %%: %s', r);
   raise notice 'OK  los dos precios de cada plan';
 end $$;
 
@@ -122,8 +122,19 @@ insert into charges (academy_id, student_id, concept, due_date, description, amo
 select s.academy_id, s.id, 'other', current_date, 'Otro', 1000000 from students s where s.first_name = 'Valentina';
 do $$
 begin
-  assert (select amount_cents from charges where description = 'Otro') = 1210000, 'recargo de las reglas';
+  assert (select amount_cents from charges where description = 'Otro') = 1085000, 'recargo de las reglas (8,5 %)';
   raise notice 'OK  cargos sin plan con recargo';
+end $$;
+
+-- 8. Precios de enero 2027 con 8,5 %: $64.015, $13.671, $75.408 y $117.180.
+do $$
+declare a uuid := (select id from academies limit 1);
+begin
+  assert non_cash_price(a, 5900000) = 6401500, 'cuota';
+  assert non_cash_price(a, 1260000) = 1367100, 'clase';
+  assert non_cash_price(a, 6950000) = 7540800, 'pack 10';
+  assert non_cash_price(a, 10800000) = 11718000, 'pack 16';
+  raise notice 'OK  recargo 8,5 %%';
 end $$;
 
 rollback;

@@ -5,7 +5,7 @@ import { NoAccess } from "@/components/status/NoAccess";
 import { PageHeader } from "@/components/ui/basics";
 import { canOpen } from "@/domain/navigation/menus";
 import { formatARS } from "@/domain/shared/money";
-import { otherPrice } from "@/domain/billing/cash-price";
+import { otherPrice, pctLabel } from "@/domain/billing/cash-price";
 import { addDays } from "@/domain/shared/calendar-date";
 import { academyToday } from "@/lib/grilla";
 import { loadPlans } from "@/lib/prices";
@@ -13,7 +13,7 @@ import { requireProfile } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import { removePrice, saveRules, saveTransferInfo, setPrice } from "./actions";
 import { loadTransferInfo } from "@/lib/receipts";
-import { EDITABLE_RULES, RULE_GROUPS } from "@/domain/settings/rules";
+import { displayValue, EDITABLE_RULES, RULE_GROUPS } from "@/domain/settings/rules";
 
 export const metadata: Metadata = { title: "Configuración" };
 
@@ -40,7 +40,7 @@ function ruleError(key: string | undefined, kind: string | undefined): string {
   const rule = EDITABLE_RULES.find((r) => r.key === key);
   if (!rule) return "Revisá las reglas.";
   if (kind === "credito") return "La clase del crédito tiene que poder ser al menos hasta el último día para reservarla.";
-  if (kind === "numero") return `"${rule.label}": escribí un número entero.`;
+  if (kind === "numero") return rule.scale ? `"${rule.label}": escribí un número, con un decimal como mucho (ej.: 8,5).` : `"${rule.label}": escribí un número entero.`;
   return `"${rule.label}" tiene que estar entre ${rule.min} y ${rule.max}.`;
 }
 
@@ -74,7 +74,7 @@ export default async function ConfiguracionPage({ searchParams }: { searchParams
   };
   const rows = (settings ?? []) as unknown as SettingRow[];
   const valueOf = (key: string) => rows.find((r) => r.key === key)?.value;
-  const surcharge = valueOf("non_cash_surcharge_pct") ?? 0;
+  const surcharge = (valueOf("non_cash_surcharge_tenths") ?? 0) / 10;
   const lastEdit = rows.filter((r) => r.updated_by).sort((a, b) => b.updated_at.localeCompare(a.updated_at))[0];
   const editor = lastEdit?.updated_by
     ? ((await supabase.from("profiles").select("first_name, last_name").eq("id", lastEdit.updated_by).maybeSingle()).data as {
@@ -119,7 +119,7 @@ export default async function ConfiguracionPage({ searchParams }: { searchParams
         <h2 className="font-display text-2xl font-bold uppercase tracking-wide">Precios</h2>
         <p className="text-[15px] text-muted">
           Cada precio tiene dos valores: en efectivo y con otros medios (transferencia, QR, tarjeta o la app). Si no cargás el de otros medios, se
-          calcula con el recargo de las reglas (hoy {surcharge} %). Un aumento se programa desde una fecha. Lo ya cobrado o emitido no cambia.
+          calcula con el recargo de las reglas (hoy {pctLabel(surcharge)} %). Un aumento se programa desde una fecha. Lo ya cobrado o emitido no cambia.
         </p>
         <div className="grid gap-4 lg:grid-cols-2">
           {plans.map((plan) => (
@@ -134,7 +134,7 @@ export default async function ConfiguracionPage({ searchParams }: { searchParams
               </p>
               {plan.current && (
                 <p className="-mt-2 flex items-baseline justify-between text-sm text-muted">
-                  <span>Con otros medios{plan.current.otherCents == null ? ` (+${surcharge} %)` : ""}</span>
+                  <span>Con otros medios{plan.current.otherCents == null ? ` (+${pctLabel(surcharge)} %)` : ""}</span>
                   <strong>{formatARS(otherPrice(plan.current.amountCents, surcharge, plan.current.otherCents))}</strong>
                 </p>
               )}
@@ -167,7 +167,7 @@ export default async function ConfiguracionPage({ searchParams }: { searchParams
                       name="other_amount"
                       label="Precio con otros medios"
                       inputMode="numeric"
-                      hint={`Ej.: 64.000. Si lo dejás vacío, se suma el recargo (${surcharge} %).`}
+                      hint={`Ej.: 64.000. Si lo dejás vacío, se suma el recargo (${pctLabel(surcharge)} %).`}
                     />
                     <TextField name="valid_from" label="Rige desde" type="date" required defaultValue={addDays(today, 1)} />
                   </div>
@@ -221,12 +221,12 @@ export default async function ConfiguracionPage({ searchParams }: { searchParams
                       id={`regla-${r.key}`}
                       name={r.key}
                       type="number"
-                      inputMode="numeric"
+                      inputMode={r.scale ? "decimal" : "numeric"}
                       min={r.min}
                       max={r.max}
-                      step={1}
+                      step={r.scale ? 1 / r.scale : 1}
                       required
-                      defaultValue={valueOf(r.key)}
+                      defaultValue={displayValue(r, valueOf(r.key))}
                       className="h-10 w-20 rounded-xl border border-edge bg-paper px-3 text-right text-base outline-none focus:border-ink"
                     />
                     <span className="w-28 text-sm text-muted">{r.unit}</span>

@@ -13,6 +13,12 @@ set local request.jwt.claims = '{"sub":"d0000000-0000-0000-0000-00000000000d"}';
 select grant_role('a0000000-0000-0000-0000-00000000000a', 'reception');
 reset role;
 
+-- Estas pruebas usan 21 % (la regla arranca en 8,5 %: se prueba en la 0037).
+do $$ begin
+  assert (select value from app_settings where key = 'non_cash_surcharge_tenths') = 85, 'recargo inicial 8,5 %';
+end $$;
+update app_settings set value = 210 where key = 'non_cash_surcharge_tenths';
+
 -- Tres cargos de $56.000 (precio en efectivo) para Valentina.
 insert into charges (academy_id, student_id, concept, due_date, description, amount_cents)
 select s.academy_id, s.id, 'other', current_date, 'Cuota ' || n, 5600000
@@ -20,7 +26,7 @@ from students s, generate_series(1, 3) n where s.first_name = 'Valentina';
 
 do $$
 begin
-  assert (select setting((select id from academies limit 1), 'non_cash_surcharge_pct')) = 21, 'recargo inicial 21 %';
+  assert (select setting((select id from academies limit 1), 'non_cash_surcharge_tenths')) = 210, 'recargo 21 % (fijado arriba)';
   assert (select count(*) from charges where cash_amount_cents = 5600000 and amount_cents = 6776000) = 3, '56.000 y 67.760';
   assert non_cash_price((select id from academies limit 1), 5550000) = 6715500, '55.500 → 67.155';
   raise notice 'OK  cada cargo guarda los dos precios';
@@ -94,14 +100,14 @@ end $$;
 -- 6. El recargo es una regla editable (0 a 50 %).
 do $$
 begin
-  perform update_settings('{"non_cash_surcharge_pct": 60}');
+  perform update_settings('{"non_cash_surcharge_tenths": 600}');
   raise exception 'pasa 60 por ciento';
 exception when invalid_parameter_value then
   raise notice 'OK  recargo con límite';
 end $$;
 do $$
 begin
-  perform update_settings('{"non_cash_surcharge_pct": 10}');
+  perform update_settings('{"non_cash_surcharge_tenths": 100}');
   assert non_cash_price((select id from academies limit 1), 5600000) = 6160000, '56.000 + 10 %';
   raise notice 'OK  recargo editable';
 end $$;

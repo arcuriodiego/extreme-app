@@ -213,6 +213,7 @@ export async function loadDebtors(supabase: Client, today: CalendarDate, graceDa
 
 /** Recargo (%) sobre el precio en efectivo para los otros medios de pago. */
 export async function loadSurcharge(supabase: Client): Promise<number> {
-  const { data } = await supabase.from("app_settings").select("value").eq("key", "non_cash_surcharge_pct").maybeSingle();
-  return Number((data as { value: number } | null)?.value ?? 0);
+  // La regla se guarda en décimas de por ciento (85 = 8,5 %).
+  const { data } = await supabase.from("app_settings").select("value").eq("key", "non_cash_surcharge_tenths").maybeSingle();
+  return Number((data as { value: number } | null)?.value ?? 0) / 10;
 }

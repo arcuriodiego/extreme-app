@@ -7,9 +7,12 @@ export interface RuleDef {
   key: string;
   label: string;
   unit: string;
+  /** Rango en lo que se ve (ej.: 0 a 50 %). */
   min: number;
   max: number;
   help: string;
+  /** Si se guarda en fracciones: 10 = la base guarda décimas (8,5 % → 85). */
+  scale?: number;
 }
 
 export interface RuleGroup {
@@ -22,11 +25,12 @@ export const RULE_GROUPS: readonly RuleGroup[] = [
     title: "Precios",
     rules: [
       {
-        key: "non_cash_surcharge_pct",
+        key: "non_cash_surcharge_tenths",
         label: "Recargo por pagar con otros medios",
         unit: "% sobre efectivo",
         min: 0,
         max: 50,
+        scale: 10,
         help: "Se suma al precio en efectivo al pagar con transferencia, QR, tarjeta o la app. Rige para lo que se emita desde ahora.",
       },
     ],
@@ -78,7 +82,12 @@ export const RULE_GROUPS: readonly RuleGroup[] = [
 
 export const EDITABLE_RULES: readonly RuleDef[] = RULE_GROUPS.flatMap((g) => g.rules);
 
-/** Lee el formulario: valores enteros dentro de su rango. Devuelve sólo los que cambiaron. */
+/** Valor para mostrar en el formulario (la base guarda décimas en las reglas con escala). */
+export function displayValue(rule: RuleDef, stored: number | undefined): number | undefined {
+  return stored === undefined ? undefined : stored / (rule.scale ?? 1);
+}
+
+/** Lee el formulario: valores dentro de su rango (enteros, o con un decimal si la regla lo permite). Devuelve sólo los que cambiaron, como los guarda la base. */
 export function validateRules(
   input: Record<string, unknown>,
   current: Readonly<Record<string, number>>,
@@ -89,9 +98,11 @@ export function validateRules(
     const raw = input[rule.key];
     if (raw === undefined || raw === null || raw === "") continue;
     const text = String(raw).trim();
-    if (!/^\d{1,4}$/.test(text)) return { ok: false, key: rule.key, error: "numero" };
-    const value = Number(text);
-    if (value < rule.min || value > rule.max) return { ok: false, key: rule.key, error: "rango" };
+    const pattern = rule.scale ? /^\d{1,4}([.,]\d)?$/ : /^\d{1,4}$/;
+    if (!pattern.test(text)) return { ok: false, key: rule.key, error: "numero" };
+    const shown = Number(text.replace(",", "."));
+    if (shown < rule.min || shown > rule.max) return { ok: false, key: rule.key, error: "rango" };
+    const value = Math.round(shown * (rule.scale ?? 1));
     next[rule.key] = value;
     if (current[rule.key] !== value) changed[rule.key] = value;
   }

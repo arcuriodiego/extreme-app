@@ -1,12 +1,21 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { cashDue, nonCashPrice, otherPrice, pricePair } from "./cash-price.ts";
+import { cashDue, nonCashPrice, otherPrice, pctLabel, pricePair } from "./cash-price.ts";
 
 test("otros medios = efectivo + recargo, en pesos enteros", () => {
   assert.equal(nonCashPrice(5_600_000, 21), 6_776_000);
   assert.equal(nonCashPrice(5_550_000, 21), 6_715_500);
   assert.equal(nonCashPrice(1_150_050, 21), 1_391_600);
   assert.equal(nonCashPrice(5_600_000, 0), 5_600_000);
+});
+
+test("recargo con un decimal (8,5 %, precios de enero 2027)", () => {
+  assert.equal(nonCashPrice(5_900_000, 8.5), 6_401_500);
+  assert.equal(nonCashPrice(1_260_000, 8.5), 1_367_100);
+  assert.equal(nonCashPrice(6_950_000, 8.5), 7_540_800);
+  assert.equal(nonCashPrice(10_800_000, 8.5), 11_718_000);
+  assert.equal(pctLabel(8.5), "8,5");
+  assert.equal(pctLabel(21), "21");
 });
 
 test("par de precios", () => {

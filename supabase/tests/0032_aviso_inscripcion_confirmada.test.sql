@@ -8,7 +8,7 @@ insert into auth.users (id, email, raw_user_meta_data) values
   ('b0000000-0000-0000-0000-00000000000b', 'vale@example.com', '{"first_name":"Valentina","academy":"extreme-dance"}'),
   ('c0000000-0000-0000-0000-00000000000c', 'laura@example.com', '{"first_name":"Laura","academy":"extreme-dance","account_type":"guardian"}');
 select bootstrap_admin('diego@example.com');
-update app_settings set value = 0 where key = 'non_cash_surcharge_pct';
+update app_settings set value = 0 where key = 'non_cash_surcharge_tenths';
 insert into teachers (academy_id, profile_id, display_name) select academy_id, id, 'Diego' from profiles where email = 'diego@example.com';
 set local role authenticated;
 set local request.jwt.claims = '{"sub":"d0000000-0000-0000-0000-00000000000d"}';

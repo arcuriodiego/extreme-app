@@ -8,7 +8,7 @@ insert into auth.users (id, email, raw_user_meta_data) values
   ('e0000000-0000-0000-0000-00000000000e', 'martina@example.com', '{"first_name":"Martina","academy":"extreme-dance"}');
 select bootstrap_admin('diego@example.com');
 -- Precio único (sin recargo por otros medios): estas pruebas son anteriores al precio en efectivo (0030).
-update app_settings set value = 0 where key = 'non_cash_surcharge_pct';
+update app_settings set value = 0 where key = 'non_cash_surcharge_tenths';
 set local role authenticated;
 set local request.jwt.claims = '{"sub":"d0000000-0000-0000-0000-00000000000d"}';
 select grant_role('a0000000-0000-0000-0000-00000000000a', 'reception');

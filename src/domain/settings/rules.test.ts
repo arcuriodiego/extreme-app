@@ -20,3 +20,11 @@ test("la clase del crédito no puede ser antes que el plazo para reservarla", ()
 test("cada regla tiene un rango válido", () => {
   for (const r of EDITABLE_RULES) assert.ok(r.min <= r.max, r.key);
 });
+
+test("recargo con un decimal: se guarda en décimas", () => {
+  const cur = { ...current, non_cash_surcharge_tenths: 210 };
+  assert.deepEqual(validateRules({ non_cash_surcharge_tenths: "8,5" }, cur), { ok: true, changed: { non_cash_surcharge_tenths: 85 } });
+  assert.deepEqual(validateRules({ non_cash_surcharge_tenths: "8.5" }, cur), { ok: true, changed: { non_cash_surcharge_tenths: 85 } });
+  assert.deepEqual(validateRules({ non_cash_surcharge_tenths: "8,55" }, cur), { ok: false, key: "non_cash_surcharge_tenths", error: "numero" });
+  assert.deepEqual(validateRules({ non_cash_surcharge_tenths: "51" }, cur), { ok: false, key: "non_cash_surcharge_tenths", error: "rango" });
+});

@@ -1,11 +1,18 @@
 /**
  * Precio en efectivo (Diego, 28 oct): el precio que se carga es el de efectivo.
  * Con otros medios (transferencia, QR, tarjeta, la app) se suma un recargo
- * (regla non_cash_surcharge_pct). Mismo cálculo que la base (non_cash_price):
+ * (regla non_cash_surcharge_tenths, en décimas de %). Mismo cálculo que la base (non_cash_price):
  * redondeado a pesos enteros.
  */
 export function nonCashPrice(cashCents: number, surchargePct: number): number {
-  return Math.round((cashCents * (100 + surchargePct)) / 10000) * 100;
+  // En décimas de por ciento (8,5 % → 85), como la base: sin errores de coma flotante.
+  const tenths = Math.round(surchargePct * 10);
+  return Math.round((cashCents * (1000 + tenths)) / 100000) * 100;
+}
+
+/** "8,5" o "21": el porcentaje como se escribe en Argentina. */
+export function pctLabel(pct: number): string {
+  return String(Math.round(pct * 10) / 10).replace(".", ",");
 }
 
 /** Los dos precios de algo que se cobra. `cash` es null si no hay precio distinto en efectivo. */
