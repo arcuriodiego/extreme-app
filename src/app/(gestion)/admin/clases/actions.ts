@@ -190,6 +190,34 @@ export async function addRoom(formData: FormData): Promise<void> {
   to(CATALOG, { aviso: "agregado" });
 }
 
+/** Cambia nombre y capacidad de una sala (administración). */
+export async function updateRoom(formData: FormData): Promise<void> {
+  const id = str(formData, "id");
+  const name = validateCatalogName(formData.get("name"));
+  const capacity = validateCapacity(str(formData, "capacity"));
+  if (!UUID.test(id)) to(CATALOG, { error: "datos" });
+  if (!name.ok) to(CATALOG, { error: "nombre" });
+  if (!capacity.ok) to(CATALOG, { error: "cupo" });
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("rooms").update({ name: name.value, capacity: capacity.value }).eq("id", id).select("id");
+  if (error) to(CATALOG, { error: grillaErrorCode(error) });
+  if (!data || data.length === 0) to(CATALOG, { error: "sin-permiso" });
+  to(CATALOG, { aviso: "sala-guardada" });
+}
+
+/** Borra una sala que nunca se usó. Si tiene horarios, clases o workshops, la base no deja: se desactiva. */
+export async function deleteRoom(formData: FormData): Promise<void> {
+  const id = str(formData, "id");
+  if (!UUID.test(id)) to(CATALOG, { error: "datos" });
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("rooms").delete().eq("id", id).select("id");
+  if (error) to(CATALOG, { error: error.code === "23503" ? "sala-en-uso" : grillaErrorCode(error) });
+  if (!data || data.length === 0) to(CATALOG, { error: "sin-permiso" });
+  to(CATALOG, { aviso: "sala-eliminada" });
+}
+
 export async function renameTeacher(formData: FormData): Promise<void> {
   const back = backTo(formData, CATALOG);
   const id = str(formData, "id");

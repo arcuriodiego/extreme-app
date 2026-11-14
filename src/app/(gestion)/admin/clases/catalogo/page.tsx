@@ -7,7 +7,7 @@ import { can } from "@/domain/auth/roles";
 import { type CatalogItem, loadCatalog } from "@/lib/grilla";
 import { requireProfile } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
-import { addCatalogItem, addRoom, removeTeacherPhoto, renameTeacher, setCatalogItemActive, setTeacherPayPeriod, setTeacherPhoto } from "../actions";
+import { addCatalogItem, addRoom, deleteRoom, removeTeacherPhoto, renameTeacher, setCatalogItemActive, setTeacherPayPeriod, setTeacherPhoto, updateRoom } from "../actions";
 import { ImagePicker } from "@/components/images/ImagePicker";
 import { TeacherAvatar } from "@/components/images/TeacherAvatar";
 import { ERRORS, NOTICES } from "../messages";
@@ -83,9 +83,40 @@ export default async function CatalogoPage({ searchParams }: { searchParams: Pro
           {catalog.rooms.length === 0 && <p className="text-[15px] text-muted">Todavía no hay salas. Cargalas para poder armar horarios.</p>}
           <ul className="flex flex-col">
             {catalog.rooms.map((room) => (
-              <li key={room.id} className="flex items-center justify-between gap-3 border-t border-line py-2.5">
-                <ItemName item={room} extra={`${room.capacity} personas`} />
-                <ToggleActive kind="sala" item={room} />
+              <li key={room.id} className="flex flex-col gap-2 border-t border-line py-2.5">
+                <div className="flex items-center justify-between gap-3">
+                  <ItemName item={room} extra={`${room.capacity} personas`} />
+                  <ToggleActive kind="sala" item={room} />
+                </div>
+                <details>
+                  <summary className="cursor-pointer text-sm font-semibold">Editar o eliminar</summary>
+                  <div className="flex flex-col gap-3 pt-2">
+                    <form action={updateRoom} className="flex flex-wrap gap-2">
+                      <input type="hidden" name="id" value={room.id} />
+                      <label className="sr-only" htmlFor={`sala-nombre-${room.id}`}>
+                        Nombre de la sala
+                      </label>
+                      <input id={`sala-nombre-${room.id}`} name="name" required maxLength={40} defaultValue={room.name} className={`${input} flex-1`} />
+                      <label className="sr-only" htmlFor={`sala-capacidad-${room.id}`}>
+                        Capacidad
+                      </label>
+                      <input
+                        id={`sala-capacidad-${room.id}`}
+                        name="capacity"
+                        required
+                        inputMode="numeric"
+                        defaultValue={room.capacity}
+                        className={`${input} w-28`}
+                      />
+                      <SmallSubmit tone="dark">Guardar</SmallSubmit>
+                    </form>
+                    <form action={deleteRoom} className="flex flex-wrap items-center gap-3">
+                      <input type="hidden" name="id" value={room.id} />
+                      <SmallSubmit tone="danger">Eliminar sala</SmallSubmit>
+                      <span className="text-sm text-muted">Sólo si nunca se usó. Si ya tiene horarios o clases, desactivala.</span>
+                    </form>
+                  </div>
+                </details>
               </li>
             ))}
           </ul>
