@@ -16,6 +16,9 @@ import { requireProfile } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 import { TeacherAvatar } from "@/components/images/TeacherAvatar";
 import { FamilyOverview } from "./FamilyOverview";
+import { TeacherHome } from "./TeacherHome";
+import { cookies } from "next/headers";
+import { resolveMode } from "@/domain/navigation/menus";
 
 export const metadata: Metadata = { title: "Inicio" };
 
@@ -32,6 +35,22 @@ export default async function InicioPage({ searchParams }: { searchParams: Promi
   const showGestion = hasGestion(profile.access);
   const supabase = await createClient();
   const today = academyToday();
+
+  // Vista de profe: su propio inicio (sus clases), sin inscripciones ni cuotas.
+  if (resolveMode(profile.access, (await cookies()).get("modo")?.value) === "profe") {
+    await ensureNotifications(supabase);
+    return (
+      <>
+        {notice && <FormAlert kind="ok">{notice}</FormAlert>}
+        {showGestion && <LinkCard href="/admin" title="Gestión" description="Alumnos, clases, pagos y más" dark />}
+        <TeacherHome supabase={supabase} profileId={profile.id} firstName={profile.firstName} today={today} />
+        {!profile.phone && (
+          <LinkCard href="/perfil" title="Completá tu teléfono" description="Para que administración y recepción puedan contactarte." />
+        )}
+      </>
+    );
+  }
+
   const [{ active, options, family }, graceDays] = await Promise.all([getActiveStudent(), loadGraceDays(supabase), ensureNotifications(supabase)]);
   const studentId = active?.id ?? null;
   const viewingChild = active !== null && !active.isSelf;
