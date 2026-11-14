@@ -122,18 +122,18 @@ insert into charges (academy_id, student_id, concept, due_date, description, amo
 select s.academy_id, s.id, 'other', current_date, 'Otro', 1000000 from students s where s.first_name = 'Valentina';
 do $$
 begin
-  assert (select amount_cents from charges where description = 'Otro') = 1085000, 'recargo de las reglas (8,5 %)';
+  assert (select amount_cents from charges where description = 'Otro') = 1090000, 'recargo de las reglas (8,5 %, redondeado a $100)';
   raise notice 'OK  cargos sin plan con recargo';
 end $$;
 
--- 8. Precios de enero 2027 con 8,5 %: $64.015, $13.671, $75.408 y $117.180.
+-- 8. Precios de enero 2027 con 8,5 %, redondeados a $100: $64.000, $13.700, $75.400 y $117.200.
 do $$
 declare a uuid := (select id from academies limit 1);
 begin
-  assert non_cash_price(a, 5900000) = 6401500, 'cuota';
-  assert non_cash_price(a, 1260000) = 1367100, 'clase';
-  assert non_cash_price(a, 6950000) = 7540800, 'pack 10';
-  assert non_cash_price(a, 10800000) = 11718000, 'pack 16';
+  assert non_cash_price(a, 5900000) = 6400000, 'cuota';
+  assert non_cash_price(a, 1260000) = 1370000, 'clase';
+  assert non_cash_price(a, 6950000) = 7540000, 'pack 10';
+  assert non_cash_price(a, 10800000) = 11720000, 'pack 16';
   raise notice 'OK  recargo 8,5 %%';
 end $$;
 

@@ -2,31 +2,32 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { cashDue, nonCashPrice, otherPrice, pctLabel, pricePair } from "./cash-price.ts";
 
-test("otros medios = efectivo + recargo, en pesos enteros", () => {
-  assert.equal(nonCashPrice(5_600_000, 21), 6_776_000);
-  assert.equal(nonCashPrice(5_550_000, 21), 6_715_500);
-  assert.equal(nonCashPrice(1_150_050, 21), 1_391_600);
+test("otros medios = efectivo + recargo, redondeado a $100", () => {
+  assert.equal(nonCashPrice(5_600_000, 21), 6_780_000);
+  assert.equal(nonCashPrice(5_550_000, 21), 6_720_000);
+  assert.equal(nonCashPrice(1_150_050, 21), 1_390_000);
+  assert.equal(nonCashPrice(5_555_000, 0), 5_555_000);
   assert.equal(nonCashPrice(5_600_000, 0), 5_600_000);
 });
 
 test("recargo con un decimal (8,5 %, precios de enero 2027)", () => {
-  assert.equal(nonCashPrice(5_900_000, 8.5), 6_401_500);
-  assert.equal(nonCashPrice(1_260_000, 8.5), 1_367_100);
-  assert.equal(nonCashPrice(6_950_000, 8.5), 7_540_800);
-  assert.equal(nonCashPrice(10_800_000, 8.5), 11_718_000);
+  assert.equal(nonCashPrice(5_900_000, 8.5), 6_400_000);
+  assert.equal(nonCashPrice(1_260_000, 8.5), 1_370_000);
+  assert.equal(nonCashPrice(6_950_000, 8.5), 7_540_000);
+  assert.equal(nonCashPrice(10_800_000, 8.5), 11_720_000);
   assert.equal(pctLabel(8.5), "8,5");
   assert.equal(pctLabel(21), "21");
 });
 
 test("par de precios", () => {
-  assert.deepEqual(pricePair(5_600_000, 21), { list: 6_776_000, cash: 5_600_000 });
+  assert.deepEqual(pricePair(5_600_000, 21), { list: 6_780_000, cash: 5_600_000 });
   assert.deepEqual(pricePair(5_600_000, 0), { list: 5_600_000, cash: null });
 });
 
 test("precio con otros medios cargado a mano (precios de enero 2027)", () => {
   assert.equal(otherPrice(5_900_000, 21, 6_400_000), 6_400_000);
-  assert.equal(otherPrice(5_900_000, 21, null), 7_139_000);
-  assert.equal(otherPrice(5_900_000, 21), 7_139_000);
+  assert.equal(otherPrice(5_900_000, 21, null), 7_140_000);
+  assert.equal(otherPrice(5_900_000, 21), 7_140_000);
   assert.deepEqual(pricePair(1_260_000, 21, 1_350_000), { list: 1_350_000, cash: 1_260_000 });
   assert.deepEqual(pricePair(1_260_000, 21, 1_260_000), { list: 1_260_000, cash: null });
 });

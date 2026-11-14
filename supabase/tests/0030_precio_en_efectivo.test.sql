@@ -27,8 +27,8 @@ from students s, generate_series(1, 3) n where s.first_name = 'Valentina';
 do $$
 begin
   assert (select setting((select id from academies limit 1), 'non_cash_surcharge_tenths')) = 210, 'recargo 21 % (fijado arriba)';
-  assert (select count(*) from charges where cash_amount_cents = 5600000 and amount_cents = 6776000) = 3, '56.000 y 67.760';
-  assert non_cash_price((select id from academies limit 1), 5550000) = 6715500, '55.500 → 67.155';
+  assert (select count(*) from charges where cash_amount_cents = 5600000 and amount_cents = 6780000) = 3, '56.000 y 67.800';
+  assert non_cash_price((select id from academies limit 1), 5550000) = 6720000, '55.500 → 67.200';
   raise notice 'OK  cada cargo guarda los dos precios';
 end $$;
 
@@ -41,12 +41,12 @@ declare c uuid := (select id from charges where description = 'Cuota 1');
 begin
   perform pay_charge(c, 5600000, 'cash', null);
   assert (select status from charges where id = c) = 'paid', 'pagado';
-  assert (select discount_cents from charges where id = c) = 1176000, 'descuento por efectivo';
+  assert (select discount_cents from charges where id = c) = 1180000, 'descuento por efectivo';
   assert (select p.amount_cents from payments p join payment_allocations a on a.payment_id = p.id where a.charge_id = c) = 5600000, 'entró $56.000';
   raise notice 'OK  efectivo: $56.000';
 end $$;
 
--- 2. Con transferencia se cobra $67.760; el precio en efectivo no sirve.
+-- 2. Con transferencia se cobra $67.800; el precio en efectivo no sirve.
 do $$
 declare c uuid := (select id from charges where description = 'Cuota 2');
 begin
@@ -55,22 +55,22 @@ begin
     raise exception 'transferencia al precio en efectivo';
   exception when invalid_parameter_value then null;
   end;
-  perform pay_charge(c, 6776000, 'transfer', null);
+  perform pay_charge(c, 6780000, 'transfer', null);
   assert (select status from charges where id = c) = 'paid', 'pagado';
   assert (select discount_cents from charges where id = c) = 0, 'sin descuento';
-  raise notice 'OK  transferencia: $67.760';
+  raise notice 'OK  transferencia: $67.800';
 end $$;
 
 -- 3. En efectivo no se puede pagar el precio de otros medios (recepción vio el importe equivocado).
 do $$
 begin
-  perform pay_charge((select id from charges where description = 'Cuota 3'), 6776000, 'cash', null);
+  perform pay_charge((select id from charges where description = 'Cuota 3'), 6780000, 'cash', null);
   raise exception 'efectivo con el otro precio';
 exception when invalid_parameter_value then
   raise notice 'OK  el importe tiene que coincidir con el medio';
 end $$;
 
--- 4. Si se anula el pago en efectivo, el cargo vuelve a costar $67.760 (o $56.000 en efectivo).
+-- 4. Si se anula el pago en efectivo, el cargo vuelve a costar $67.800 (o $56.000 en efectivo).
 set local request.jwt.claims = '{"sub":"d0000000-0000-0000-0000-00000000000d"}';
 do $$
 declare c uuid := (select id from charges where description = 'Cuota 1');
@@ -78,7 +78,7 @@ begin
   perform void_payment((select a.payment_id from payment_allocations a where a.charge_id = c), 'Error de carga');
   assert (select status from charges where id = c) = 'open', 'abierto';
   assert (select discount_cents from charges where id = c) = 0, 'sin descuento';
-  assert (select total_cents from charges where id = c) = 6776000, 'total de otros medios';
+  assert (select total_cents from charges where id = c) = 6780000, 'total de otros medios';
   perform pay_charge(c, 5600000, 'cash', null);
   assert (select status from charges where id = c) = 'paid', 'se vuelve a cobrar en efectivo';
   raise notice 'OK  anular y volver a cobrar';
