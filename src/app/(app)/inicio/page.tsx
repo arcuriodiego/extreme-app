@@ -42,8 +42,8 @@ export default async function InicioPage({ searchParams }: { searchParams: Promi
     return (
       <>
         {notice && <FormAlert kind="ok">{notice}</FormAlert>}
-        {showGestion && <LinkCard href="/admin" title="Gestión" description="Alumnos, clases, pagos y más" dark />}
         <TeacherHome supabase={supabase} profileId={profile.id} firstName={profile.firstName} today={today} />
+        {showGestion && <LinkCard href="/admin" title="Gestión" description="Alumnos, clases, pagos y más" dark />}
         {!profile.phone && (
           <LinkCard href="/perfil" title="Completá tu teléfono" description="Para que administración y recepción puedan contactarte." />
         )}
