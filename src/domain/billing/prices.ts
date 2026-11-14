@@ -7,6 +7,8 @@ import type { Cents } from "../shared/money.ts";
 export interface PriceEntry {
   id: string;
   amountCents: Cents;
+  /** Precio con otros medios cargado a mano (null = efectivo + recargo de las reglas). */
+  otherCents?: Cents | null;
   validFrom: string; // "AAAA-MM-DD"
 }
 

@@ -13,8 +13,9 @@ function to(params: Record<string, string>): never {
   redirect(`${BACK}?${new URLSearchParams(params).toString()}`);
 }
 
-function code(error: { code?: string }): string {
+function code(error: { code?: string; hint?: string }): string {
   if (error.code === "42501") return "sin-permiso";
+  if (error.hint === "non_cash_lower") return "otros-medios-menor";
   if (error.code === "22023") return "fecha-pasada";
   if (error.code === "P0002") return "no-disponible";
   return "generico";
@@ -24,12 +25,22 @@ export async function setPrice(formData: FormData): Promise<void> {
   const planId = String(formData.get("plan_id") ?? "");
   const amount = parsePesos(formData.get("amount"));
   const validFrom = String(formData.get("valid_from") ?? "");
+  // Precio con otros medios: opcional; vacío = efectivo + recargo de las reglas.
+  const otherRaw = String(formData.get("other_amount") ?? "").trim();
+  const other = otherRaw === "" ? null : parsePesos(otherRaw);
   if (!UUID.test(planId)) to({ error: "datos" });
   if (amount === null) to({ error: "monto" });
+  if (otherRaw !== "" && other === null) to({ error: "monto" });
+  if (other !== null && other < amount) to({ error: "otros-medios-menor" });
   if (!DATE.test(validFrom)) to({ error: "fecha" });
 
   const supabase = await createClient();
-  const { error } = await supabase.rpc("set_plan_price", { p_plan_id: planId, p_amount_cents: amount, p_valid_from: validFrom });
+  const { error } = await supabase.rpc("set_plan_price", {
+    p_plan_id: planId,
+    p_amount_cents: amount,
+    p_valid_from: validFrom,
+    p_non_cash_cents: other,
+  });
   if (error) to({ error: code(error) });
   to({ aviso: "precio-guardado" });
 }

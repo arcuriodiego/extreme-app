@@ -8,7 +8,7 @@ import type { PlanWithPrices } from "@/lib/prices";
 import { loadSessions } from "@/lib/sessions";
 import type { createClient } from "@/lib/supabase/server";
 import { bookForStudent, cancelStudentBooking, sellPack } from "../actions";
-import { nonCashPrice } from "@/domain/billing/cash-price";
+import { otherPrice } from "@/domain/billing/cash-price";
 
 type Client = Awaited<ReturnType<typeof createClient>>;
 
@@ -72,7 +72,8 @@ export async function PacksSection({
   const booked = new Set(bookings.map((b) => b.sessionId));
   const options = bookable.filter((s) => (availability.get(s.id)?.seatsLeft ?? 0) > 0 && !booked.has(s.id));
   const packs = plans.filter((p) => p.kind === "pack" && p.active && p.current);
-  const single = plans.find((p) => p.kind === "single_class" && p.active)?.current?.amountCents ?? null;
+  const singleEntry = plans.find((p) => p.kind === "single_class" && p.active)?.current ?? null;
+  const single = singleEntry?.amountCents ?? null;
   const active = balances.filter((b) => b.active);
   const hasBalance = active.length > 0;
 
@@ -134,7 +135,7 @@ export async function PacksSection({
               {packs.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.name}
-                  {p.current ? ` — efectivo ${formatARS(p.current.amountCents)} · otros medios ${formatARS(nonCashPrice(p.current.amountCents, surchargePct))}` : ""}
+                  {p.current ? ` — efectivo ${formatARS(p.current.amountCents)} · otros medios ${formatARS(otherPrice(p.current.amountCents, surchargePct, p.current.otherCents))}` : ""}
                 </option>
               ))}
             </select>
@@ -174,7 +175,7 @@ export async function PacksSection({
                   {canPay && single !== null && (
                     <label className="flex items-center gap-2">
                       <input type="radio" name="mode" value="single" defaultChecked={!hasBalance} className="size-4 accent-ink" />
-                      Cobrar clase individual (efectivo {formatARS(single)} · otros medios {formatARS(nonCashPrice(single, surchargePct))})
+                      Cobrar clase individual (efectivo {formatARS(single)} · otros medios {formatARS(otherPrice(single, surchargePct, singleEntry?.otherCents))})
                     </label>
                   )}
                 </fieldset>

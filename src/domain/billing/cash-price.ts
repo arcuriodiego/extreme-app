@@ -14,8 +14,16 @@ export interface PricePair {
   cash: number | null;
 }
 
-export function pricePair(cashCents: number, surchargePct: number): PricePair {
-  const list = nonCashPrice(cashCents, surchargePct);
+/**
+ * Precio con otros medios de un plan (Diego, 14 nov): el cargado a mano si lo hay;
+ * si no, efectivo + recargo. Misma lógica que la base (plan_price_pair_on).
+ */
+export function otherPrice(cashCents: number, surchargePct: number, explicitCents?: number | null): number {
+  return explicitCents ?? nonCashPrice(cashCents, surchargePct);
+}
+
+export function pricePair(cashCents: number, surchargePct: number, explicitCents?: number | null): PricePair {
+  const list = otherPrice(cashCents, surchargePct, explicitCents);
   return { list, cash: list > cashCents ? cashCents : null };
 }
 

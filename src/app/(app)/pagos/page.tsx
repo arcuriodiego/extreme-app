@@ -6,7 +6,7 @@ import { academyToday } from "@/lib/grilla";
 import { methodLabel } from "@/domain/billing/payments";
 import { getActiveStudent } from "@/lib/active-student";
 import { ensureCharges, loadCharges, loadPayments, loadSurcharge } from "@/lib/billing";
-import { nonCashPrice } from "@/domain/billing/cash-price";
+import { otherPrice } from "@/domain/billing/cash-price";
 import { loadPlans } from "@/lib/prices";
 import { loadTransferInfo } from "@/lib/receipts";
 import { transferLines } from "@/domain/billing/whatsapp";
@@ -126,15 +126,17 @@ export default async function PagosPage() {
                   <span className="text-sm text-muted">{p.description}</span>
                   {p.next && (
                     <span className="text-sm font-semibold text-warn-ink">
-                      Desde el {dateFormat.format(new Date(`${p.next.validFrom}T12:00:00Z`))}: {formatARS(nonCashPrice(p.next.amountCents, surcharge))}
-                      {surcharge > 0 ? ` (${formatARS(p.next.amountCents)} en efectivo)` : ""}
+                      Desde el {dateFormat.format(new Date(`${p.next.validFrom}T12:00:00Z`))}: {formatARS(otherPrice(p.next.amountCents, surcharge, p.next.otherCents))}
+                      {otherPrice(p.next.amountCents, surcharge, p.next.otherCents) > p.next.amountCents ? ` (${formatARS(p.next.amountCents)} en efectivo)` : ""}
                     </span>
                   )}
                 </span>
                 {p.current && (
                   <span className="flex shrink-0 flex-col items-end">
-                    <strong className="font-display text-2xl">{formatARS(nonCashPrice(p.current.amountCents, surcharge))}</strong>
-                    {surcharge > 0 && <span className="text-sm text-muted">{formatARS(p.current.amountCents)} en efectivo</span>}
+                    <strong className="font-display text-2xl">{formatARS(otherPrice(p.current.amountCents, surcharge, p.current.otherCents))}</strong>
+                    {otherPrice(p.current.amountCents, surcharge, p.current.otherCents) > p.current.amountCents && (
+                      <span className="text-sm text-muted">{formatARS(p.current.amountCents)} en efectivo</span>
+                    )}
                   </span>
                 )}
               </li>

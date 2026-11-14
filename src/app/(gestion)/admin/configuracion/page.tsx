@@ -5,7 +5,7 @@ import { NoAccess } from "@/components/status/NoAccess";
 import { PageHeader } from "@/components/ui/basics";
 import { canOpen } from "@/domain/navigation/menus";
 import { formatARS } from "@/domain/shared/money";
-import { nonCashPrice } from "@/domain/billing/cash-price";
+import { otherPrice } from "@/domain/billing/cash-price";
 import { addDays } from "@/domain/shared/calendar-date";
 import { academyToday } from "@/lib/grilla";
 import { loadPlans } from "@/lib/prices";
@@ -32,6 +32,7 @@ const ERRORS: Record<string, string> = {
   datos: "Revisá los datos.",
   generico: "No pudimos guardar el cambio. Probá de nuevo.",
   reglas: "No pudimos guardar las reglas. Revisá los valores y probá de nuevo.",
+  "otros-medios-menor": "El precio con otros medios no puede ser menor que el de efectivo.",
   transferencia: "Revisá los datos: el alias va de 6 a 20 letras, números, puntos o guiones, y el CBU/CVU tiene 22 números.",
 };
 
@@ -117,8 +118,8 @@ export default async function ConfiguracionPage({ searchParams }: { searchParams
       <section className="flex flex-col gap-4">
         <h2 className="font-display text-2xl font-bold uppercase tracking-wide">Precios</h2>
         <p className="text-[15px] text-muted">
-          Se carga el precio en efectivo; con transferencia, QR, tarjeta o la app se cobra ese precio más el recargo de las reglas (hoy{" "}
-          {surcharge} %). Un aumento se programa desde una fecha. Lo ya cobrado o emitido no cambia.
+          Cada precio tiene dos valores: en efectivo y con otros medios (transferencia, QR, tarjeta o la app). Si no cargás el de otros medios, se
+          calcula con el recargo de las reglas (hoy {surcharge} %). Un aumento se programa desde una fecha. Lo ya cobrado o emitido no cambia.
         </p>
         <div className="grid gap-4 lg:grid-cols-2">
           {plans.map((plan) => (
@@ -131,10 +132,10 @@ export default async function ConfiguracionPage({ searchParams }: { searchParams
                 <span className="text-[15px]">Precio en efectivo</span>
                 <strong className="font-display text-3xl">{plan.current ? formatARS(plan.current.amountCents) : "Sin precio"}</strong>
               </p>
-              {plan.current && surcharge > 0 && (
+              {plan.current && (
                 <p className="-mt-2 flex items-baseline justify-between text-sm text-muted">
-                  <span>Con otros medios (+{surcharge} %)</span>
-                  <strong>{formatARS(nonCashPrice(plan.current.amountCents, surcharge))}</strong>
+                  <span>Con otros medios{plan.current.otherCents == null ? ` (+${surcharge} %)` : ""}</span>
+                  <strong>{formatARS(otherPrice(plan.current.amountCents, surcharge, plan.current.otherCents))}</strong>
                 </p>
               )}
               {plan.prices.filter((p) => p.validFrom > today).length > 0 && (
@@ -146,7 +147,7 @@ export default async function ConfiguracionPage({ searchParams }: { searchParams
                       <li key={p.id} className="flex items-center justify-between gap-2">
                         <span>
                           Desde el {shortDate(p.validFrom)}: <strong>{formatARS(p.amountCents)}</strong>
-                          {surcharge > 0 ? ` en efectivo · ${formatARS(nonCashPrice(p.amountCents, surcharge))} otros medios` : ""}
+                          {` en efectivo · ${formatARS(otherPrice(p.amountCents, surcharge, p.otherCents))} otros medios`}
                         </span>
                         <form action={removePrice}>
                           <input type="hidden" name="id" value={p.id} />
@@ -161,7 +162,13 @@ export default async function ConfiguracionPage({ searchParams }: { searchParams
                 <form action={setPrice} className="flex flex-col gap-3 pt-3">
                   <input type="hidden" name="plan_id" value={plan.id} />
                   <div className="grid gap-3 sm:grid-cols-2">
-                    <TextField name="amount" label="Precio en efectivo" inputMode="numeric" required hint="Ej.: 56.000. Con otros medios se suma el recargo." />
+                    <TextField name="amount" label="Precio en efectivo" inputMode="numeric" required hint="Ej.: 59.000" />
+                    <TextField
+                      name="other_amount"
+                      label="Precio con otros medios"
+                      inputMode="numeric"
+                      hint={`Ej.: 64.000. Si lo dejás vacío, se suma el recargo (${surcharge} %).`}
+                    />
                     <TextField name="valid_from" label="Rige desde" type="date" required defaultValue={addDays(today, 1)} />
                   </div>
                   <div>
@@ -177,7 +184,8 @@ export default async function ConfiguracionPage({ searchParams }: { searchParams
                       .filter((p) => p.validFrom <= today)
                       .map((p) => (
                         <li key={p.id}>
-                          Desde el {shortDate(p.validFrom)}: {formatARS(p.amountCents)}
+                          Desde el {shortDate(p.validFrom)}: {formatARS(p.amountCents)} en efectivo ·{" "}
+                          {formatARS(otherPrice(p.amountCents, surcharge, p.otherCents))} otros medios
                         </li>
                       ))}
                   </ul>

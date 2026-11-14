@@ -24,12 +24,17 @@ function describe(p: { kind: string; classes_per_week: number | null; class_coun
 export async function loadPlans(supabase: Client, today: string): Promise<PlanWithPrices[]> {
   const { data, error } = await supabase
     .from("plans")
-    .select("id, kind, name, classes_per_week, class_count, has_grace, active, sort_order, prices:plan_prices(id, amount_cents, valid_from)")
+    .select("id, kind, name, classes_per_week, class_count, has_grace, active, sort_order, prices:plan_prices(id, amount_cents, non_cash_amount_cents, valid_from)")
     .order("sort_order");
   if (error) throw new Error(`No se pudieron cargar los planes: ${error.message}`);
   return (data ?? []).map((p) => {
-    const prices: PriceEntry[] = ((p.prices ?? []) as { id: string; amount_cents: number; valid_from: string }[])
-      .map((x) => ({ id: x.id, amountCents: Number(x.amount_cents), validFrom: x.valid_from }))
+    const prices: PriceEntry[] = ((p.prices ?? []) as { id: string; amount_cents: number; non_cash_amount_cents: number | null; valid_from: string }[])
+      .map((x) => ({
+        id: x.id,
+        amountCents: Number(x.amount_cents),
+        otherCents: x.non_cash_amount_cents == null ? null : Number(x.non_cash_amount_cents),
+        validFrom: x.valid_from,
+      }))
       .sort((a, b) => b.validFrom.localeCompare(a.validFrom));
     return {
       id: p.id as string,

@@ -90,7 +90,8 @@ export default async function AlumnoPage({
     ...guardians.filter((g) => g.profileId).map((g) => ({ name: g.name, profileId: g.profileId! })),
   ];
   const signupSlotsList = signup ? signupSlots(await loadGroups(supabase).catch(() => [])) : [];
-  const monthlyPrice = plans.find((p) => p.kind === "teacher_monthly" && p.active)?.current?.amountCents ?? null;
+  const monthlyEntry = plans.find((p) => p.kind === "teacher_monthly" && p.active)?.current ?? null;
+  const monthlyPrice = monthlyEntry?.amountCents ?? null;
 
   const notice = query.aviso ? NOTICES[query.aviso] : undefined;
   const failure = query.error ? ERRORS[query.error] : undefined;
@@ -172,6 +173,7 @@ export default async function AlumnoPage({
         today={today}
         graceDays={graceDays}
         monthlyPriceCents={monthlyPrice}
+        monthlyOtherCents={monthlyEntry?.otherCents ?? null}
         surchargePct={surcharge}
       />
 

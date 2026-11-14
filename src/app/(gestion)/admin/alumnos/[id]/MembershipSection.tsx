@@ -26,6 +26,7 @@ export async function MembershipSection({
   today,
   graceDays,
   monthlyPriceCents,
+  monthlyOtherCents,
   surchargePct,
 }: {
   supabase: Client;
@@ -36,12 +37,14 @@ export async function MembershipSection({
   today: string;
   graceDays: number;
   monthlyPriceCents: number | null;
+  /** Precio con otros medios cargado a mano (null = con el recargo). */
+  monthlyOtherCents: number | null;
   /** Recargo (%) sobre el precio en efectivo para otros medios. */
   surchargePct: number;
   pickedTeacher?: string;
   pickedCategory?: string;
 }) {
-  const firstPrice = monthlyPriceCents !== null ? pricePair(monthlyPriceCents, surchargePct) : null;
+  const firstPrice = monthlyPriceCents !== null ? pricePair(monthlyPriceCents, surchargePct, monthlyOtherCents) : null;
   const [memberships, groups, fixed, catalog] = await Promise.all([
     loadActiveMemberships(supabase, studentId),
     loadGroups(supabase, { onlyActive: true }),
