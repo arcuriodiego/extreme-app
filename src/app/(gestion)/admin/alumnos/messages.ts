@@ -4,6 +4,8 @@ export const NOTICES: Record<string, string> = {
   ...BOOKING_NOTICES,
   creado: "Listo, creamos la ficha.",
   guardado: "Listo, guardamos los cambios.",
+  eliminado: "Listo, eliminamos la ficha.",
+  "eliminado-con-cuenta": "Listo, eliminamos la ficha y su cuenta en la app. Si hace falta, puede volver a registrarse con el mismo email.",
   "notas-guardadas": "Listo, guardamos las notas.",
   inscripto: "Listo, quedó inscripto en la cuota de profe con sus horarios fijos.",
   "horario-cambiado": "Listo, cambiamos el horario fijo.",
@@ -16,6 +18,9 @@ export const NOTICES: Record<string, string> = {
 
 export const ERRORS: Record<string, string> = {
   ...BOOKING_ERRORS,
+  "eliminar-confirmar": "Para eliminar, tildá la casilla de confirmación.",
+  "eliminar-historial": "Esta ficha ya tiene historial (cuotas, pagos, reservas o ingresos), así que no se puede eliminar. Pasala a Inactivo en \"Datos de la ficha\".",
+  "eliminar-propia": "No podés eliminar tu propia ficha.",
   "sin-saldo": "El alumno no tiene clases disponibles para esa fecha: vendele un pack o cobrale la clase individual.",
   "campo-firstName": "Escribí el nombre (hasta 80 letras).",
   "campo-lastName": "El apellido puede tener hasta 80 letras.",

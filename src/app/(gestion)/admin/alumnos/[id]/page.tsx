@@ -13,7 +13,7 @@ import { acceptancesOf, loadCurrentRegulation } from "@/lib/regulations";
 import { requireProfile } from "@/lib/session";
 import { loadStudent, loadStudentNotes } from "@/lib/students";
 import { createClient } from "@/lib/supabase/server";
-import { openReceipt, saveNotes, updateStudent, voidPayment } from "../actions";
+import { deleteStudent, openReceipt, saveNotes, updateStudent, voidPayment } from "../actions";
 import { loadFamilyOpenCharges } from "@/lib/receipts";
 import { PayTogetherSection } from "./PayTogetherSection";
 import { methodLabel } from "@/domain/billing/payments";
@@ -268,6 +268,28 @@ export default async function AlumnoPage({
             <StudentForm student={student} action={updateStudent} />
           </section>
         </>
+      )}
+
+      {can(profile.access, "settings.manage") && (
+        <section className="flex flex-col gap-3 border-t border-line pt-6">
+          <details className="max-w-xl">
+            <summary className="cursor-pointer font-semibold text-alert-ink">Eliminar esta ficha</summary>
+            <form action={deleteStudent} className="flex flex-col gap-3 pt-3">
+              <input type="hidden" name="id" value={student.id} />
+              <p className="text-[15px] text-muted">
+                Para fichas o cuentas creadas por error. Sólo se puede si no tiene historial (cuotas, pagos, reservas o ingresos); si lo
+                tiene, pasala a Inactivo. Si tiene cuenta en la app y es sólo de alumno, también se borra la cuenta. No se puede deshacer.
+              </p>
+              <label className="flex items-center gap-3 text-[15px]">
+                <input type="checkbox" name="confirm" value="1" required className="size-5 accent-ink" />
+                Entiendo que se borra para siempre.
+              </label>
+              <div>
+                <SmallSubmit tone="danger">Eliminar ficha</SmallSubmit>
+              </div>
+            </form>
+          </details>
+        </section>
       )}
     </>
   );

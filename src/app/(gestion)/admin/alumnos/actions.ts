@@ -68,6 +68,28 @@ export async function updateStudent(formData: FormData): Promise<void> {
   to(back, { aviso: "guardado" });
 }
 
+/**
+ * Elimina una ficha creada por error (sólo administración y sólo sin historial).
+ * Si era una cuenta de alumno, también borra la cuenta para que pueda volver a registrarse.
+ */
+export async function deleteStudent(formData: FormData): Promise<void> {
+  const id = String(formData.get("id") ?? "");
+  if (!UUID.test(id)) to("/admin/alumnos", { error: "datos" });
+  const back = `/admin/alumnos/${id}`;
+  if (formData.get("confirm") !== "1") to(back, { error: "eliminar-confirmar" });
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("delete_student", { p_student_id: id });
+  if (error) {
+    const hint = (error as { hint?: string }).hint;
+    const code =
+      hint === "has_history" ? "eliminar-historial" : hint === "own_student" ? "eliminar-propia" : error.code === "42501" ? "sin-permiso" : "generico";
+    to(back, { error: code });
+  }
+  const accountDeleted = Boolean((data as { account_deleted?: boolean } | null)?.account_deleted);
+  to("/admin/alumnos", { aviso: accountDeleted ? "eliminado-con-cuenta" : "eliminado" });
+}
+
 export async function saveNotes(formData: FormData): Promise<void> {
   const id = String(formData.get("id") ?? "");
   if (!UUID.test(id)) to("/admin/alumnos", { error: "datos" });

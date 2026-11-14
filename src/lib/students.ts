@@ -54,15 +54,30 @@ function toRow(r: Raw): StudentRow {
 }
 
 /** Busca por nombre, apellido o DNI. Devuelve hasta 100. */
-export async function searchStudents(supabase: Client, q: string): Promise<{ rows: StudentRow[]; error: boolean }> {
+export type StudentListView = "activos" | "inactivos";
+
+/** Busca alumnos. En la lista de Alumnos los inactivos van aparte; el escáner y los workshops buscan en todos. */
+export async function searchStudents(
+  supabase: Client,
+  q: string,
+  view: StudentListView | "todos" = "todos",
+): Promise<{ rows: StudentRow[]; error: boolean }> {
   const safe = q.replace(/[,()%*\\.]/g, " ").trim().slice(0, 80);
   let query = supabase.from("students").select(SELECT).order("last_name").order("first_name").limit(100);
+  if (view === "inactivos") query = query.eq("status", "inactive");
+  if (view === "activos") query = query.neq("status", "inactive");
   if (safe) {
     const words = safe.split(/\s+/).filter(Boolean);
     for (const w of words) query = query.or(`first_name.ilike.%${w}%,last_name.ilike.%${w}%,dni.ilike.%${w}%`);
   }
   const { data, error } = await query;
   return { rows: ((data ?? []) as unknown as Raw[]).map(toRow), error: Boolean(error) };
+}
+
+/** Cuántos alumnos hay inactivos (para la pestaña). */
+export async function countInactiveStudents(supabase: Client): Promise<number> {
+  const { count } = await supabase.from("students").select("id", { count: "exact", head: true }).eq("status", "inactive");
+  return count ?? 0;
 }
 
 export async function loadStudent(supabase: Client, id: string): Promise<StudentRow | null> {
