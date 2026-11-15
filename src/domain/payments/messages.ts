@@ -16,7 +16,7 @@ export const PURCHASE_ERRORS: Record<string, string> = {
 };
 
 export const PURCHASE_NOTICES: Record<string, string> = {
-  "transferencia-enviada": "¡Listo! Recibimos tu comprobante. Apenas recepción confirme la transferencia, se activa solo y te avisamos.",
+  "transferencia-enviada": "¡Listo! Recibimos tu comprobante. Apenas recepción confirme la transferencia, se activa solo: lo vas a ver acá.",
 };
 
 /** Comprobante de transferencia: imagen o PDF de hasta 4 MB. */
