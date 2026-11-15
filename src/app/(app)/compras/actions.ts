@@ -59,10 +59,10 @@ export async function submitTransfer(formData: FormData): Promise<void> {
   if (!isPurchaseKind(kind) || !UUID.test(ref)) redirect("/pagos?error=compra-datos#comprar");
   const entry = formData.get("proof");
   const proof = checkProof(entry instanceof File ? entry : null);
-  if (!proof.ok) fail(proof.error);
+  if (!proof.ok) return fail(proof.error);
 
   const [{ active }, supabase] = await Promise.all([getActiveStudent(), createClient()]);
-  if (!active) fail("compra-sin-alumno");
+  if (!active) return fail("compra-sin-alumno");
   const { data, error } = await supabase.rpc("create_purchase", { p_kind: kind, p_student_id: active.id, p_ref: ref, p_channel: "transfer" });
   if (error) {
     const msg = error.message ?? "";
@@ -75,8 +75,8 @@ export async function submitTransfer(formData: FormData): Promise<void> {
   const ext = (proof as { ok: true; ext: string }).ext;
   const path = `${academyId}/${purchaseId}/${randomBytes(12).toString("base64url")}.${ext}`;
   const up = academyId ? await supabase.storage.from("comprobantes").upload(path, file, { contentType: file.type, upsert: false }) : { error: true };
-  if (up.error) fail("comprobante-subida");
+  if (up.error) return fail("comprobante-subida");
   const { error: saveError } = await supabase.rpc("set_transfer_proof", { p_purchase_id: purchaseId, p_path: path });
-  if (saveError) fail("comprobante-subida");
+  if (saveError) return fail("comprobante-subida");
   redirect("/pagos?aviso=transferencia-enviada#comprar");
 }
