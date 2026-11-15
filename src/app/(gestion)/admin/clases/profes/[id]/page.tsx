@@ -13,6 +13,7 @@ import { createClient } from "@/lib/supabase/server";
 import {
   addSchedule,
   createTeacherClass,
+  deleteTeacher,
   removeSchedule,
   removeTeacherPhoto,
   renameTeacher,
@@ -187,6 +188,28 @@ export default async function ProfePage({ params, searchParams }: { params: Prom
           </form>
         )}
       </section>
+
+      {can(profile.access, "roles.manage") && (
+        <section className="flex flex-col gap-3 border-t border-line pt-6">
+          <details className="max-w-xl">
+            <summary className="cursor-pointer font-semibold text-alert-ink">Quitar a este profe de la lista</summary>
+            <form action={deleteTeacher} className="flex flex-col gap-3 pt-3">
+              <input type="hidden" name="id" value={teacher.id} />
+              <p className="text-[15px] text-muted">
+                Para profes que quedaron por error (por ejemplo, alguien con dos cuentas). Sólo se puede si nunca tuvo grupos, clases ni cuotas.
+                También se le quita el rol Profesor a esa cuenta; la cuenta en sí no se borra.
+              </p>
+              <label className="flex items-center gap-3 text-[15px]">
+                <input type="checkbox" name="confirm" value="1" required className="size-5 accent-ink" />
+                Quiero quitar a {teacher.displayName} de la lista de profes.
+              </label>
+              <div>
+                <SmallSubmit tone="danger">Quitar de la lista</SmallSubmit>
+              </div>
+            </form>
+          </details>
+        </section>
+      )}
     </>
   );
 }

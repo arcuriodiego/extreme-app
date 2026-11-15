@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { validateCapacity, validateCatalogName, validateSchedule } from "@/domain/classes/schedule";
+import { IMAGE_BUCKET, isImagePath } from "@/domain/images/images";
 import { grillaErrorCode } from "@/lib/grilla";
 import { removeImage, replaceImage } from "@/lib/images";
 import { createClient } from "@/lib/supabase/server";
@@ -260,6 +261,24 @@ export async function removeTeacherPhoto(formData: FormData): Promise<void> {
   const result = await removeImage(await createClient(), "profes", id);
   if (!result.ok) to(back, { error: result.error });
   to(back, { aviso: "foto-quitada" });
+}
+
+/** Quita de la lista a un profe cargado por error (sin grupos, clases ni cuotas) y le saca el rol Profesor. */
+export async function deleteTeacher(formData: FormData): Promise<void> {
+  const id = str(formData, "id");
+  if (!UUID.test(id)) to("/admin/clases/profes", { error: "datos" });
+  const back = `/admin/clases/profes/${id}`;
+  if (str(formData, "confirm") !== "1") to(back, { error: "confirmar" });
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("delete_teacher", { p_teacher_id: id });
+  if (error) {
+    const hint = (error as { hint?: string }).hint;
+    to(back, { error: hint === "teacher_in_use" ? "profe-en-uso" : error.code === "42501" ? "sin-permiso" : "generico" });
+  }
+  const photo = data as string | null;
+  if (photo && isImagePath(photo, "profes")) await supabase.storage.from(IMAGE_BUCKET).remove([photo]);
+  to("/admin/clases/profes", { aviso: "profe-quitado" });
 }
 
 export async function deleteGroup(formData: FormData): Promise<void> {
