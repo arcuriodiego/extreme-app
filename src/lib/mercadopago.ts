@@ -39,7 +39,8 @@ export async function createPreference(input: {
     body: JSON.stringify({
       items: [{ id: input.purchaseId, title: input.title.slice(0, 120), quantity: 1, currency_id: "ARS", unit_price: centsToPesos(input.amountCents) }],
       external_reference: input.purchaseId,
-      payer: input.payerEmail ? { email: input.payerEmail } : undefined,
+      // Sin email del comprador: Mercado Pago usa la cuenta con la que entra (o pide los datos). Mandar un email
+      // real con credenciales de prueba hace fallar el pago ("una de las partes es de prueba").
       back_urls: { success: back, pending: back, failure: back },
       auto_return: "approved",
       notification_url: `${academyConfig.appUrl}/api/mercadopago/webhook`,
