@@ -40,7 +40,7 @@ const STUDENT_TABS: readonly NavItem[] = [
   { key: "inicio", href: "/inicio", label: "Inicio", icon: "home" },
   { key: "clases", href: "/clases", label: "Clases", icon: "calendar" },
   { key: "pases", href: "/pases", label: "Mis pases", icon: "ticket" },
-  { key: "pagos", href: "/pagos", label: "Pagos", icon: "card" },
+  { key: "pagos", href: "/pagos", label: "Compras", icon: "card" },
   { key: "perfil", href: "/perfil", label: "Perfil", icon: "user" },
 ];
 

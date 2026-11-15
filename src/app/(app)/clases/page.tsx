@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { DayStrip } from "@/components/classes/DayStrip";
 import { SessionCard } from "@/components/classes/SessionCard";
 import { WeeklyGrid } from "@/components/classes/WeeklyGrid";
@@ -129,6 +130,13 @@ export default async function ClasesPage({ searchParams }: { searchParams: Promi
                               <SmallSubmit tone="dark">Reservar</SmallSubmit>
                             </form>
                           )}
+                          <Link
+                            href={`/clases/clase/${s.id}`}
+                            className="flex items-center justify-between border-t border-line pt-3 text-sm font-semibold text-ink no-underline hover:text-ink"
+                          >
+                            {fixed || booking ? "Ver la clase" : "Ver la clase y cómo anotarme"}
+                            <span aria-hidden="true">›</span>
+                          </Link>
                         </SessionCard>
                       );
                     })()}
@@ -140,15 +148,16 @@ export default async function ClasesPage({ searchParams }: { searchParams: Promi
           <WorkshopList workshops={workshops} mine={myWorkshops} waits={workshopWaits} canJoin={canBook} />
           {!hasBalance && (
             <p className="rounded-xl bg-surface px-4 py-3 text-[15px] leading-snug">
-              Para reservar clases sueltas necesitás un <strong>pack</strong> o una <strong>clase individual</strong>: pedilos en recepción.
-              Tus clases fijas de la cuota no hace falta reservarlas.
+              Para reservar clases sueltas necesitás un <strong>pack</strong> o comprar la <strong>clase suelta</strong>: tocá una clase o
+              entrá a <Link href="/compras">Compras</Link>. Tus clases fijas de la cuota no hace falta reservarlas.
             </p>
           )}
           {slots.length > 0 && (
             <details className="group rounded-xl border border-line p-4">
               <summary className="cursor-pointer font-semibold">Ver la grilla semanal completa</summary>
               <div className="pt-4">
-                <WeeklyGrid slots={slots} />
+                <p className="pb-3 text-sm text-muted">Tocá una clase para ver su próxima fecha y cómo anotarte.</p>
+                <WeeklyGrid slots={slots} hrefFor={(slot) => `/clases/horario/${slot.id}`} />
               </div>
             </details>
           )}

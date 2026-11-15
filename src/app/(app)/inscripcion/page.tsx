@@ -12,7 +12,7 @@ import { SignupForm } from "./SignupForm";
 
 export const metadata: Metadata = { title: "Inscripción" };
 
-export default async function InscripcionPage({ searchParams }: { searchParams: Promise<{ para?: string }> }) {
+export default async function InscripcionPage({ searchParams }: { searchParams: Promise<{ para?: string; horario?: string }> }) {
   const [profile, params, { options }] = await Promise.all([requireProfile(), searchParams, getActiveStudent()]);
   const supabase = await createClient();
   const self = options.find((o) => o.isSelf) ?? null;
@@ -36,6 +36,7 @@ export default async function InscripcionPage({ searchParams }: { searchParams: 
       <SignupForm slots={signupSlots(groups)} defaultFor={defaultFor} phone={profile.phone} birthDate={profile.birthDate} selfDone={selfDone}
         canSelf={canSelf}
         regulation={toAccept ? { id: toAccept.id, title: toAccept.title, body: toAccept.body } : null}
+        preselected={params.horario && /^[0-9a-f-]{36}$/i.test(params.horario) ? [params.horario] : []}
       />
     </>
   );

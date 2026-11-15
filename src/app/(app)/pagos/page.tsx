@@ -11,15 +11,20 @@ import { loadPlans } from "@/lib/prices";
 import { loadTransferInfo } from "@/lib/receipts";
 import { transferLines } from "@/domain/billing/whatsapp";
 import { requireProfile } from "@/lib/session";
+import { FormAlert } from "@/components/forms/fields";
+import { PURCHASE_ERRORS } from "@/domain/payments/messages";
+import { mpConfigured } from "@/lib/mercadopago";
+import { loadStudentRegistrations, loadWorkshops } from "@/lib/workshops";
+import { BuySection } from "./BuySection";
 import { createClient } from "@/lib/supabase/server";
 
-export const metadata: Metadata = { title: "Pagos" };
+export const metadata: Metadata = { title: "Pagos y compras" };
 
 const dateFormat = new Intl.DateTimeFormat("es-AR", { day: "numeric", month: "long", timeZone: "UTC" });
 
-export default async function PagosPage() {
+export default async function PagosPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const today = academyToday();
-  await requireProfile();
+  const [, query] = await Promise.all([requireProfile(), searchParams]);
   const supabase = await createClient();
   const [allPlans, { active }, surcharge] = await Promise.all([
     loadPlans(supabase, today).catch(() => []),
@@ -40,11 +45,20 @@ export default async function PagosPage() {
   const receipts = new Map((receiptRows as { id: string; token: string; number: number }[]).map((r) => [r.id, r]));
   const transferInfo = transferLines(transfer);
   const owed = charges.filter((c) => c.pendingCents > 0).sort((a, b) => a.dueDate.localeCompare(b.dueDate));
+  const [allWorkshops, myRegs] = await Promise.all([
+    loadWorkshops(supabase).catch(() => []),
+    studentId ? loadStudentRegistrations(supabase, studentId).catch(() => []) : Promise.resolve([]),
+  ]);
+  const enrolled = new Set(myRegs.map((r) => r.workshopId));
+  const buyableWorkshops = allWorkshops.filter(
+    (w) => w.status === "published" && !w.finished && w.sessions.length > 0 && !enrolled.has(w.id) && w.taken + w.held < w.capacity && (w.firstStart ?? "") > new Date().toISOString(),
+  );
   const fmt = (d: string) => d.split("-").reverse().join("/");
 
   return (
     <>
-      <PageHeader title={child ? `Pagos de ${active.firstName}` : "Pagos"} />
+      <PageHeader title={child ? `Pagos y compras de ${active.firstName}` : "Pagos y compras"} />
+      {query.error && PURCHASE_ERRORS[query.error] && <FormAlert kind="error">{PURCHASE_ERRORS[query.error]}</FormAlert>}
       <section className="flex flex-col gap-3">
         <h2 className="font-display text-2xl font-bold uppercase tracking-wide">{child ? "Lo que debe" : "Lo que debés"}</h2>
         {owed.length === 0 ? (
@@ -71,8 +85,8 @@ export default async function PagosPage() {
           </ul>
         )}
         <p className="text-sm text-muted">
-          Por ahora se paga en recepción: efectivo, transferencia, QR de cualquier billetera o tarjeta. Pagando en efectivo en recepción tenés
-          descuento. Muy pronto, también desde la app.
+          Podés pagar en recepción (efectivo, transferencia, QR o tarjeta) o desde la app con Mercado Pago. Pagando en efectivo en recepción
+          tenés descuento.
         </p>
         {transferInfo.length > 0 && (
           <div className="flex flex-col gap-1 rounded-xl border border-line p-4">
@@ -86,6 +100,19 @@ export default async function PagosPage() {
           </div>
         )}
       </section>
+
+      {studentId && (
+        <BuySection
+          ready={mpConfigured()}
+          canBuy={active?.canBook ?? false}
+          who={child ? active.firstName : null}
+          owedMemberships={owed.filter((c) => c.membershipId !== null)}
+          packs={plans.filter((p) => p.kind === "pack" && p.current)}
+          single={plans.find((p) => p.kind === "single_class" && p.current) ?? null}
+          workshops={buyableWorkshops}
+          surcharge={surcharge}
+        />
+      )}
 
       {payments.length > 0 && (
         <section className="flex flex-col gap-3">

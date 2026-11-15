@@ -16,6 +16,7 @@ export function SignupForm({
   selfDone,
   canSelf,
   regulation,
+  preselected = [],
 }: {
   slots: readonly SignupSlot[];
   defaultFor: "self" | "child";
@@ -27,11 +28,13 @@ export function SignupForm({
   canSelf: boolean;
   /** Reglamento vigente que esta cuenta todavía no aceptó. */
   regulation: { id: string; title: string; body: string } | null;
+  /** Horarios ya tildados (por ejemplo, al venir desde una clase de la grilla). */
+  preselected?: string[];
 }) {
   const [state, action] = useActionState(submitSignup, initial);
   const v = state.values ?? {};
   const [who, setWho] = useState<"self" | "child">((v.for as "self" | "child") || defaultFor);
-  const chosen = new Set(state.scheduleIds ?? []);
+  const chosen = new Set(state.scheduleIds ?? preselected);
   const days = [...new Set(slots.map((s) => s.dayLabel))];
 
   return (

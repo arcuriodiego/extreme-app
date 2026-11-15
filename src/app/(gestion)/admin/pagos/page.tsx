@@ -36,6 +36,19 @@ export default async function PagosPage({ searchParams }: { searchParams: Promis
   const day = params.dia && isValidCalendarDate(params.dia) && params.dia <= today ? params.dia : today;
 
   const supabase = await createClient();
+  const { data: reviewRows } = await supabase
+    .from("purchases")
+    .select("id, student_id, description, note, student:students(first_name, last_name)")
+    .eq("status", "review")
+    .order("created_at", { ascending: false })
+    .limit(20);
+  const toReview = (reviewRows ?? []) as unknown as {
+    id: string;
+    student_id: string;
+    description: string;
+    note: string | null;
+    student: { first_name: string; last_name: string } | null;
+  }[];
   const [, graceDays, payments, refunds] = await Promise.all([
     ensureCharges(supabase),
     loadGraceDays(supabase),
@@ -68,6 +81,25 @@ export default async function PagosPage({ searchParams }: { searchParams: Promis
       )}
       {notice && <FormAlert kind="ok">{notice}</FormAlert>}
       {failure && <FormAlert kind="error">{failure}</FormAlert>}
+      {toReview.length > 0 && (
+        <section className="flex flex-col gap-2 rounded-[var(--radius-card)] bg-warn-soft p-4 text-warn-ink">
+          <span className="font-semibold">Compras por Mercado Pago a revisar</span>
+          <span className="text-sm">
+            Se cobraron pero no se pudieron completar solas (por ejemplo, la clase se llenó mientras pagaban). El cobro ya está registrado en la
+            ficha: dale otra fecha o devolvé la plata.
+          </span>
+          <ul className="flex flex-col gap-1 text-sm">
+            {toReview.map((r) => (
+              <li key={r.id}>
+                <Link href={`/admin/alumnos/${r.student_id}`} className="font-semibold underline">
+                  {r.student ? `${r.student.first_name} ${r.student.last_name}` : "Alumno"}
+                </Link>{" "}
+                · {r.description} · {r.note ?? ""}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <div className="grid gap-10 xl:grid-cols-[minmax(0,1fr)_380px]">
         <section className="flex min-w-0 flex-col gap-4">
