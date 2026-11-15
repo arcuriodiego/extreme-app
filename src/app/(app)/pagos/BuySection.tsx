@@ -17,6 +17,7 @@ function BuyRow({
   kind,
   refId,
   ready,
+  transfer,
   label = "Pagar con Mercado Pago",
 }: {
   title: string;
@@ -26,6 +27,8 @@ function BuyRow({
   kind: string;
   refId: string;
   ready: boolean;
+  /** Se puede pagar por transferencia (la academia cargó sus datos). */
+  transfer: boolean;
   label?: string;
 }) {
   return (
@@ -40,13 +43,22 @@ function BuyRow({
           {cashCents !== null && cashCents < priceCents && <span className="text-xs text-muted">{formatARS(cashCents)} efectivo en recepción</span>}
         </span>
       </div>
-      {ready && (
-        <form action={startPurchase}>
-          <input type="hidden" name="kind" value={kind} />
-          <input type="hidden" name="ref" value={refId} />
-          <input type="hidden" name="back" value="/pagos" />
-          <SmallSubmit tone="dark">{label}</SmallSubmit>
-        </form>
+      {(ready || transfer) && (
+        <div className="flex flex-wrap items-center gap-3">
+          {ready && (
+            <form action={startPurchase}>
+              <input type="hidden" name="kind" value={kind} />
+              <input type="hidden" name="ref" value={refId} />
+              <input type="hidden" name="back" value="/pagos" />
+              <SmallSubmit tone="dark">{label}</SmallSubmit>
+            </form>
+          )}
+          {transfer && (
+            <Link href={`/compras/transferencia?kind=${kind}&ref=${refId}`} className="text-sm font-semibold">
+              Pagar por transferencia ›
+            </Link>
+          )}
+        </div>
       )}
     </li>
   );
@@ -58,6 +70,7 @@ function BuyRow({
  */
 export function BuySection({
   ready,
+  transfer,
   canBuy,
   who,
   owedMemberships,
@@ -67,6 +80,7 @@ export function BuySection({
   surcharge,
 }: {
   ready: boolean;
+  transfer: boolean;
   canBuy: boolean;
   who: string | null;
   owedMemberships: ChargeRow[];
@@ -76,12 +90,18 @@ export function BuySection({
   surcharge: number;
 }) {
   const live = ready && canBuy;
+  const byTransfer = transfer && canBuy;
   return (
     <section id="comprar" className="flex scroll-mt-20 flex-col gap-4">
       <h2 className="font-display text-2xl font-bold uppercase tracking-wide">{who ? `Comprar para ${who}` : "Comprar"}</h2>
-      {!ready && (
+      {!ready && !transfer && (
         <p className="rounded-xl bg-surface px-4 py-3 text-[15px] leading-snug">
-          Muy pronto vas a poder pagar desde la app con Mercado Pago. Por ahora, se paga en recepción o por transferencia.
+          Muy pronto vas a poder pagar desde la app con Mercado Pago. Por ahora, se paga en recepción.
+        </p>
+      )}
+      {transfer && (
+        <p className="text-sm text-muted">
+          {ready ? "Pagá con Mercado Pago (se acredita al instante) o por transferencia desde Cuenta DNI, cualquier banco o billetera." : "Pagá por transferencia desde Cuenta DNI, cualquier banco o billetera, y mandanos el comprobante desde acá."}
         </p>
       )}
 
@@ -99,6 +119,7 @@ export function BuySection({
                 kind="membership_charge"
                 refId={c.id}
                 ready={live}
+                transfer={byTransfer}
                 label="Pagar la cuota"
               />
             ))}
@@ -120,6 +141,7 @@ export function BuySection({
                 kind="pack"
                 refId={p.id}
                 ready={live}
+                transfer={byTransfer}
                 label="Comprar pack"
               />
             ))}
@@ -160,6 +182,7 @@ export function BuySection({
                 kind="workshop"
                 refId={w.id}
                 ready={live}
+                transfer={byTransfer}
                 label="Inscribirme y pagar"
               />
             ))}

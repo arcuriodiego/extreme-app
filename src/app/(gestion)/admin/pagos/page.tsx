@@ -42,6 +42,8 @@ export default async function PagosPage({ searchParams }: { searchParams: Promis
     .eq("status", "review")
     .order("created_at", { ascending: false })
     .limit(20);
+  const pendingTransfers =
+    (await supabase.from("purchases").select("id", { count: "exact", head: true }).eq("channel", "transfer").eq("status", "pending")).count ?? 0;
   const toReview = (reviewRows ?? []) as unknown as {
     id: string;
     student_id: string;
@@ -77,6 +79,14 @@ export default async function PagosPage({ searchParams }: { searchParams: Promis
           className="inline-flex h-11 items-center self-start rounded-full bg-ink px-5 text-[15px] font-bold text-paper"
         >
           Recordatorios de cuota por WhatsApp
+        </Link>
+      )}
+      {can(profile.access, "payments.register") && (
+        <Link
+          href="/admin/pagos/transferencias"
+          className={`inline-flex h-11 items-center self-start rounded-full px-5 text-[15px] font-bold ${pendingTransfers > 0 ? "bg-brand text-white" : "border border-line text-ink"}`}
+        >
+          Transferencias por confirmar{pendingTransfers > 0 ? ` (${pendingTransfers})` : ""}
         </Link>
       )}
       {notice && <FormAlert kind="ok">{notice}</FormAlert>}

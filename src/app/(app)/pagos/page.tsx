@@ -9,10 +9,10 @@ import { ensureCharges, loadCharges, loadPayments, loadSurcharge } from "@/lib/b
 import { otherPrice } from "@/domain/billing/cash-price";
 import { loadPlans } from "@/lib/prices";
 import { loadTransferInfo } from "@/lib/receipts";
-import { transferLines } from "@/domain/billing/whatsapp";
+import { hasTransferInfo, transferLines } from "@/domain/billing/whatsapp";
 import { requireProfile } from "@/lib/session";
 import { FormAlert } from "@/components/forms/fields";
-import { PURCHASE_ERRORS } from "@/domain/payments/messages";
+import { PURCHASE_ERRORS, PURCHASE_NOTICES } from "@/domain/payments/messages";
 import { mpConfigured } from "@/lib/mercadopago";
 import { loadStudentRegistrations, loadWorkshops } from "@/lib/workshops";
 import { BuySection } from "./BuySection";
@@ -22,7 +22,7 @@ export const metadata: Metadata = { title: "Pagos y compras" };
 
 const dateFormat = new Intl.DateTimeFormat("es-AR", { day: "numeric", month: "long", timeZone: "UTC" });
 
-export default async function PagosPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
+export default async function PagosPage({ searchParams }: { searchParams: Promise<{ error?: string; aviso?: string }> }) {
   const today = academyToday();
   const [, query] = await Promise.all([requireProfile(), searchParams]);
   const supabase = await createClient();
@@ -50,6 +50,17 @@ export default async function PagosPage({ searchParams }: { searchParams: Promis
     studentId ? loadStudentRegistrations(supabase, studentId).catch(() => []) : Promise.resolve([]),
   ]);
   const enrolled = new Set(myRegs.map((r) => r.workshopId));
+  const { data: transferRows } = studentId
+    ? await supabase
+        .from("purchases")
+        .select("id, description, status, reject_reason, created_at")
+        .eq("student_id", studentId)
+        .eq("channel", "transfer")
+        .in("status", ["pending", "rejected"])
+        .gte("created_at", new Date(Date.now() - 30 * 86_400_000).toISOString())
+        .order("created_at", { ascending: false })
+    : { data: [] };
+  const myTransfers = (transferRows ?? []) as { id: string; description: string; status: string; reject_reason: string | null }[];
   const buyableWorkshops = allWorkshops.filter(
     (w) => w.status === "published" && !w.finished && w.sessions.length > 0 && !enrolled.has(w.id) && w.taken + w.held < w.capacity && (w.firstStart ?? "") > new Date().toISOString(),
   );
@@ -59,6 +70,31 @@ export default async function PagosPage({ searchParams }: { searchParams: Promis
     <>
       <PageHeader title={child ? `Pagos y compras de ${active.firstName}` : "Pagos y compras"} />
       {query.error && PURCHASE_ERRORS[query.error] && <FormAlert kind="error">{PURCHASE_ERRORS[query.error]}</FormAlert>}
+      {query.aviso && PURCHASE_NOTICES[query.aviso] && <FormAlert kind="ok">{PURCHASE_NOTICES[query.aviso]}</FormAlert>}
+      {myTransfers.length > 0 && (
+        <section className="flex flex-col gap-2">
+          <h2 className="font-display text-xl font-bold uppercase tracking-wide">Tus transferencias</h2>
+          <ul className="flex flex-col gap-2">
+            {myTransfers.map((t) => (
+              <li key={t.id} className="flex items-start justify-between gap-3 rounded-xl border border-line p-3.5">
+                <span className="flex min-w-0 flex-col gap-0.5">
+                  <span className="font-semibold">{t.description}</span>
+                  <span className="text-sm text-muted">
+                    {t.status === "pending"
+                      ? "En revisión: recepción la confirma apenas vea la transferencia."
+                      : `Rechazada${t.reject_reason ? `: ${t.reject_reason}` : ""}. Consultá en recepción.`}
+                  </span>
+                </span>
+                <span
+                  className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-bold ${t.status === "pending" ? "bg-warn-soft text-warn-ink" : "bg-alert-soft text-alert-ink"}`}
+                >
+                  {t.status === "pending" ? "EN REVISIÓN" : "RECHAZADA"}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
       <section className="flex flex-col gap-3">
         <h2 className="font-display text-2xl font-bold uppercase tracking-wide">{child ? "Lo que debe" : "Lo que debés"}</h2>
         {owed.length === 0 ? (
@@ -104,6 +140,7 @@ export default async function PagosPage({ searchParams }: { searchParams: Promis
       {studentId && (
         <BuySection
           ready={mpConfigured()}
+          transfer={hasTransferInfo(transfer)}
           canBuy={active?.canBook ?? false}
           who={child ? active.firstName : null}
           owedMemberships={owed.filter((c) => c.membershipId !== null)}

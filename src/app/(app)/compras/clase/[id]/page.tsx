@@ -63,8 +63,11 @@ export default async function ComprarClasePage({ params, searchParams }: { param
               <span className="text-sm text-muted">Al aprobarse el pago, la clase queda reservada.</span>
             </form>
           ) : (
-            <p className="rounded-xl bg-surface px-4 py-3 text-[15px]">Muy pronto vas a poder pagar desde la app. Por ahora, reservala en recepción.</p>
+            <p className="text-sm text-muted">Pronto también con Mercado Pago. Por ahora, por transferencia o en recepción.</p>
           )}
+          <Link href={`/compras/transferencia?kind=single_class&ref=${id}`} className="self-start text-sm font-semibold">
+            Pagar por transferencia (Cuenta DNI, banco o billetera) ›
+          </Link>
           <p className="text-sm text-muted">En recepción, en efectivo: {formatARS(cash)}.</p>
         </section>
       ) : (

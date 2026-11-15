@@ -21,3 +21,12 @@ test("pesos y centavos", () => {
   assert.ok(isPurchaseKind("pack"));
   assert.ok(!isPurchaseKind("regalo"));
 });
+
+test("comprobante de transferencia", async () => {
+  const { checkProof } = await import("./messages.ts");
+  assert.deepEqual(checkProof(null), { ok: false, error: "comprobante-falta" });
+  assert.deepEqual(checkProof(new File(["x"], "a.jpg", { type: "image/jpeg" })), { ok: true, ext: "jpg" });
+  assert.deepEqual(checkProof(new File(["x"], "a.pdf", { type: "application/pdf" })), { ok: true, ext: "pdf" });
+  assert.deepEqual(checkProof(new File(["x"], "a.gif", { type: "image/gif" })), { ok: false, error: "comprobante-tipo" });
+  assert.deepEqual(checkProof(new File([new Uint8Array(3.5 * 1024 * 1024 + 1)], "a.png", { type: "image/png" })), { ok: false, error: "comprobante-pesado" });
+});
