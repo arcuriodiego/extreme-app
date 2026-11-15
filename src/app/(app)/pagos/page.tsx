@@ -3,6 +3,7 @@ import Link from "next/link";
 import { PageHeader } from "@/components/ui/basics";
 import { formatARS } from "@/domain/shared/money";
 import { academyToday } from "@/lib/grilla";
+import { addDays } from "@/domain/shared/calendar-date";
 import { methodLabel } from "@/domain/billing/payments";
 import { getActiveStudent } from "@/lib/active-student";
 import { ensureCharges, loadCharges, loadPayments, loadSurcharge } from "@/lib/billing";
@@ -57,12 +58,12 @@ export default async function PagosPage({ searchParams }: { searchParams: Promis
         .eq("student_id", studentId)
         .eq("channel", "transfer")
         .in("status", ["pending", "rejected"])
-        .gte("created_at", new Date(Date.now() - 30 * 86_400_000).toISOString())
+        .gte("created_at", addDays(today, -30))
         .order("created_at", { ascending: false })
     : { data: [] };
   const myTransfers = (transferRows ?? []) as { id: string; description: string; status: string; reject_reason: string | null }[];
   const buyableWorkshops = allWorkshops.filter(
-    (w) => w.status === "published" && !w.finished && w.sessions.length > 0 && !enrolled.has(w.id) && w.taken + w.held < w.capacity && (w.firstStart ?? "") > new Date().toISOString(),
+    (w) => w.status === "published" && !w.finished && w.sessions.length > 0 && !enrolled.has(w.id) && w.taken + w.held < w.capacity && (w.firstStart ?? "") > today,
   );
   const fmt = (d: string) => d.split("-").reverse().join("/");
 
