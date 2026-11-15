@@ -82,12 +82,17 @@ function serviceClient(): Client | null {
  * Consulta el pago en Mercado Pago (nunca confía en lo que llega por la URL o el aviso)
  * y, si está aprobado, cumple la compra. Idempotente: se puede llamar varias veces.
  */
-export async function settlePayment(paymentId: string): Promise<"approved" | "review" | "pending" | "rejected" | "error"> {
+export async function settlePayment(paymentId: string): Promise<"approved" | "review" | "pending" | "rejected" | "refunded" | "error"> {
   const payment = await getPayment(paymentId);
   if (!payment || !payment.external_reference) return "error";
-  if (payment.status !== "approved") return payment.status === "rejected" || payment.status === "cancelled" ? "rejected" : "pending";
   const supabase = serviceClient();
   if (!supabase) return "error";
+  // Devuelto (o contracargo) desde Mercado Pago: se anula el pago en la app y se deshace lo comprado.
+  if (payment.status === "refunded" || payment.status === "charged_back") {
+    const { error } = await supabase.rpc("refund_mp_payment", { p_mp_payment_id: String(payment.id) });
+    return error ? "error" : "refunded";
+  }
+  if (payment.status !== "approved") return payment.status === "rejected" || payment.status === "cancelled" ? "rejected" : "pending";
   const { data, error } = await supabase.rpc("fulfill_purchase", {
     p_purchase_id: payment.external_reference,
     p_mp_payment_id: String(payment.id),

@@ -222,7 +222,14 @@ export default async function AlumnoPage({
                   )}
                   {p.status === "approved" && canVoid && (
                     <details>
-                      <summary className="cursor-pointer text-sm font-semibold text-alert-ink">Anular este pago</summary>
+                      <summary className="cursor-pointer text-sm font-semibold text-alert-ink">Anular este pago (devolución)</summary>
+                      <p className="pt-2 text-sm text-muted">
+                        {p.method === "mp_checkout"
+                          ? "Si fue por Mercado Pago, devolvé la plata desde Mercado Pago: la app lo anula sola. Anulalo acá sólo si ya la devolviste por otro lado."
+                          : "Devolvé la plata y anulalo acá."}{" "}
+                        Se deshace lo que compró: la cuota queda sin pagar (sale de la liquidación del profe), el pack pierde las clases sin usar,
+                        la clase suelta y el workshop se cancelan.
+                      </p>
                       <form action={voidPayment} className="flex gap-2 pt-2">
                         <input type="hidden" name="student_id" value={student.id} />
                         <input type="hidden" name="payment_id" value={p.id} />
