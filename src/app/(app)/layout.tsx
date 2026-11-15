@@ -33,7 +33,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   ]);
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col">
+    <div className="relative isolate mx-auto flex min-h-dvh w-full max-w-md flex-col">
+      {/* Fondo: foto del show arriba, oscurecida y fundida en negro (queda quieta al bajar). */}
+      <div aria-hidden="true" className="pointer-events-none fixed inset-x-0 top-0 -z-10 mx-auto h-[440px] w-full max-w-md overflow-hidden">
+        <div className="absolute inset-0 bg-[url('/brand/fondo-app.webp')] bg-cover bg-center opacity-60" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(10,10,10,0.45),rgba(10,10,10,0.8)_50%,var(--color-paper)_92%)]" />
+      </div>
       <header className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 px-5 pt-4">
         <Bell initial={unread} className="justify-self-start" />
         <Link href="/inicio" aria-label="Ir a mi inicio">
