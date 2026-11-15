@@ -12,6 +12,8 @@ export interface Profile {
   lastName: string;
   phone: string;
   birthDate: string;
+  /** Cómo usa la app (elegido en Inicio): alumno, tutor o todavía sin elegir. */
+  accountKind: "student" | "guardian" | null;
   access: Access;
 }
 
@@ -30,7 +32,7 @@ export const requireProfile = cache(async function requireProfile(): Promise<Pro
   const user = { id: claims.sub, email: typeof claims.email === "string" ? claims.email : "" };
 
   const [{ data: profile }, { data: accessRows }] = await Promise.all([
-    supabase.from("profiles").select("first_name, last_name, phone, birth_date").eq("id", user.id).maybeSingle(),
+    supabase.from("profiles").select("first_name, last_name, phone, birth_date, account_kind").eq("id", user.id).maybeSingle(),
     supabase.rpc("my_access"),
   ]);
 
@@ -46,6 +48,7 @@ export const requireProfile = cache(async function requireProfile(): Promise<Pro
     lastName: profile?.last_name ?? "",
     phone: profile?.phone ?? "",
     birthDate: profile?.birth_date ?? "",
+    accountKind: profile?.account_kind === "student" || profile?.account_kind === "guardian" ? profile.account_kind : null,
     access: {
       roles: sortRoles((row?.role_codes ?? []).filter(isRoleCode)) as RoleCode[],
       permissions: (row?.permission_codes ?? []) as PermissionCode[],

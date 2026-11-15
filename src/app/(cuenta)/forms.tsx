@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useState } from "react";
+import { useActionState } from "react";
 import { FormAlert, SubmitButton, TextField } from "@/components/forms/fields";
 import { PASSWORD_MIN } from "@/domain/auth/validation";
 import {
@@ -50,7 +50,6 @@ export function SignUpForm() {
   return (
     <form action={action} noValidate className="flex flex-col gap-5">
       {state.error && <FormAlert kind="error">{state.error}</FormAlert>}
-      <AccountTypeField defaultValue={state.values?.accountType} />
       <div className="grid grid-cols-1 gap-5 min-[420px]:grid-cols-2">
         <TextField name="firstName" label="Nombre" autoComplete="given-name" required defaultValue={state.values?.firstName} error={e.firstName} />
         <TextField name="lastName" label="Apellido" autoComplete="family-name" required defaultValue={state.values?.lastName} error={e.lastName} />
@@ -110,29 +109,3 @@ export function ProfileForm({ initialValues }: { initialValues: Record<string, s
   );
 }
 
-/** ¿Quién usa la cuenta? Los padres no toman clases: su cuenta es sólo para manejar a sus hijos. */
-function AccountTypeField({ defaultValue }: { defaultValue?: string }) {
-  const [value, setValue] = useState(defaultValue === "guardian" ? "guardian" : "student");
-  return (
-    <fieldset className="flex flex-col gap-2">
-      <legend className="pb-1 text-sm font-semibold text-ink-soft">¿Quién va a tomar clases?</legend>
-      <div className="grid grid-cols-1 gap-2 min-[420px]:grid-cols-2">
-        {(
-          [
-            ["student", "Yo", "Voy a tomar clases"],
-            ["guardian", "Mi hijo/a", "Soy madre, padre o tutor/a"],
-          ] as const
-        ).map(([v, title, sub]) => (
-          <label
-            key={v}
-            className={`flex cursor-pointer flex-col rounded-xl border px-4 py-3 ${value === v ? "border-ink bg-ink text-paper" : "border-edge bg-paper"}`}
-          >
-            <input type="radio" name="accountType" value={v} checked={value === v} onChange={() => setValue(v)} className="sr-only" />
-            <span className="font-semibold">{title}</span>
-            <span className={`text-[13px] ${value === v ? "text-paper/70" : "text-muted"}`}>{sub}</span>
-          </label>
-        ))}
-      </div>
-    </fieldset>
-  );
-}

@@ -17,6 +17,7 @@ import { createClient } from "@/lib/supabase/server";
 import { TeacherAvatar } from "@/components/images/TeacherAvatar";
 import { FamilyOverview } from "./FamilyOverview";
 import { TeacherHome } from "./TeacherHome";
+import { chooseAccountKind } from "./actions";
 import { cookies } from "next/headers";
 import { resolveMode } from "@/domain/navigation/menus";
 
@@ -61,6 +62,10 @@ export default async function InicioPage({ searchParams }: { searchParams: Promi
   const pendingSlots = pending ? signupSlots(await loadGroups(supabase, { onlyActive: true }).catch(() => [])) : [];
   const mustAccept = (profile.access.roles.includes("student") || profile.access.roles.includes("guardian")) && (await regulationPending(supabase).catch(() => false));
   const charges = studentId && memberships.length > 0 ? await loadCharges(supabase, studentId).catch(() => []) : [];
+  const isGuardian = profile.access.roles.includes("guardian");
+  // Cuenta nueva sin elegir: preguntamos antes de mostrar nada de inscripción.
+  const askKind =
+    profile.accountKind === null && profile.access.roles.includes("student") && !isGuardian && memberships.length === 0 && !pending && !viewingChild;
 
   return (
     <>
@@ -89,8 +94,33 @@ export default async function InicioPage({ searchParams }: { searchParams: Promi
 
       {showGestion && <LinkCard href="/admin" title="Gestión" description="Alumnos, clases, pagos y más" dark />}
 
+      {askKind && (
+        <section className="flex flex-col gap-3 rounded-[var(--radius-card)] border-[1.5px] border-ink p-5">
+          <span className="font-display text-xl font-bold uppercase tracking-wide">¿Cómo vas a usar la app?</span>
+          <p className="text-[15px] leading-snug text-muted">Elegí una opción y te mostramos lo que necesitás.</p>
+          <form action={chooseAccountKind} className="grid grid-cols-1 gap-2 min-[420px]:grid-cols-2">
+            <button
+              name="kind"
+              value="student"
+              className="flex flex-col items-start rounded-xl border border-edge bg-paper px-4 py-3 text-left hover:border-ink"
+            >
+              <span className="font-semibold">Soy alumno/a</span>
+              <span className="text-[13px] text-muted">Voy a tomar clases</span>
+            </button>
+            <button
+              name="kind"
+              value="guardian"
+              className="flex flex-col items-start rounded-xl border border-edge bg-paper px-4 py-3 text-left hover:border-ink"
+            >
+              <span className="font-semibold">Soy madre, padre o tutor/a</span>
+              <span className="text-[13px] text-muted">Voy a anotar a mis hijos</span>
+            </button>
+          </form>
+        </section>
+      )}
+
       {family && <FamilyOverview supabase={supabase} people={options} today={today} graceDays={graceDays} />}
-      {!family && (
+      {!family && !askKind && (
         <>
 
       {memberships.map((m) => (
@@ -177,9 +207,10 @@ export default async function InicioPage({ searchParams }: { searchParams: Promi
         </Link>
       )}
 
-      {(active?.isSelf || (guardianOnly && active)) && (
+      {/* Sólo los tutores anotan hijos; a los alumnos no les aparece. */}
+      {isGuardian && active && (guardianOnly || viewingChild) && (
         <Link href="/inscripcion?para=hijo" className="self-start text-[15px] font-semibold">
-          {guardianOnly ? "Anotar a otro hijo/a" : "Anotar a un hijo/a"}
+          Anotar a otro hijo/a
         </Link>
       )}
 
