@@ -274,7 +274,12 @@ export async function deleteTeacher(formData: FormData): Promise<void> {
   const { data, error } = await supabase.rpc("delete_teacher", { p_teacher_id: id });
   if (error) {
     const hint = (error as { hint?: string }).hint;
-    to(back, { error: hint === "teacher_in_use" ? "profe-en-uso" : hint === "teacher_has_classes" ? "profe-con-clases" : error.code === "42501" ? "sin-permiso" : "generico" });
+    if (hint === "teacher_in_use") {
+      // La base dice qué la frena ("2 cuota(s)…, 1 clase(s)…"): sólo pasamos los números.
+      const n = (re: RegExp) => error.message.match(re)?.[1] ?? "0";
+      to(back, { error: "profe-en-uso", c: n(/(\d+) cuota/), f: n(/(\d+) clase/), a: n(/(\d+) alumno/) });
+    }
+    to(back, { error: hint === "teacher_has_classes" ? "profe-con-clases" : error.code === "42501" ? "sin-permiso" : "generico" });
   }
   const photo = data as string | null;
   if (photo && isImagePath(photo, "profes")) await supabase.storage.from(IMAGE_BUCKET).remove([photo]);

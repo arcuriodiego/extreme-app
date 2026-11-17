@@ -28,7 +28,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const input = "h-10 min-w-0 rounded-xl border border-edge bg-paper px-3 text-base outline-none focus:border-ink";
 
 /** Perfil de un profe: sus datos y sus clases (agregar clase, agregar o quitar horarios). */
-export default async function ProfePage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ aviso?: string; error?: string }> }) {
+export default async function ProfePage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ aviso?: string; error?: string; c?: string; f?: string; a?: string }> }) {
   const [profile, { id }, query] = await Promise.all([requireProfile(), params, searchParams]);
   if (!can(profile.access, "classes.manage")) return <NoAccess />;
   if (!UUID.test(id)) notFound();
@@ -42,6 +42,16 @@ export default async function ProfePage({ params, searchParams }: { params: Prom
   const active = <T extends { active: boolean; name: string; id: string }>(items: T[]) => items.filter((i) => i.active).map((i) => ({ value: i.id, label: i.name }));
   const notice = query.aviso ? NOTICES[query.aviso] : undefined;
   const failure = query.error ? (ERRORS[query.error] ?? ERRORS.generico) : undefined;
+  // Qué frena quitar al profe (números que manda la base).
+  const count = (v?: string) => (v && /^\d{1,5}$/.test(v) ? Number(v) : 0);
+  const blockers =
+    query.error === "profe-en-uso"
+      ? [
+          count(query.c) > 0 && `${count(query.c)} cuota${count(query.c) === 1 ? "" : "s"} de profe a su nombre`,
+          count(query.f) > 0 && `${count(query.f)} clase${count(query.f) === 1 ? "" : "s"} con reservas, ingresos o compras`,
+          count(query.a) > 0 && `${count(query.a)} alumno${count(query.a) === 1 ? "" : "s"} fijo${count(query.a) === 1 ? "" : "s"} en sus clases`,
+        ].filter((x): x is string => Boolean(x))
+      : [];
 
   return (
     <>
@@ -59,7 +69,12 @@ export default async function ProfePage({ params, searchParams }: { params: Prom
         </div>
       </div>
       {notice && <FormAlert kind="ok">{notice}</FormAlert>}
-      {failure && <FormAlert kind="error">{failure}</FormAlert>}
+      {failure && (
+        <FormAlert kind="error">
+          {failure}
+          {blockers.length > 0 && ` Lo que lo impide: ${blockers.join(", ")}.`}
+        </FormAlert>
+      )}
 
       <section className="flex flex-col gap-3">
         <h2 className="font-display text-2xl font-bold uppercase tracking-wide">Sus clases</h2>

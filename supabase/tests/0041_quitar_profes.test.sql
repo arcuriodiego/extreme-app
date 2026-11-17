@@ -113,4 +113,49 @@ begin
   raise notice 'OK  con historial no se borra nada';
 end $$;
 
+-- 5. A una clase se le cambió el profe: las fechas pasadas sin nadie pasan al
+--    nuevo y el anterior se puede quitar. El aviso de historial dice qué es.
+insert into auth.users (id, email, raw_user_meta_data) values
+  ('c3000000-0000-0000-0000-0000000000c3', 'vieja@example.com', '{"first_name":"Vieja","academy":"extreme-dance"}'),
+  ('c4000000-0000-0000-0000-0000000000c4', 'nueva@example.com', '{"first_name":"Nueva","academy":"extreme-dance"}');
+set local role authenticated;
+set local request.jwt.claims = '{"sub":"d0000000-0000-0000-0000-00000000000d"}';
+select grant_role('c3000000-0000-0000-0000-0000000000c3', 'teacher');
+select grant_role('c4000000-0000-0000-0000-0000000000c4', 'teacher');
+reset role;
+insert into class_groups (academy_id, style_id, age_category_id, capacity, teacher_id)
+select t.academy_id, (select id from dance_styles limit 1), (select id from age_categories limit 1), 10, t.id
+from teachers t join profiles p on p.id = t.profile_id where p.email = 'vieja@example.com';
+insert into class_sessions (academy_id, group_id, starts_at, ends_at, room_id, teacher_id, capacity)
+select g.academy_id, g.id, now() - interval '5 days', now() - interval '5 days' + interval '1 hour',
+       (select id from rooms where name = 'Sala T'), g.teacher_id, 10
+from class_groups g join teachers t on t.id = g.teacher_id join profiles p on p.id = t.profile_id
+where p.email = 'vieja@example.com';
+update class_groups set teacher_id = (select t.id from teachers t join profiles p on p.id = t.profile_id where p.email = 'nueva@example.com')
+where teacher_id = (select t.id from teachers t join profiles p on p.id = t.profile_id where p.email = 'vieja@example.com');
+
+set local role authenticated;
+set local request.jwt.claims = '{"sub":"d0000000-0000-0000-0000-00000000000d"}';
+do $$
+begin
+  perform delete_teacher((select t.id from teachers t join profiles p on p.id = t.profile_id where p.email = 'vieja@example.com'));
+  assert not exists (select 1 from teachers t join profiles p on p.id = t.profile_id where p.email = 'vieja@example.com'), 'vieja quitada';
+  raise notice 'OK  con fechas pasadas de una clase que cambió de profe, se quita';
+end $$;
+do $$
+begin
+  perform delete_teacher((select t.id from teachers t join profiles p on p.id = t.profile_id where p.email = 'caro@example.com'));
+  raise exception 'quitó un profe con ingresos';
+exception when foreign_key_violation then
+  assert sqlerrm like '%1 clase(s) con reservas, ingresos o compras%', sqlerrm;
+  raise notice 'OK  el aviso dice qué la frena: %', sqlerrm;
+end $$;
+reset role;
+do $$
+begin
+  assert (select count(*) from class_sessions cs join teachers t on t.id = cs.teacher_id join profiles p on p.id = t.profile_id
+          where p.email = 'nueva@example.com' and cs.starts_at < now()) = 1, 'la fecha pasó a la nueva';
+  raise notice 'OK  la fecha pasada quedó a nombre del profe actual';
+end $$;
+
 rollback;
