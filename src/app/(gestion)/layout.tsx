@@ -27,7 +27,12 @@ export default async function GestionLayout({ children }: { children: React.Reac
   const mainRole = profile.access.roles.find((r) => r === "admin" || r === "reception");
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-6xl flex-col">
+    <div className="relative isolate mx-auto flex min-h-dvh w-full max-w-6xl flex-col">
+      {/* Fondo: la misma foto del show que en la app, más oscura para que las tablas se lean bien (queda quieta al bajar). */}
+      <div aria-hidden="true" className="pointer-events-none fixed inset-x-0 top-0 -z-10 h-[520px] overflow-hidden">
+        <div className="absolute inset-0 bg-[url('/brand/fondo-app.webp')] bg-cover bg-[center_35%] opacity-45" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(10,10,10,0.5),rgba(10,10,10,0.82)_55%,var(--color-paper)_95%)]" />
+      </div>
       <header className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 border-b border-line px-5 py-3">
         <div>{menu.length > 0 && <MobileMenu items={menu} />}</div>
         <Link href="/admin" aria-label="Ir al panel de gestión">
