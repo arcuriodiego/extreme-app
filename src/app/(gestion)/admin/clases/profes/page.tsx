@@ -24,7 +24,43 @@ export default async function ProfesPage({ searchParams }: { searchParams: Promi
   const [catalog, groups] = await Promise.all([loadCatalog(supabase), loadGroups(supabase)]);
   const live = groups.filter((g) => g.status !== "closed");
   const unassigned = live.filter((g) => !g.teacherId);
-  const teachers = [...catalog.teachers].sort((a, b) => Number(b.active) - Number(a.active) || a.displayName.localeCompare(b.displayName, "es"));
+  const teachers = [...catalog.teachers].sort((a, b) => a.displayName.localeCompare(b.displayName, "es"));
+  // Sin rol y sin clases: van aparte, plegados (conservan su historial).
+  const isFormer = (t: (typeof teachers)[number]) => !t.active && !live.some((g) => g.teacherId === t.id);
+  const current = teachers.filter((t) => !isFormer(t));
+  const former = teachers.filter(isFormer);
+  const card = (t: (typeof teachers)[number]) => {
+    const mine = live.filter((g) => g.teacherId === t.id);
+    const slots = mine.filter((g) => g.status === "active").flatMap((g) => g.schedules);
+    const hours = slots.reduce((sum, s) => sum + (minutes(s.end) - minutes(s.start)) / 60, 0);
+    const days = [...new Set(slots.sort((a, b) => a.weekday - b.weekday).map((s) => weekdayLabel(s.weekday).slice(0, 3)))];
+    return (
+      <li key={t.id}>
+        <Link
+          href={`/admin/clases/profes/${t.id}`}
+          className="flex h-full items-center gap-3 rounded-[var(--radius-card)] border border-line p-4 text-ink no-underline hover:border-ink hover:text-ink"
+        >
+          <TeacherAvatar name={t.displayName} url={t.photoUrl} size={56} />
+          <span className="flex min-w-0 flex-col gap-0.5">
+            <span className="font-semibold">
+              {t.displayName}
+              {!t.active && <span className="ml-2 rounded-full bg-surface px-2 py-0.5 text-xs font-bold">SIN ROL</span>}
+            </span>
+            <span className="text-sm text-muted">
+              {slots.length === 0
+                ? "Sin clases asignadas"
+                : `${slots.length} ${slots.length === 1 ? "clase" : "clases"} por semana · ${Number.isInteger(hours) ? hours : hours.toFixed(1).replace(".", ",")} h`}
+            </span>
+            {days.length > 0 && <span className="text-sm text-muted">{days.join(" · ")}</span>}
+            <span className="text-xs text-muted">{t.payPeriod === "fortnight" ? "Cobra por quincena" : "Cobra el mes completo"}</span>
+          </span>
+          <span aria-hidden="true" className="ml-auto">
+            ›
+          </span>
+        </Link>
+      </li>
+    );
+  };
 
   return (
     <>
@@ -39,40 +75,18 @@ export default async function ProfesPage({ searchParams }: { searchParams: Promi
           <Link href="/admin/usuarios">Usuarios y roles</Link>.
         </p>
       ) : (
-        <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {teachers.map((t) => {
-            const mine = live.filter((g) => g.teacherId === t.id);
-            const slots = mine.filter((g) => g.status === "active").flatMap((g) => g.schedules);
-            const hours = slots.reduce((sum, s) => sum + (minutes(s.end) - minutes(s.start)) / 60, 0);
-            const days = [...new Set(slots.sort((a, b) => a.weekday - b.weekday).map((s) => weekdayLabel(s.weekday).slice(0, 3)))];
-            return (
-              <li key={t.id}>
-                <Link
-                  href={`/admin/clases/profes/${t.id}`}
-                  className="flex h-full items-center gap-3 rounded-[var(--radius-card)] border border-line p-4 text-ink no-underline hover:border-ink hover:text-ink"
-                >
-                  <TeacherAvatar name={t.displayName} url={t.photoUrl} size={56} />
-                  <span className="flex min-w-0 flex-col gap-0.5">
-                    <span className="font-semibold">
-                      {t.displayName}
-                      {!t.active && <span className="ml-2 rounded-full bg-surface px-2 py-0.5 text-xs font-bold">SIN ROL</span>}
-                    </span>
-                    <span className="text-sm text-muted">
-                      {slots.length === 0
-                        ? "Sin clases asignadas"
-                        : `${slots.length} ${slots.length === 1 ? "clase" : "clases"} por semana · ${Number.isInteger(hours) ? hours : hours.toFixed(1).replace(".", ",")} h`}
-                    </span>
-                    {days.length > 0 && <span className="text-sm text-muted">{days.join(" · ")}</span>}
-                    <span className="text-xs text-muted">{t.payPeriod === "fortnight" ? "Cobra por quincena" : "Cobra el mes completo"}</span>
-                  </span>
-                  <span aria-hidden="true" className="ml-auto">
-                    ›
-                  </span>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
+        <>
+          <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{current.map(card)}</ul>
+          {former.length > 0 && (
+            <details className="rounded-[var(--radius-card)] border border-line p-4">
+              <summary className="cursor-pointer font-semibold">Profes sin rol ({former.length})</summary>
+              <p className="mt-2 text-sm text-muted">
+                Ya no tienen el rol Profesor ni clases en la grilla. Quedan acá sólo para conservar su historial; los alumnos no los ven.
+              </p>
+              <ul className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{former.map(card)}</ul>
+            </details>
+          )}
+        </>
       )}
 
       {unassigned.length > 0 && (
