@@ -196,7 +196,7 @@ export default async function ProfePage({ params, searchParams }: { params: Prom
             <form action={deleteTeacher} className="flex flex-col gap-3 pt-3">
               <input type="hidden" name="id" value={teacher.id} />
               <p className="text-[15px] text-muted">
-                Para profes que quedaron por error (por ejemplo, alguien con dos cuentas). Sólo se puede si nunca tuvo grupos, clases ni cuotas.
+                Para profes que quedaron por error (por ejemplo, alguien con dos cuentas). Primero eliminá sus clases de la grilla. No se puede si ya tuvo alumnos fijos, reservas, ingresos o cuotas.
                 También se le quita el rol Profesor a esa cuenta; la cuenta en sí no se borra.
               </p>
               <label className="flex items-center gap-3 text-[15px]">

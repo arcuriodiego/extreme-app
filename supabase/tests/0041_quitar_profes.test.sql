@@ -60,4 +60,57 @@ begin
   raise notice 'OK  sin rol Profesor';
 end $$;
 
+-- 4. Profe cuyas clases se eliminaron con fechas pasadas pero sin nadie: se quita
+--    junto con sus grupos cerrados. Otro con un ingreso registrado: no.
+insert into auth.users (id, email, raw_user_meta_data) values
+  ('c1000000-0000-0000-0000-0000000000c1', 'agos@example.com', '{"first_name":"Agos","academy":"extreme-dance"}'),
+  ('c2000000-0000-0000-0000-0000000000c2', 'caro@example.com', '{"first_name":"Caro","academy":"extreme-dance"}');
+insert into rooms (academy_id, branch_id, name, capacity) select academy_id, id, 'Sala T', 25 from branches limit 1;
+set local role authenticated;
+set local request.jwt.claims = '{"sub":"d0000000-0000-0000-0000-00000000000d"}';
+select grant_role('c1000000-0000-0000-0000-0000000000c1', 'teacher');
+select grant_role('c2000000-0000-0000-0000-0000000000c2', 'teacher');
+reset role;
+insert into class_groups (academy_id, style_id, age_category_id, capacity, teacher_id, status)
+select t.academy_id, (select id from dance_styles limit 1), (select id from age_categories limit 1), 10, t.id, 'closed'
+from teachers t join profiles p on p.id = t.profile_id where p.email in ('agos@example.com', 'caro@example.com');
+insert into class_sessions (academy_id, group_id, starts_at, ends_at, room_id, teacher_id, capacity)
+select g.academy_id, g.id,
+       now() - interval '2 days' - case when p.email = 'caro@example.com' then interval '3 hours' else interval '0' end,
+       now() - interval '2 days' - case when p.email = 'caro@example.com' then interval '3 hours' else interval '0' end + interval '1 hour',
+       (select id from rooms where name = 'Sala T'), g.teacher_id, 10
+from class_groups g join teachers t on t.id = g.teacher_id join profiles p on p.id = t.profile_id
+where p.email in ('agos@example.com', 'caro@example.com');
+insert into students (academy_id, first_name, last_name) select id, 'Ana', 'Test' from academies;
+insert into attendances (academy_id, student_id, session_id, source)
+select cs.academy_id, (select id from students where first_name = 'Ana' and last_name = 'Test'), cs.id, 'manual'
+from class_sessions cs join teachers t on t.id = cs.teacher_id join profiles p on p.id = t.profile_id
+where p.email = 'caro@example.com';
+
+set local role authenticated;
+set local request.jwt.claims = '{"sub":"d0000000-0000-0000-0000-00000000000d"}';
+do $$
+begin
+  perform delete_teacher((select t.id from teachers t join profiles p on p.id = t.profile_id where p.email = 'agos@example.com'));
+  assert not exists (select 1 from teachers t join profiles p on p.id = t.profile_id where p.email = 'agos@example.com'), 'agos quitada';
+  raise notice 'OK  con clases eliminadas sin nadie, se quita';
+end $$;
+do $$
+begin
+  perform delete_teacher((select t.id from teachers t join profiles p on p.id = t.profile_id where p.email = 'caro@example.com'));
+  raise exception 'quitó un profe con ingresos';
+exception when foreign_key_violation then
+  raise notice 'OK  con ingresos no';
+end $$;
+reset role;
+do $$
+begin
+  assert not exists (select 1 from class_groups g where g.teacher_id is null), 'sin grupos huérfanos';
+  assert (select count(*) from class_groups g join teachers t on t.id = g.teacher_id join profiles p on p.id = t.profile_id
+          where p.email = 'caro@example.com') = 1, 'el grupo de Caro sigue';
+  assert (select count(*) from class_sessions cs join teachers t on t.id = cs.teacher_id join profiles p on p.id = t.profile_id
+          where p.email = 'caro@example.com') = 1, 'su fecha sigue';
+  raise notice 'OK  con historial no se borra nada';
+end $$;
+
 rollback;
