@@ -100,3 +100,43 @@ export function checkDocument(file: { size: number; type: string } | null | unde
   if (file.size > MAX_DOCUMENT_BYTES) return { ok: false, error: "archivo-pesado" };
   return { ok: true, type: file.type as DocumentType };
 }
+
+// ---------------------------------------------------------------------
+// Encuadre de fotos redondas (profes y alumnos): el usuario mueve y agranda
+// la foto dentro de un marco cuadrado; se sube sólo lo que queda adentro.
+// ---------------------------------------------------------------------
+
+/** Fotos que se muestran en un círculo y se encuadran antes de subir. */
+export const SQUARE_KINDS: readonly ImageKind[] = ["profes", "alumnos"];
+
+export type Offset = { x: number; y: number };
+
+/** Escala con la que la foto (w×h) cubre justo un marco de lado `frame`, por el zoom. */
+export function coverScale(width: number, height: number, frame: number, zoom: number): number {
+  return (frame / Math.min(width, height)) * zoom;
+}
+
+/** Corrimiento (centro de la foto respecto del centro del marco) limitado para que la foto siempre cubra el marco. */
+export function clampOffset(width: number, height: number, frame: number, zoom: number, offset: Offset): Offset {
+  const s = coverScale(width, height, frame, zoom);
+  const maxX = Math.max(0, (width * s - frame) / 2);
+  const maxY = Math.max(0, (height * s - frame) / 2);
+  const clamp = (v: number, m: number) => Math.min(m, Math.max(-m, v)) || 0;
+  return { x: clamp(offset.x, maxX), y: clamp(offset.y, maxY) };
+}
+
+/** Cuadrado de la foto original (en sus píxeles) que se ve dentro del marco. */
+export function cropSquare(
+  width: number,
+  height: number,
+  frame: number,
+  zoom: number,
+  offset: Offset,
+): { x: number; y: number; size: number } {
+  const o = clampOffset(width, height, frame, zoom, offset);
+  const s = coverScale(width, height, frame, zoom);
+  const size = Math.min(frame / s, width, height);
+  const x = Math.min(width - size, Math.max(0, width / 2 - o.x / s - size / 2));
+  const y = Math.min(height - size, Math.max(0, height / 2 - o.y / s - size / 2));
+  return { x, y, size };
+}
